@@ -2332,7 +2332,10 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
                     )]
 
             # Convert character data to CharacterData format
-            from .analyzer.weakness_detector import CharacterData
+            try:
+                from .analyzer.weakness_detector import CharacterData
+            except ImportError:
+                from src.analyzer.weakness_detector import CharacterData
 
             # DEBUG: Log what we're getting
             logger.info(f"[WEAKNESS_DETECTOR] character_data keys: {list(character_data.keys())}")
@@ -2474,7 +2477,10 @@ Consider:
                     )]
 
             # Convert to DefensiveStats format
-            from .calculator.ehp_calculator import DefensiveStats, DamageType, ThreatProfile
+            try:
+                from .calculator.ehp_calculator import DefensiveStats, DamageType, ThreatProfile
+            except ImportError:
+                from src.calculator.ehp_calculator import DefensiveStats, DamageType, ThreatProfile
 
             stats = DefensiveStats(
                 life=character_data.get("life", 0),
@@ -4091,7 +4097,10 @@ Consider:
     async def _handle_get_formula(self, args: dict) -> List[types.TextContent]:
         """Get a PoE2 calculation formula for Claude to use"""
         try:
-            from .knowledge.formulas import get_formula, get_all_formula_names, FORMULAS
+            try:
+                from .knowledge.formulas import get_formula, get_all_formula_names, FORMULAS
+            except ImportError:
+                from src.knowledge.formulas import get_formula, get_all_formula_names, FORMULAS
 
             formula_type = args.get("formula_type", "").lower().strip()
 
@@ -6287,21 +6296,41 @@ Could not extract account and character from URL.
             fresh_provider = get_fresh_data_provider()
             base_items = fresh_provider.get_all_base_items()
 
-            # Filter and format
             items_list = []
-            for item_id, item_data in base_items.items():
-                name = item_data.get('name', item_id)
+            source_label = "data/game/ (FreshDataProvider)"
 
-                # Apply filters
-                if filter_type and filter_type not in item_id.lower() and filter_type not in name.lower():
-                    continue
-                if filter_name and filter_name not in name.lower():
-                    continue
+            if base_items:
+                for item_id, item_data in base_items.items():
+                    name = item_data.get('name', item_id)
 
-                items_list.append({
-                    'id': item_id,
-                    'name': name
-                })
+                    # Apply filters
+                    if filter_type and filter_type not in item_id.lower() and filter_type not in name.lower():
+                        continue
+                    if filter_name and filter_name not in name.lower():
+                        continue
+
+                    items_list.append({'id': item_id, 'name': name, 'type': ''})
+            else:
+                # Fallback: the FreshDataProvider base-item set is empty when the
+                # raw baseitemtypes.datc64 is absent and complete_models carries
+                # no base items. Use the curated items DB (same source as
+                # search_items) so the tool works instead of returning nothing.
+                source_label = "items database (db_manager)"
+                try:
+                    db_items = await self.db_manager.get_all_items()
+                except Exception as e:
+                    db_items = []
+                    logger.warning(f"Base-item DB fallback failed: {e}")
+                for it in db_items:
+                    name = (it.get('name') or '').strip()
+                    itype = (it.get('type') or '').strip()
+                    if not name:
+                        continue
+                    if filter_type and filter_type not in itype.lower() and filter_type not in name.lower():
+                        continue
+                    if filter_name and filter_name not in name.lower():
+                        continue
+                    items_list.append({'id': name, 'name': name, 'type': itype})
 
             # Sort by name
             items_list.sort(key=lambda x: x['name'])
@@ -6313,10 +6342,9 @@ Could not extract account and character from URL.
             # Format response
             response = f"# Base Item Types ({len(items_list)} shown, {total_count} total)\n\n"
 
-            # Group by type prefix for better organization
+            # Group by type prefix (metadata IDs) for better organization
             current_prefix = ""
             for item in items_list:
-                # Extract category from ID
                 parts = item['id'].split('/')
                 prefix = parts[0] if len(parts) > 1 else ""
                 if prefix != current_prefix:
@@ -6324,10 +6352,13 @@ Could not extract account and character from URL.
                     if prefix:
                         response += f"\n## {prefix.replace('Metadata', '').replace('Items', '').strip()}\n"
 
-                response += f"- **{item['name']}** (`{item['id']}`)\n"
+                type_suffix = f" — *{item['type']}*" if item.get('type') else ""
+                response += f"- **{item['name']}**{type_suffix} (`{item['id']}`)\n"
 
             if not items_list:
                 response += "*No base items found matching filters.*\n"
+            else:
+                response += f"\n*Source: {source_label}*\n"
 
             return [types.TextContent(type="text", text=response)]
 
@@ -6370,6 +6401,29 @@ Could not extract account and character from URL.
                         found = item_data
                         found_id = item_id
                         break
+
+            # Fallback: FreshDataProvider base-item set empty/missing the item.
+            # Query the curated items DB (same source as search_items) so the
+            # tool returns real data with correct display names.
+            if not found:
+                try:
+                    db_matches = await self.db_manager.search_items(item_name)
+                except Exception as e:
+                    db_matches = []
+                    logger.warning(f"Base-item DB fallback failed: {e}")
+                if db_matches:
+                    # Prefer an exact (case-insensitive) name match, else first.
+                    best = next(
+                        (m for m in db_matches if (m.get('name', '')).lower() == item_name_lower),
+                        db_matches[0],
+                    )
+                    response = f"# {best.get('name', item_name)}\n\n"
+                    for key, value in best.items():
+                        if value in (None, "", 0):
+                            continue
+                        response += f"**{key.replace('_', ' ').title()}:** {value}\n"
+                    response += "\n*Source: items database (db_manager)*\n"
+                    return [types.TextContent(type="text", text=response)]
 
             if not found:
                 return [types.TextContent(
