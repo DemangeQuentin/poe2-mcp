@@ -4025,7 +4025,28 @@ Consider:
                 )]
             limit = int(args.get("limit") or 15)
 
-            sources = get_stat_source_index().find_sources(query, limit_per_source=limit)
+            # Run the (synchronous, CPU-bound) index lookup in a worker thread
+            # under a hard timeout. A single pathological query must never hang
+            # the whole MCP session — it returns a graceful error instead
+            # (field bug #4, 2026-06-16).
+            index = get_stat_source_index()
+            loop = asyncio.get_event_loop()
+            try:
+                sources = await asyncio.wait_for(
+                    loop.run_in_executor(
+                        None, index.find_sources, query, limit
+                    ),
+                    timeout=15.0,
+                )
+            except asyncio.TimeoutError:
+                logger.error(f"find_stat_sources timed out for query={query!r}")
+                return [types.TextContent(
+                    type="text",
+                    text=(
+                        f"Error: stat-source lookup for `{query}` exceeded 15s "
+                        "and was aborted. Try a more specific substring."
+                    )
+                )]
 
             total = (
                 len(sources["skills"]) + len(sources["mods"])
@@ -4065,11 +4086,17 @@ Consider:
                 if sources["mods"]:
                     lines.append(f"## Item mods ({len(sources['mods'])} matching stat_ids)")
                     for stat_id, mods in sources["mods"].items():
+                        # display_name is empty for IMPLICITs on uniques /
+                        # monsters / maps — fall back to the descriptive mod_id
+                        # so the player still gets an actionable source label
+                        # instead of a blank entry (field bug, 2026-06-16).
                         names = ", ".join(
-                            f"{m['display_name']} ({m['generation_type']})"
-                            for m in mods[:6] if m.get('display_name')
+                            f"{m.get('display_name') or m.get('mod_id') or '?'} "
+                            f"({m.get('generation_type') or '?'})"
+                            for m in mods[:6]
                         )
-                        lines.append(f"- `{stat_id}`: {names}")
+                        extra = f" (+{len(mods) - 6} more)" if len(mods) > 6 else ""
+                        lines.append(f"- `{stat_id}`: {names}{extra}")
                     lines.append("")
 
             if not sources["ascendancy_data_available"]:
@@ -6568,13 +6595,29 @@ Could not extract account and character from URL.
             with open(mods_file, 'r', encoding='utf-8') as f:
                 mods_data = json.load(f)
 
-            # Filter mods
+            # Stat lookup is a no-op fallback for modern inline-stat_id dumps,
+            # but keeps filter_stat working against older extractions too.
+            stat_lookup = _load_stat_lookup(DATA_DIR) if filter_stat else None
+
+            # Filter mods. filter_stat matches the mod_id OR any resolved
+            # stat_id — previously it only checked mod_id, so a stat-id query
+            # like "convert_to_fire" returned 0 results even though the mods
+            # exist (field bug, 2026-06-16). Now it agrees with
+            # find_stat_sources, which keys on stat_id.
             filtered_mods = []
             for mod in mods_data.get('mods', []):
                 if generation_type and mod.get('generation_type_name') != generation_type:
                     continue
-                if filter_stat and filter_stat not in mod.get('mod_id', '').lower():
-                    continue
+                if filter_stat:
+                    if filter_stat in mod.get('mod_id', '').lower():
+                        pass  # mod_id match
+                    elif any(
+                        filter_stat in r["stat_id"].lower()
+                        for r in _iter_resolved_stats(mod, stat_lookup=stat_lookup)
+                    ):
+                        pass  # stat_id match
+                    else:
+                        continue
                 filtered_mods.append(mod)
 
             # Sort by level requirement
