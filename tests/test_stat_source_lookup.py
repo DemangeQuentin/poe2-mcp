@@ -66,6 +66,20 @@ def test_exact_stat_id_skill_lookup(index):
     assert "Fireball" in skills
 
 
+def test_empty_display_name_mods_not_collapsed(index):
+    """Field bug 2026-06-16: convert_to_fire mods are IMPLICITs with an empty
+    display_name. The dedup must key on mod_id so distinct mods survive instead
+    of collapsing into a single ('', generation_type) entry."""
+    sources = index.find_sources("convert_to_fire")
+    assert sources["mods"], "convert_to_fire stat_ids should map to mods"
+    phys = sources["mods"].get("non_skill_base_physical_damage_%_to_convert_to_fire")
+    assert phys, "the core phys->fire conversion stat must be present"
+    # Pre-fix this collapsed to 1; there are many distinct unique/monster mods.
+    assert len(phys) > 5, f"expected multiple distinct mods, got {len(phys)}"
+    # Every entry must carry a usable label (mod_id, since display_name is blank)
+    assert all(m.get("mod_id") for m in phys)
+
+
 def test_empty_query_returns_empty(index):
     sources = index.find_sources("")
     assert sources["skills"] == {}
@@ -146,6 +160,48 @@ async def test_find_stat_sources_handler(mcp):
     assert "Withering Touch" in text
     assert "## Skills" in text
     assert "## Passive tree nodes" in text
+
+
+@pytest.mark.asyncio
+async def test_find_stat_sources_renders_empty_display_name_mods(mcp):
+    """Field bug 2026-06-16: mods with empty display_name were dropped by the
+    `if m.get('display_name')` filter, leaving blank entries. The renderer must
+    fall back to mod_id so item-mod sources are actually shown."""
+    r = await mcp._handle_find_stat_sources({"query": "convert_to_fire"})
+    text = r[0].text
+    assert "## Item mods" in text
+    # The mod_id fallback should appear in the output (not a blank entry).
+    assert "ConvertPhysicalToFire" in text or "MapMonster" in text
+
+
+@pytest.mark.asyncio
+async def test_list_all_mods_filter_by_stat_id(mcp):
+    """Field bug 2026-06-16: list_all_mods filter_stat only matched mod_id, so a
+    stat-id query returned 0 results. It must now agree with find_stat_sources
+    and match resolved stat_ids too."""
+    r = await mcp._handle_list_all_mods(
+        {"filter_stat": "convert_to_fire", "limit": 5}
+    )
+    text = r[0].text
+    # Header is "# Mods (N of TOTAL)" — TOTAL must be non-zero now.
+    import re
+    m = re.search(r"# Mods \(\d+ of (\d+)\)", text)
+    assert m, f"unexpected header: {text.splitlines()[0]!r}"
+    assert int(m.group(1)) > 0, "filter_stat by stat_id must find conversion mods"
+
+
+@pytest.mark.asyncio
+async def test_find_stat_sources_completes_under_timeout(mcp):
+    """Field bug #4 2026-06-16: a single query must never hang the session.
+    The exact reported query should return promptly via the timeout guard."""
+    import asyncio
+    r = await asyncio.wait_for(
+        mcp._handle_find_stat_sources(
+            {"query": "corpse_explosion_monster_life_permillage_physical"}
+        ),
+        timeout=20.0,
+    )
+    assert r and r[0].text
 
 
 @pytest.mark.asyncio

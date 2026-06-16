@@ -104,6 +104,7 @@ class StatSourceIndex:
                 "mod_id": mod.get("mod_id"),
                 "display_name": mod.get("display_name"),
                 "generation_type": mod.get("generation_type_name"),
+                "domain": mod.get("domain"),
             }
             for stat in (mod.get("stats") or []):
                 stat_id = stat.get("stat_id") if isinstance(stat, dict) else None
@@ -217,11 +218,17 @@ class StatSourceIndex:
         mod_hits = 0
         for stat_id, mods in self._mod_index.items():
             if q in stat_id.lower():
-                # Dedupe by display name, keep first occurrence
+                # Dedupe, keep first occurrence. Many mods (IMPLICITs on
+                # uniques/monsters/maps) have an EMPTY display_name, so keying
+                # solely on it collapses distinct mods into one — fall back to
+                # mod_id so each real mod survives (field bug, 2026-06-16).
                 seen = set()
                 unique = []
                 for m in mods:
-                    key = (m.get("display_name"), m.get("generation_type"))
+                    key = (
+                        m.get("display_name") or m.get("mod_id"),
+                        m.get("generation_type"),
+                    )
                     if key not in seen:
                         seen.add(key)
                         unique.append(m)
