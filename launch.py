@@ -117,7 +117,16 @@ def check_dependencies():
 
     if missing:
         print_warning(f"Missing packages: {', '.join(missing)}")
-        print_info("Installing missing dependencies...")
+        # Anchor requirements.txt to THIS script's directory, not the CWD.
+        # Claude Desktop launches the .mcpb from a foreign working directory,
+        # so a bare 'requirements.txt' isn't found and the auto-install dies
+        # with "Could not open requirements file" (server disconnects).
+        req_file = Path(__file__).resolve().parent / "requirements.txt"
+        if not req_file.is_file():
+            print_error(f"requirements.txt not found at {req_file}")
+            print_info(f"Please run: pip install -r \"{req_file}\"")
+            return False
+        print_info(f"Installing missing dependencies from {req_file}...")
         try:
             subprocess.check_call([
                 sys.executable,
@@ -125,13 +134,13 @@ def check_dependencies():
                 'pip',
                 'install',
                 '-r',
-                'requirements.txt'
+                str(req_file),
             ])
             print_success("Dependencies installed successfully")
             return True
         except subprocess.CalledProcessError:
             print_error("Failed to install dependencies")
-            print_info("Please run: pip install -r requirements.txt")
+            print_info(f"Please run: pip install -r \"{req_file}\"")
             return False
     else:
         print_success("All dependencies installed")
