@@ -214,6 +214,64 @@ def read_interval(data: bytes, offset: int) -> Tuple[int, int]:
     return (min_val, max_val)
 
 
+def read_list_header(data: bytes, offset: int) -> Tuple[int, int]:
+    """
+    Read a 16-byte List field header: 8-byte element count + 8-byte data offset.
+
+    The data offset is relative to the file's data-section start (the magic
+    separator). Returns (count, data_offset).
+    """
+    count = struct.unpack('<Q', data[offset:offset + 8])[0]
+    data_off = struct.unpack('<Q', data[offset + 8:offset + 16])[0]
+    return (count, data_off)
+
+
+# SpawnTags is a List<Key->Tags> at offset 158 (immediately after Stat4Value,
+# offset 150 + 8). Confirmed against PoB's spec.lua Mods table (field order:
+# ... Stat4Value, SpawnTags, <int>, Tags, ...) and verified empirically on the
+# 0.5 mods.datc64: the parallel weight-values list (next field) reads empty in
+# this extraction, so we use tag MEMBERSHIP for item-class eligibility. Mods
+# list their applicable equipment slots explicitly (e.g. IncreasedMana1 lists
+# 'wand'; Strength1 does not), so membership is a correct eligibility signal.
+SPAWN_TAGS_LIST_OFFSET = 158
+# Defensive cap: a real spawn-tag list is small (<~40). A wild count means we
+# parsed a monster/garbage row — return nothing rather than read out of bounds.
+MAX_SPAWN_TAGS = 64
+
+
+def parse_spawn_tag_indices(
+    row_data: bytes,
+    full_data: bytes,
+    data_section_start: int,
+) -> List[int]:
+    """
+    Resolve a mod row's SpawnTags list into tag row indices (into the Tags table).
+
+    Args:
+        row_data: the mod's own row bytes (>= MOD_ROW_SIZE).
+        full_data: the entire mods.datc64 file bytes (the list points into the
+            shared data section).
+        data_section_start: offset of the data section (the magic separator).
+
+    Returns:
+        List of tag row indices (resolve to names via the Tags table). Empty on
+        any out-of-range / implausible header.
+    """
+    if len(row_data) < SPAWN_TAGS_LIST_OFFSET + 16:
+        return []
+    count, data_off = read_list_header(row_data, SPAWN_TAGS_LIST_OFFSET)
+    if count == 0 or count > MAX_SPAWN_TAGS:
+        return []
+    base = data_section_start + data_off
+    if base < 0 or base + count * 16 > len(full_data):
+        return []
+    indices = []
+    for i in range(count):
+        koff = base + i * 16
+        indices.append(struct.unpack('<Q', full_data[koff:koff + 8])[0])
+    return indices
+
+
 def parse_mod_row(data: bytes, row_index: int = 0) -> ModRecord:
     """
     Parse a single 661-byte mod row.

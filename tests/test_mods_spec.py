@@ -44,8 +44,12 @@ from src.parsers.specifications.mods_spec import (
     StatEntry,
     extract_mod_family,
     parse_mod_row,
+    parse_spawn_tag_indices,
     read_interval,
     read_key,
+    read_list_header,
+    SPAWN_TAGS_LIST_OFFSET,
+    MAX_SPAWN_TAGS,
     validate_generation_type,
     validate_mod_record,
     validate_stat_key,
@@ -442,3 +446,61 @@ def test_validate_mod_record_flags_bad_stat_key():
     )
     errors = validate_mod_record(rec)
     assert any("stat1_key" in e for e in errors)
+
+
+# ---------------------------------------------------------------------------
+# SpawnTags parsing (Bug 3 — item-class eligibility, 2026-06-16)
+# ---------------------------------------------------------------------------
+
+def test_read_list_header_unpacks_count_and_offset():
+    buf = bytearray(32)
+    struct.pack_into("<Q", buf, 0, 16)     # count
+    struct.pack_into("<Q", buf, 8, 74)     # data offset
+    count, off = read_list_header(buf, 0)
+    assert count == 16
+    assert off == 74
+
+
+def test_spawn_tags_offset_is_after_stat4_value():
+    # Stat4Value is the last documented field at offset 150 (8-byte interval),
+    # so SpawnTags must begin immediately after at 158.
+    assert SPAWN_TAGS_LIST_OFFSET == 150 + 8
+
+
+def _build_mod_with_spawn_tags(tag_indices):
+    """Synthesize (row_data, full_data, data_section_start) where the row's
+    SpawnTags list at offset 158 points at `tag_indices` in the data section."""
+    row = bytearray(MOD_ROW_SIZE)
+    # Data section: place the 16-byte tag keys at data offset 0.
+    keys = bytearray()
+    for ti in tag_indices:
+        keys += struct.pack("<Q", ti) + struct.pack("<Q", 0)
+    data_section_start = 1000
+    full = bytearray(data_section_start) + keys
+    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET, len(tag_indices))   # count
+    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET + 8, 0)              # data offset
+    return bytes(row), bytes(full), data_section_start
+
+
+def test_parse_spawn_tag_indices_resolves_keys():
+    row, full, dss = _build_mod_with_spawn_tags([2, 3, 9, 1015])
+    assert parse_spawn_tag_indices(row, full, dss) == [2, 3, 9, 1015]
+
+
+def test_parse_spawn_tag_indices_empty_list():
+    row, full, dss = _build_mod_with_spawn_tags([])
+    assert parse_spawn_tag_indices(row, full, dss) == []
+
+
+def test_parse_spawn_tag_indices_rejects_implausible_count():
+    row = bytearray(MOD_ROW_SIZE)
+    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET, MAX_SPAWN_TAGS + 1)
+    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET + 8, 0)
+    assert parse_spawn_tag_indices(bytes(row), b"\x00" * 2000, 1000) == []
+
+
+def test_parse_spawn_tag_indices_rejects_out_of_range_offset():
+    row = bytearray(MOD_ROW_SIZE)
+    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET, 4)
+    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET + 8, 10**9)  # way past EOF
+    assert parse_spawn_tag_indices(bytes(row), b"\x00" * 2000, 1000) == []

@@ -112,6 +112,61 @@ def legacy_mods_path(data_dir: Path) -> Path:
     return data_dir / "poe2_mods_extracted.json"
 
 
+def spawn_tags_path(data_dir: Path) -> Path:
+    """Path to the mod SpawnTags map (item-class eligibility, Bug 3 fix).
+
+    Produced by scripts/extract_mod_spawn_tags.py. Decoupled from the large
+    mods.json so it can be loaded on its own.
+    """
+    return data_dir / "game" / "mods" / "spawn_tags.json"
+
+
+# Cache: keyed by resolved file path so tests with different data dirs don't
+# collide. Cleared implicitly per-process; the file is static between releases.
+_SPAWN_TAGS_CACHE: Dict[str, Dict[str, list]] = {}
+
+
+def load_spawn_tags(data_dir: Path) -> Dict[str, list]:
+    """Read spawn_tags.json into {mod_id: [tag, ...]}.
+
+    Returns an empty dict when the file is absent (older data release that
+    predates the Bug 3 fix) — callers must degrade gracefully.
+    """
+    path = spawn_tags_path(data_dir)
+    key = str(path)
+    if key in _SPAWN_TAGS_CACHE:
+        return _SPAWN_TAGS_CACHE[key]
+    if not path.exists():
+        _SPAWN_TAGS_CACHE[key] = {}
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        result = data.get("spawn_tags", {}) or {}
+    except (OSError, json.JSONDecodeError) as e:
+        logger.warning(f"load_spawn_tags: {e}")
+        result = {}
+    _SPAWN_TAGS_CACHE[key] = result
+    return result
+
+
+def available_spawn_tags(data_dir: Path) -> List[str]:
+    """Sorted list of every distinct spawn tag present (for help/validation)."""
+    tags = set()
+    for tag_list in load_spawn_tags(data_dir).values():
+        tags.update(tag_list)
+    return sorted(tags)
+
+
+def normalize_item_class(item_class: str) -> str:
+    """Normalize a user-supplied item class / base type to a spawn-tag form.
+
+    'Body Armour' -> 'body_armour', 'Wand' -> 'wand'. Matching against the
+    actual tag set happens caller-side; this only canonicalizes casing/spacing.
+    """
+    return (item_class or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
 def load_stat_lookup(data_dir: Path) -> Dict[int, str]:
     """Read data/game/stats/stats.json into a row_index -> stat_id dict.
 
