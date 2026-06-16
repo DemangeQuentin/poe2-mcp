@@ -157,13 +157,23 @@ def download_and_install(release: Dict[str, Any]) -> bool:
         tmp_path.unlink(missing_ok=True)
 
 
-def ensure_data_current(allow_network: bool = True) -> Tuple[bool, str]:
+def ensure_data_current(allow_network: bool = True,
+                        consent: Optional[bool] = None) -> Tuple[bool, str]:
     """Top-level entry: check freshness, download if needed.
 
     Returns (success: bool, status_msg: str). `success=True` means data is
-    current (either was already, or was successfully updated). `success=False`
-    means an update was needed but failed (offline, no bundle, etc.) — the
-    MCP should continue with stale data and surface the status_msg to the user.
+    usable — either current, freshly updated, or stale-but-runnable (an upgrade
+    was available but not applied without consent). `success=False` means a
+    *required* fetch failed (offline bootstrap, no bundle, etc.).
+
+    Consent model (honors "update only with the user's permission"):
+      * `consent=None`  -> derive from env: `POE2_MCP_AUTO_UPDATE=1` grants it.
+      * `consent=True`  -> apply a pending upgrade now (explicit permission).
+      * `consent=False` -> upgrade detected but NOT applied; keep local data.
+
+    Bootstrap exception: if there is NO local data at all, the fetch always
+    proceeds regardless of consent — the MCP cannot function without data and
+    installing it is consent to acquire what it needs.
 
     Honors `POE2_MCP_NO_DATA_FETCH=1` to skip the check entirely (for users
     running their own local extraction).
@@ -173,18 +183,33 @@ def ensure_data_current(allow_network: bool = True) -> Tuple[bool, str]:
     if not allow_network:
         return True, "network disabled; using local data without freshness check"
 
+    if consent is None:
+        consent = os.environ.get("POE2_MCP_AUTO_UPDATE") == "1"
+
     update, reason = needs_update()
     if not update:
         return True, reason
 
+    # Distinguish a first-time bootstrap (no local data) from upgrading existing
+    # data. Bootstrap is always allowed; upgrades require consent.
+    is_bootstrap = get_local_data_version() is None
+    if not is_bootstrap and not consent:
+        return True, (
+            f"data update available ({reason}) — not applied without consent; "
+            f"set POE2_MCP_AUTO_UPDATE=1 or use check_for_updates(apply=true). "
+            f"Continuing with local data."
+        )
+
     release = get_latest_release_info()
     if not release:
-        return False, f"update needed ({reason}) but releases API unreachable"
+        ok_without = not is_bootstrap
+        return ok_without, f"update needed ({reason}) but releases API unreachable"
 
     ok = download_and_install(release)
     if ok:
         return True, f"updated to {release.get('tag_name')}"
-    return False, f"update needed ({reason}) but download/install failed"
+    # Bootstrap failure is fatal-ish (no data); upgrade failure leaves usable data.
+    return (not is_bootstrap), f"update needed ({reason}) but download/install failed"
 
 
 if __name__ == "__main__":

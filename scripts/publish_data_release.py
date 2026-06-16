@@ -150,7 +150,12 @@ def create_release(tag: str, title: str, notes: str, asset: Path, dry_run: bool)
         print(f"  gh release create {tag} --title {title!r} --notes-file <notes>")
         print(f"  gh release upload {tag} {asset}")
         return True
-    notes_file = Path(tempfile.mkstemp(suffix=".md")[1])
+    # NB: close mkstemp's fd immediately — on Windows an open handle blocks the
+    # later unlink() (WinError 32), which previously crashed the script *after*
+    # the release succeeded.
+    _fd, _notes_path = tempfile.mkstemp(suffix=".md")
+    os.close(_fd)
+    notes_file = Path(_notes_path)
     try:
         notes_file.write_text(notes, encoding="utf-8")
         subprocess.run(
