@@ -13,10 +13,12 @@ Legacy providers, in priority order:
 1. Local raw extraction (FreshDataProvider): reads from data/extracted/
    (gitignored — raw .datc64 dumps the user populated via
    scripts/extract_poe2_data.py).
-2. Releases-bundle distributor (data_distributor): downloads zip bundle
-   from this repo's GitHub Releases. Currently no-op because no data-*
-   release is published — the canonical path is now data/game/ in-repo
-   (PR #66's distributor will be repurposed or removed in a follow-up).
+2. Releases-bundle distributor (data_distributor): downloads the poe2-data.zip
+   bundle from this repo's GitHub Releases (active as of the data-v0.5.0-1
+   release). Used for fresh-install bootstrap and permissioned upgrades.
+3. Update orchestration (update_manager): unified data + code freshness check
+   with a consent model (notify by default; POE2_MCP_AUTO_UPDATE=1 to auto-apply).
+   Backs the check_for_updates MCP tool.
 
 Per CLAUDE.md data policy, all sources trace back to extraction from a
 licensed PoE2 install. No third-party wiki / scraped data.
@@ -25,10 +27,12 @@ licensed PoE2 install. No third-party wiki / scraped data.
 from .fresh_data_provider import FreshDataProvider, get_fresh_data_provider
 from . import data_distributor
 from . import game_data
+from . import update_manager
 
 __all__ = [
     'FreshDataProvider',
     'get_fresh_data_provider',
     'data_distributor',
     'game_data',
+    'update_manager',
 ]

@@ -413,6 +413,8 @@ class PoE2BuildOptimizerMCP:
                 return await self._handle_clear_cache(arguments)
             elif name == "check_tree_freshness":
                 return await self._handle_check_tree_freshness(arguments)
+            elif name == "check_for_updates":
+                return await self._handle_check_for_updates(arguments)
             elif name == "setup_trade_auth":
                 return await self._handle_setup_trade_auth(arguments)
             # KNOWLEDGE TOOLS (4 tools)
@@ -785,6 +787,35 @@ class PoE2BuildOptimizerMCP:
                                 "type": "boolean",
                                 "default": False,
                                 "description": "Include full index-state snapshot list and per-dataset breakdown"
+                            }
+                        }
+                    }
+                ),
+                types.Tool(
+                    name="check_for_updates",
+                    description=(
+                        "Check whether newer game data or server code is available, and "
+                        "optionally apply it WITH THE USER'S PERMISSION. Reports both layers: "
+                        "game-data bundle (GitHub Releases) and code (git fast-forward for "
+                        "source installs, or reinstall guidance for packaged/.mcpb installs). "
+                        "By default it only reports (no changes). Pass apply=true to grant "
+                        "explicit consent and apply pending updates now. Standing policy can "
+                        "also be set via POE2_MCP_AUTO_UPDATE=1 (auto) or "
+                        "POE2_MCP_NO_DATA_FETCH=1 / POE2_MCP_NO_CODE_CHECK=1 (off)."
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "apply": {
+                                "type": "boolean",
+                                "default": False,
+                                "description": "Apply pending updates now (explicit consent). Default false = report only."
+                            },
+                            "layer": {
+                                "type": "string",
+                                "enum": ["all", "data", "code"],
+                                "default": "all",
+                                "description": "Which layer to check/apply. Default 'all'."
                             }
                         }
                     }
@@ -3178,6 +3209,73 @@ Consider:
             return [types.TextContent(
                 type="text",
                 text=f"check_tree_freshness encountered an error: {str(e)}"
+            )]
+
+    async def _handle_check_for_updates(self, args: dict) -> List[types.TextContent]:
+        """Report (and optionally apply, with consent) pending data/code updates.
+
+        Default is report-only. ``apply=true`` is the user's explicit consent to
+        apply updates right now. See src/data/update_manager.py for the model.
+        """
+        try:
+            apply = bool(args.get("apply", False))
+            layer = args.get("layer", "all")
+            try:
+                from src.data import update_manager as um
+            except ImportError:
+                from data import update_manager as um  # direct-exec fallback
+
+            # Network + git calls are blocking; keep the event loop responsive.
+            status = await asyncio.to_thread(um.get_update_status, True)
+
+            response = "# Update Check\n\n"
+            response += f"**Update available:** {'yes' if status['update_available'] else 'no'}\n"
+            response += f"**Recommended:** {status['recommended_action']}\n\n"
+
+            d = status["data"]
+            response += "## Game Data\n\n"
+            response += f"- Local bundle: `{d['local_tag'] or '(none — bootstrap)'}`\n"
+            response += f"- Latest release: `{d['latest_tag'] or '(unknown)'}`\n"
+            response += f"- Consent policy: `{d['consent_mode']}`\n"
+            response += f"- Status: {d['reason']}\n\n"
+
+            c = status["code"]
+            response += "## Server Code\n\n"
+            response += f"- Install kind: `{c['install_kind']}`\n"
+            response += f"- Current: `{c['current'] or '(unknown)'}`\n"
+            response += f"- Latest: `{c['latest'] or '(unknown)'}`\n"
+            response += f"- Self-applicable: {'yes' if c['can_self_apply'] else 'no'}\n"
+            response += f"- Status: {c['reason']}\n\n"
+
+            if apply and status["update_available"]:
+                response += "## Applying (consent granted via apply=true)\n\n"
+                do_data = layer in ("all", "data")
+                do_code = layer in ("all", "code")
+                results = await asyncio.to_thread(um.apply_updates, True, do_data, do_code)
+                if results.get("data") is not None:
+                    r = results["data"]
+                    response += f"- Data: {'OK' if r['ok'] else 'FAILED'} — {r['message']}\n"
+                if results.get("code") is not None:
+                    r = results["code"]
+                    response += f"- Code: {'OK' if r['ok'] else 'FAILED'} — {r['message']}\n"
+                if c["install_kind"] != "git" and c["update_available"]:
+                    response += (
+                        "\n> Note: a running packaged (.mcpb) install can't replace its own "
+                        "code. Reinstall the newer `.mcpb` in Claude Desktop to update code.\n"
+                    )
+                if results.get("data") and results["data"]["ok"]:
+                    response += "\n*Data applied. Restart the MCP server to load the new data.*\n"
+            elif apply:
+                response += "_Nothing to apply — already current._\n"
+            elif status["update_available"]:
+                response += "_Report only. Re-run with `apply=true` to apply with your consent._\n"
+
+            return [types.TextContent(type="text", text=response)]
+        except Exception as e:
+            logger.error(f"check_for_updates failed: {e}", exc_info=True)
+            return [types.TextContent(
+                type="text",
+                text=f"check_for_updates encountered an error: {str(e)}"
             )]
 
     async def _handle_clear_cache(self, args: dict) -> List[types.TextContent]:

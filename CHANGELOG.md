@@ -7,6 +7,22 @@ Format based on Path of Building changelog style, adapted for MCP tooling.
 
 ---
 
+## Version 1.0.4 (2026-06-16) - permissioned self-update
+
+Closes the "no data release published" gap and adds a consent-based self-update path so the server updates its game data and code only with the user's permission.
+
+--- MCP Tools ---
+* Add `check_for_updates` (#191). Reports game-data and code freshness across both layers and, with `apply=true` (explicit consent), applies pending updates. Packaged/.mcpb installs get reinstall guidance; git installs fast-forward `main`
+
+--- Infrastructure ---
+* Add a three-mode consent model to data distribution (#191). `ensure_data_current` now gates *upgrades* behind consent (`POE2_MCP_AUTO_UPDATE=1` or `apply=true`); a fresh-install *bootstrap* (no local data) still proceeds automatically since the server can't run without data
+* Add `src/data/update_manager.py` (#191). Unifies data + code update detection, install-kind detection (git vs packaged), and consent-gated application
+* Fix Windows fd-leak crash in `publish_data_release.py` (#191). `mkstemp`'s file handle was left open, so the post-upload `unlink` failed with WinError 32 *after* the release succeeded
+* Un-ignore `src/data/update_manager.py` from the root-scratch `update_*.py` gitignore glob (#191)
+
+--- Data ---
+* Publish the `data-v0.5.0-1` game-data release (#191). First `poe2-data.zip` bundle (12 canonical files); activates `data_distributor` and the `.mcpb` CI auto-build
+
 ## Version 1.0.3 (2026-05-31) - skill_gems shipped + zero-coverage gap sweep
 
 Follow-up to 1.0.2 the same day. Closes the last 0.5-pending dataset (`skill_gems`), adds the operator/AI-facing docs that were missing across the repo, and lands ~200 new tests filling zero-coverage gaps on load-bearing pure-function modules.

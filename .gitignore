@@ -294,6 +294,11 @@ parse_*.py
 read_*.py
 hexdump_*.py
 
+# The above globs target ROOT-level scratch scripts but aren't anchored, so
+# they also match real source modules. Un-ignore source-tree files that
+# legitimately share those prefixes.
+!src/data/update_manager.py
+
 # Root-level example/test/wrapper scripts
 example_*.py
 mcp_server_standalone.py
