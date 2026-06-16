@@ -135,6 +135,9 @@ try:
         mod_value_range as _mod_value_range,
         canonical_mods_path as _canonical_mods_path,
         legacy_mods_path as _legacy_mods_path,
+        load_spawn_tags as _load_spawn_tags,
+        available_spawn_tags as _available_spawn_tags,
+        normalize_item_class as _normalize_item_class,
     )
 except ImportError:
     from src.mod_data import (
@@ -143,6 +146,9 @@ except ImportError:
         mod_value_range as _mod_value_range,
         canonical_mods_path as _canonical_mods_path,
         legacy_mods_path as _legacy_mods_path,
+        load_spawn_tags as _load_spawn_tags,
+        available_spawn_tags as _available_spawn_tags,
+        normalize_item_class as _normalize_item_class,
     )
 
 
@@ -1390,7 +1396,7 @@ class PoE2BuildOptimizerMCP:
                 ),
                 types.Tool(
                     name="get_available_mods",
-                    description="Get all mods that could roll on an item type. Filter by generation type (PREFIX/SUFFIX) and level requirements.",
+                    description="Get all mods that could roll on an item type. Filter by generation type (PREFIX/SUFFIX), item base class (e.g. Wand, Ring, Body Armour), and level requirements.",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -1398,6 +1404,16 @@ class PoE2BuildOptimizerMCP:
                                 "type": "string",
                                 "description": "Filter by generation type: PREFIX or SUFFIX",
                                 "enum": ["PREFIX", "SUFFIX"]
+                            },
+                            "item_class": {
+                                "type": "string",
+                                "description": (
+                                    "Optional: item base class / slot to filter by "
+                                    "(e.g. 'Wand', 'Sceptre', 'Ring', 'Amulet', "
+                                    "'Belt', 'Helmet', 'Gloves', 'Boots', "
+                                    "'Body Armour', 'Shield', 'Quiver', 'Focus'). "
+                                    "Matches the mod's SpawnTags. Omit for all item types."
+                                )
                             },
                             "max_level": {
                                 "type": "integer",
@@ -6947,17 +6963,58 @@ Could not extract account and character from URL.
             return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     async def _handle_get_available_mods(self, args: dict) -> List[types.TextContent]:
-        """Get all mods that could roll on an item by generation type"""
+        """Get all mods that could roll on an item by generation type.
+
+        Optional `item_class` (e.g. "Wand", "ring", "body_armour") filters to
+        mods whose SpawnTags include that slot — the Bug 3 fix. Backed by
+        data/game/mods/spawn_tags.json (membership-based eligibility).
+        """
         try:
             generation_type = args.get("generation_type", "").upper()
             max_level = args.get("max_level", 100)
             limit = min(args.get("limit", 100), 200)  # Cap at 200
+            item_class_raw = (args.get("item_class") or "").strip()
 
             if generation_type not in ["PREFIX", "SUFFIX"]:
                 return [types.TextContent(
                     type="text",
                     text="Error: generation_type must be 'PREFIX' or 'SUFFIX'"
                 )]
+
+            # Resolve the optional item-class filter against the SpawnTags map.
+            spawn_tags = {}
+            item_class = ""
+            if item_class_raw:
+                spawn_tags = _load_spawn_tags(DATA_DIR)
+                if not spawn_tags:
+                    return [types.TextContent(
+                        type="text",
+                        text=(
+                            "Error: item_class filtering needs data/game/mods/"
+                            "spawn_tags.json, which is absent. Update to a data "
+                            "release that includes it (or run "
+                            "scripts/extract_mod_spawn_tags.py)."
+                        )
+                    )]
+                item_class = _normalize_item_class(item_class_raw)
+                valid = set(_available_spawn_tags(DATA_DIR))
+                if item_class not in valid:
+                    # Suggest the equipment-relevant tags rather than the full set.
+                    equip = [t for t in sorted(valid) if any(
+                        k in t for k in (
+                            "wand", "sceptre", "staff", "bow", "mace", "axe",
+                            "sword", "dagger", "claw", "spear", "flail",
+                            "crossbow", "quiver", "focus", "shield", "ring",
+                            "amulet", "belt", "helmet", "glove", "boot", "armour",
+                        )
+                    )]
+                    return [types.TextContent(
+                        type="text",
+                        text=(
+                            f"Error: unknown item_class '{item_class_raw}'. "
+                            f"Try one of these spawn tags:\n" + ", ".join(equip)
+                        )
+                    )]
 
             # Load mods from JSON file
             mods_file = DATA_DIR / "poe2_mods_extracted.json"
@@ -6977,6 +7034,10 @@ Could not extract account and character from URL.
                     continue
                 if mod.get('level_requirement', 0) > max_level:
                     continue
+                if item_class:
+                    tags = spawn_tags.get(mod.get('mod_id', ''))
+                    if not tags or item_class not in tags:
+                        continue
                 available_mods.append(mod)
 
             # Sort by level requirement
@@ -6999,9 +7060,17 @@ Could not extract account and character from URL.
 
             # Format response
             response = f"# Available {generation_type} Mods\n\n"
+            if item_class:
+                response += f"**Item class filter:** `{item_class}` (SpawnTags membership)\n"
             response += f"**Total families:** {len(families)}\n"
             response += f"**Total mods:** {len(available_mods)}\n"
             response += f"**Max level filter:** {max_level}\n\n"
+            if item_class and not available_mods:
+                response += (
+                    f"*No {generation_type} mods roll on `{item_class}`. "
+                    "Check the tag spelling, or this slot may only take "
+                    "implicits/uniques for this stat.*\n"
+                )
 
             response += "## Mod Families\n\n"
 

@@ -53,6 +53,8 @@ DATA_DIR = BASE_DIR / "data"
 CANONICAL_FILES = [
     # Item modifiers
     "poe2_mods_extracted.json",
+    # Mod SpawnTags (item-class eligibility for get_available_mods — Bug 3 fix)
+    "game/mods/spawn_tags.json",
     # Support gems
     "poe2_support_gems_database.json",
     "complete_models/support_gems.json",
