@@ -116,6 +116,20 @@ def assemble() -> None:
         else:
             print(f"  warn: root file missing, skipped: {name}", file=sys.stderr)
 
+    # 2b. Live PoB bridge addon — ship the Lua addon + install scripts so the
+    # MCP can deploy it (src/pob/installer.py locates pob_addon/src/Addons here).
+    # Skip the pre-built .zip artifacts; the addon source is what we install from.
+    pob_addon_src = REPO_ROOT / "pob_addon"
+    if pob_addon_src.is_dir():
+        shutil.copytree(
+            pob_addon_src,
+            SERVER_DIR / "pob_addon",
+            ignore=shutil.ignore_patterns("*.zip", "__pycache__", "*.pyc"),
+        )
+    else:
+        print("  warn: pob_addon/ missing, live PoB bridge addon not bundled",
+              file=sys.stderr)
+
     # 3. Runtime data: git-tracked data/** UNION the canonical generated set.
     copied: set[str] = set()
     tracked = _git_tracked_data_files()

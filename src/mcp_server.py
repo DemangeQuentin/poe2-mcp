@@ -204,6 +204,8 @@ class PoE2BuildOptimizerMCP:
         # Path of Building
         self.pob_importer: Optional[PoBImporter] = None
         self.pob_exporter: Optional[PoBExporter] = None
+        # Live PoB bridge client (lazy — only built when a pob_* tool is called)
+        self.pob_client = None
 
         # Passive Tree Resolver (for poe.ninja node ID resolution)
         self.passive_tree_resolver: Optional[PassiveTreeResolver] = None
@@ -407,6 +409,18 @@ class PoE2BuildOptimizerMCP:
                 return await self._handle_export_pob(arguments)
             elif name == "get_pob_code":
                 return await self._handle_get_pob_code(arguments)
+            elif name == "pob_status":
+                return await self._handle_pob_status(arguments)
+            elif name == "pob_install_addon":
+                return await self._handle_pob_install_addon(arguments)
+            elif name == "pob_get_passive_tree":
+                return await self._handle_pob_get_passive_tree(arguments)
+            elif name == "pob_get_build":
+                return await self._handle_pob_get_build(arguments)
+            elif name == "pob_load_build":
+                return await self._handle_pob_load_build(arguments)
+            elif name == "pob_get_calcs":
+                return await self._handle_pob_get_calcs(arguments)
             elif name == "health_check":
                 return await self._handle_health_check(arguments)
             elif name == "clear_cache":
@@ -752,6 +766,94 @@ class PoE2BuildOptimizerMCP:
                             }
                         },
                         "required": ["account", "character"]
+                    }
+                ),
+
+                # Live Path of Building Bridge (TCP to a running PoB instance)
+                types.Tool(
+                    name="pob_status",
+                    description="Check the live Path of Building bridge: whether PoB (PoE2) is installed, whether the MCP Bridge addon is deployed and Launch.lua is patched, and whether a running PoB is reachable on 127.0.0.1:49085 right now. Use this first before other pob_* tools.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "port": {
+                                "type": "integer",
+                                "description": "Bridge port (default 49085)",
+                                "default": 49085
+                            }
+                        },
+                        "required": []
+                    }
+                ),
+                types.Tool(
+                    name="pob_install_addon",
+                    description="Install the MCP Bridge addon into the local Path of Building (PoE2) so the live bridge works. Auto-detects the PoB install (or pass pob_path), copies the addon, and patches Launch.lua (with a backup). The user must restart PoB afterward. Idempotent.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "pob_path": {
+                                "type": "string",
+                                "description": "Path to the PoB install root (folder containing src/Launch.lua). Auto-detected if omitted."
+                            }
+                        },
+                        "required": []
+                    }
+                ),
+                types.Tool(
+                    name="pob_get_passive_tree",
+                    description="Pull the allocated passive tree from the build currently open in a running Path of Building: class, ascendancy, every allocated node (id, name, keystone/notable flags, stats) and total points. Requires PoB running with the bridge addon and a build loaded.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
+                ),
+                types.Tool(
+                    name="pob_get_build",
+                    description="Pull the build currently open in a running Path of Building as a PoB share code (default) or raw XML. Use 'code' to get a copy-pasteable share code.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "format": {
+                                "type": "string",
+                                "enum": ["code", "xml"],
+                                "description": "'code' for a PoB share code, 'xml' for raw build XML",
+                                "default": "code"
+                            }
+                        },
+                        "required": []
+                    }
+                ),
+                types.Tool(
+                    name="pob_load_build",
+                    description="Load a build into a running Path of Building so the user can see it. Accepts a PoB share code (preferred — what players paste) or raw XML. PoB must be running with the bridge addon.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string",
+                                "description": "PoB share code (base64+zlib) to load"
+                            },
+                            "xml": {
+                                "type": "string",
+                                "description": "Raw PoB build XML (alternative to code)"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Display name for the loaded build",
+                                "default": "MCP Build"
+                            }
+                        },
+                        "required": []
+                    }
+                ),
+                types.Tool(
+                    name="pob_get_calcs",
+                    description="Pull computed stats (DPS, Life/ES, resistances, attributes, max hit taken) from PoB's own calculation engine for the build currently open in a running Path of Building.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
                     }
                 ),
 
@@ -2066,6 +2168,160 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             return [types.TextContent(
                 type="text",
                 text=f"Failed to fetch PoB code: {str(e)}"
+            )]
+
+    # =========================================================================
+    # Live Path of Building Bridge handlers (TCP to a running PoB instance)
+    # =========================================================================
+
+    def _get_pob_client(self, port: int = 49085):
+        """Lazily build/cache the live PoB bridge client (sync socket client)."""
+        if self.pob_client is None or getattr(self.pob_client, "port", port) != port:
+            try:
+                from .pob.client import PoBClient
+            except ImportError:
+                from src.pob.client import PoBClient
+            self.pob_client = PoBClient(port=port)
+        return self.pob_client
+
+    async def _handle_pob_status(self, args: dict) -> List[types.TextContent]:
+        """Report PoB install / addon / live-bridge reachability."""
+        try:
+            port = int(args.get("port", 49085))
+            try:
+                from .pob import installer
+            except ImportError:
+                from src.pob import installer
+            status = await asyncio.to_thread(installer.get_bridge_status, "127.0.0.1", port)
+
+            lines = ["Path of Building bridge status:"]
+            lines.append(f"  PoB installed: {status['pob_installed']}"
+                         + (f" ({status['pob_path']})" if status.get('pob_path') else ""))
+            lines.append(f"  Addon deployed: {status['addon_installed']}")
+            lines.append(f"  Launch.lua patched: {status['launch_patched']}")
+            lines.append(f"  Bridge reachable (port {port}): {status['bridge_reachable']}")
+            if status.get("ping"):
+                ping = status["ping"]
+                lines.append(f"  PoB version: {ping.get('pob_version')}, "
+                             f"build loaded: {ping.get('build_loaded')}"
+                             + (f" ('{ping.get('build_name')}')" if ping.get('build_name') else ""))
+            if not status["bridge_reachable"]:
+                if not status["addon_installed"]:
+                    lines.append("  -> Addon not installed. Use pob_install_addon, then restart PoB.")
+                else:
+                    lines.append("  -> Addon installed but PoB isn't running (or not reachable). Start PoB.")
+            return [types.TextContent(type="text", text="\n".join(lines))]
+        except Exception as e:
+            logger.error(f"pob_status error: {e}", exc_info=True)
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+
+    async def _handle_pob_install_addon(self, args: dict) -> List[types.TextContent]:
+        """Install the bridge addon into the local PoB."""
+        try:
+            try:
+                from .pob import installer
+            except ImportError:
+                from src.pob import installer
+            pob_path = args.get("pob_path")
+            result = await asyncio.to_thread(
+                installer.install_addon,
+                Path(pob_path) if pob_path else None,
+            )
+            prefix = "Installed" if result.get("success") else "Install failed"
+            text = f"{prefix}: {result.get('message')}"
+            if result.get("pob_path"):
+                text += f"\n  PoB: {result['pob_path']}"
+            if result.get("launch_patch"):
+                text += f"\n  Launch.lua: {result['launch_patch']}"
+            return [types.TextContent(type="text", text=text)]
+        except Exception as e:
+            logger.error(f"pob_install_addon error: {e}", exc_info=True)
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+
+    async def _handle_pob_get_passive_tree(self, args: dict) -> List[types.TextContent]:
+        """Pull allocated passive tree from a running PoB."""
+        try:
+            client = self._get_pob_client()
+            tree = await asyncio.to_thread(client.get_passive_tree)
+            nodes = tree.get("nodes", [])
+            header = (f"Passive tree from PoB - class {tree.get('class')}, "
+                      f"ascendancy {tree.get('ascendancy')}, "
+                      f"{tree.get('totalPoints')} points, {len(nodes)} allocated nodes:")
+            return [types.TextContent(
+                type="text",
+                text=header + "\n" + json.dumps(tree, indent=2)
+            )]
+        except Exception as e:
+            logger.error(f"pob_get_passive_tree error: {e}", exc_info=True)
+            return [types.TextContent(
+                type="text",
+                text=f"Error pulling passive tree (is PoB running with a build loaded? "
+                     f"Try pob_status): {str(e)}"
+            )]
+
+    async def _handle_pob_get_build(self, args: dict) -> List[types.TextContent]:
+        """Pull the current build from a running PoB as code or xml."""
+        try:
+            fmt = args.get("format", "code")
+            client = self._get_pob_client()
+            result = await asyncio.to_thread(client.get_build, fmt)
+            if fmt == "code":
+                return [types.TextContent(
+                    type="text",
+                    text=f"PoB share code for '{result.get('name', 'build')}':\n\n{result.get('code', '')}"
+                )]
+            return [types.TextContent(
+                type="text",
+                text=f"PoB build XML for '{result.get('name', 'build')}':\n\n{result.get('xml', '')}"
+            )]
+        except Exception as e:
+            logger.error(f"pob_get_build error: {e}", exc_info=True)
+            return [types.TextContent(
+                type="text",
+                text=f"Error pulling build (is PoB running? Try pob_status): {str(e)}"
+            )]
+
+    async def _handle_pob_load_build(self, args: dict) -> List[types.TextContent]:
+        """Load a build (code or xml) into a running PoB."""
+        try:
+            code = args.get("code")
+            xml = args.get("xml")
+            name = args.get("name", "MCP Build")
+            if not code and not xml:
+                return [types.TextContent(
+                    type="text",
+                    text="Provide a PoB 'code' (share code) or 'xml' to load."
+                )]
+            client = self._get_pob_client()
+            result = await asyncio.to_thread(
+                client.load_build, xml, code, name
+            )
+            return [types.TextContent(
+                type="text",
+                text=f"Loaded build '{name}' into Path of Building. {result.get('note', '')}".strip()
+            )]
+        except Exception as e:
+            logger.error(f"pob_load_build error: {e}", exc_info=True)
+            return [types.TextContent(
+                type="text",
+                text=f"Error loading build (is PoB running? Try pob_status): {str(e)}"
+            )]
+
+    async def _handle_pob_get_calcs(self, args: dict) -> List[types.TextContent]:
+        """Pull computed stats from PoB's calc engine."""
+        try:
+            client = self._get_pob_client()
+            calcs = await asyncio.to_thread(client.get_calcs)
+            return [types.TextContent(
+                type="text",
+                text="PoB calculation output:\n" + json.dumps(calcs, indent=2)
+            )]
+        except Exception as e:
+            logger.error(f"pob_get_calcs error: {e}", exc_info=True)
+            return [types.TextContent(
+                type="text",
+                text=f"Error pulling calcs (is PoB running with a build loaded? "
+                     f"Try pob_status): {str(e)}"
             )]
 
     async def _handle_search_items(self, args: dict) -> List[types.TextContent]:
