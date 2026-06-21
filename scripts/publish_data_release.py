@@ -159,7 +159,17 @@ def create_release(tag: str, title: str, notes: str, asset: Path, dry_run: bool)
     try:
         notes_file.write_text(notes, encoding="utf-8")
         subprocess.run(
-            ["gh", "release", "create", tag, "--title", title, "--notes-file", str(notes_file), str(asset)],
+            [
+                "gh",
+                "release",
+                "create",
+                tag,
+                "--title",
+                title,
+                "--notes-file",
+                str(notes_file),
+                str(asset),
+            ],
             check=True,
         )
         return True
@@ -173,16 +183,24 @@ def create_release(tag: str, title: str, notes: str, asset: Path, dry_run: bool)
 def main() -> int:
     ap = argparse.ArgumentParser(description="Publish PoE2 game-data bundle to GitHub Releases")
     ap.add_argument("--patch", required=True, help='Patch version (e.g. "0.5.0")')
-    ap.add_argument("--revision", type=int, default=1, help="Bundle revision within this patch (default 1)")
-    ap.add_argument("--patch-name", default="", help='Optional patch name (e.g. "Return of the Ancients")')
-    ap.add_argument("--dry-run", action="store_true", help="Build the bundle but don't create a GitHub Release")
-    ap.add_argument("--keep-bundle", action="store_true", help="Don't delete the local bundle zip after upload")
+    ap.add_argument(
+        "--revision", type=int, default=1, help="Bundle revision within this patch (default 1)"
+    )
+    ap.add_argument(
+        "--patch-name", default="", help='Optional patch name (e.g. "Return of the Ancients")'
+    )
+    ap.add_argument(
+        "--dry-run", action="store_true", help="Build the bundle but don't create a GitHub Release"
+    )
+    ap.add_argument(
+        "--keep-bundle", action="store_true", help="Don't delete the local bundle zip after upload"
+    )
     args = ap.parse_args()
 
     release_tag = f"data-v{args.patch}-{args.revision}"
     title = f"Game data bundle {release_tag}"
     if args.patch_name:
-        title += f' ({args.patch_name})'
+        title += f" ({args.patch_name})"
 
     print(f"=== Building data bundle for {release_tag} ===")
     found = gather_files()
@@ -214,8 +232,7 @@ def main() -> int:
         f"```bash\npython -m src.data.data_distributor\n```\n\n"
         f"## Data policy\n\n"
         f"{version_payload['data_policy']}\n\n"
-        f"## Files included\n\n"
-        + "\n".join(f"- `{rel}`" for rel in sorted(found.keys()))
+        f"## Files included\n\n" + "\n".join(f"- `{rel}`" for rel in sorted(found.keys()))
     )
 
     ok = create_release(release_tag, title, notes, bundle_path, args.dry_run)

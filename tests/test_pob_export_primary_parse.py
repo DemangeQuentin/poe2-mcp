@@ -15,6 +15,7 @@ Tests:
   - poe.ninja-only metadata (account, league, defensiveStats) is preserved
     when PoB takes the primary route
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -38,17 +39,17 @@ _MINIMAL_POB_XML = (
     '<PathOfBuilding version="2.0">'
     '<Build level="55" className="Witch" ascendClassName="Infernalist">'
     '<PlayerStat stat="AverageHit" value="1234.5"/>'
-    '</Build>'
-    '<Notes>Test build notes</Notes>'
+    "</Build>"
+    "<Notes>Test build notes</Notes>"
     '<Tree activeSpec="1">'
     '<Spec masteryEffects="">'
-    '<URL>https://www.pathofexile.com/passive-skill-tree/AAAAAA</URL>'
-    '</Spec>'
-    '</Tree>'
-    '<Items/>'
-    '<Skills/>'
-    '<Config/>'
-    '</PathOfBuilding>'
+    "<URL>https://www.pathofexile.com/passive-skill-tree/AAAAAA</URL>"
+    "</Spec>"
+    "</Tree>"
+    "<Items/>"
+    "<Skills/>"
+    "<Config/>"
+    "</PathOfBuilding>"
 )
 
 
@@ -61,9 +62,11 @@ def _make_pob_code(xml: str = _MINIMAL_POB_XML) -> str:
 # Sync helper present + matches async wrapper
 # ---------------------------------------------------------------------------
 
+
 def test_import_build_sync_callable():
     """Sync entry point exists and produces a dict from a minimal PoB blob."""
     from src.pob.importer import PoBImporter
+
     importer = PoBImporter()
     code = _make_pob_code()
     result = importer.import_build_sync(code)
@@ -76,6 +79,7 @@ def test_import_build_sync_callable():
 def test_sync_matches_async_output():
     """The async wrapper returns the same dict as the sync helper."""
     from src.pob.importer import PoBImporter
+
     importer = PoBImporter()
     code = _make_pob_code()
     sync_result = importer.import_build_sync(code)
@@ -87,9 +91,11 @@ def test_sync_matches_async_output():
 # Normaliser routing
 # ---------------------------------------------------------------------------
 
+
 def _bare_fetcher():
     """Build a CharacterFetcher without running __init__ (no httpx client)."""
     from src.api.character_fetcher import CharacterFetcher
+
     return CharacterFetcher.__new__(CharacterFetcher)
 
 
@@ -104,9 +110,7 @@ def test_normalise_uses_pob_export_when_present():
         "defensiveStats": {"life": 5000, "es": 2000},
         "pathOfBuildingExport": _make_pob_code(),
     }
-    result = f._normalize_character_data(
-        {"charModel": char_model}, "TestAcct", "TestChar"
-    )
+    result = f._normalize_character_data({"charModel": char_model}, "TestAcct", "TestChar")
     assert result["parse_source"] == "pob_export"
     assert result["ascendancy"] == "Infernalist"
     assert result["pob_version"] == "2.0"
@@ -127,9 +131,7 @@ def test_normalise_falls_back_when_export_missing():
         "defensiveStats": {"life": 5000},
         "passiveSelection": [4, 16, 30],
     }
-    result = f._normalize_character_data(
-        {"charModel": char_model}, "TestAcct", "TestChar"
-    )
+    result = f._normalize_character_data({"charModel": char_model}, "TestAcct", "TestChar")
     assert result["parse_source"] == "field_normalize"
     assert "ascendancy" not in result  # PoB-only field absent
     assert result["passive_tree"] == [4, 16, 30]
@@ -148,9 +150,7 @@ def test_normalise_falls_back_on_bad_export():
         "pathOfBuildingExport": "eNrTotallyBogusGarbage===",
         "passiveSelection": [4, 16],
     }
-    result = f._normalize_character_data(
-        {"charModel": char_model}, "TestAcct", "TestChar"
-    )
+    result = f._normalize_character_data({"charModel": char_model}, "TestAcct", "TestChar")
     assert result["parse_source"] == "field_normalize"
     assert result["passive_tree"] == [4, 16]
 
@@ -165,9 +165,7 @@ def test_normalise_ignores_non_pob_prefix():
         "class": "Witch",
         "pathOfBuildingExport": "{this is not a pob code, it's json}",
     }
-    result = f._normalize_character_data(
-        {"charModel": char_model}, "Acc", "X"
-    )
+    result = f._normalize_character_data({"charModel": char_model}, "Acc", "X")
     assert result["parse_source"] == "field_normalize"
 
 
@@ -177,8 +175,8 @@ def test_normalise_preserves_pob_export_string():
     f = _bare_fetcher()
     code = _make_pob_code()
     result = f._normalize_character_data(
-        {"charModel": {"name": "X", "level": 1, "class": "Witch",
-                       "pathOfBuildingExport": code}},
-        "Acc", "X",
+        {"charModel": {"name": "X", "level": 1, "class": "Witch", "pathOfBuildingExport": code}},
+        "Acc",
+        "X",
     )
     assert result["pob_export"] == code

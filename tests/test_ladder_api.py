@@ -12,10 +12,10 @@ from pathlib import Path
 # Fix Windows encoding. reconfigure() keeps the same stream object —
 # rewrapping sys.stdout.buffer here used to close pytest's capture file
 # and abort collection of the entire suite.
-if sys.platform == 'win32':
+if sys.platform == "win32":
     for _stream in (sys.stdout, sys.stderr):
         try:
-            _stream.reconfigure(encoding='utf-8')
+            _stream.reconfigure(encoding="utf-8")
         except (AttributeError, io.UnsupportedOperation):
             pass  # pytest capture streams don't support reconfigure — fine
 
@@ -33,10 +33,7 @@ async def test_ladder():
     cache_manager = CacheManager()
     await cache_manager.initialize()
 
-    fetcher = CharacterFetcher(
-        cache_manager=cache_manager,
-        rate_limiter=RateLimiter(rate_limit=5)
-    )
+    fetcher = CharacterFetcher(cache_manager=cache_manager, rate_limiter=RateLimiter(rate_limit=5))
 
     # Test different league names
     leagues_to_test = [
@@ -47,20 +44,19 @@ async def test_ladder():
     ]
 
     print("Testing official PoE ladder API:")
-    print("="*80)
+    print("=" * 80)
 
     for league in leagues_to_test:
         print(f"\nTesting league: '{league}'")
         try:
-            characters = await fetcher.get_top_ladder_characters(
-                league=league,
-                limit=5
-            )
+            characters = await fetcher.get_top_ladder_characters(league=league, limit=5)
 
             if characters:
                 print(f"  ✓ Found {len(characters)} characters")
                 for char in characters[:3]:
-                    print(f"    {char['rank']}. {char['character']} (Level {char['level']}) - {char['class']}")
+                    print(
+                        f"    {char['rank']}. {char['character']} (Level {char['level']}) - {char['class']}"
+                    )
             else:
                 print(f"  ⚠️  No characters found (league may not exist or be empty)")
 

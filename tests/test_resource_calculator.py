@@ -9,7 +9,7 @@ import sys
 import os
 
 # Add src to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 from calculator.resource_calculator import (
     ResourceCalculator,
@@ -18,7 +18,7 @@ from calculator.resource_calculator import (
     SpiritReservation,
     ResourcePool,
     ResourceType,
-    calculate_hit_chance
+    calculate_hit_chance,
 )
 
 
@@ -119,11 +119,7 @@ class TestResourceCalculator(unittest.TestCase):
 
     def test_calculate_maximum_life_with_modifiers(self):
         """Test life calculation with modifiers."""
-        mods = ResourceModifiers(
-            flat_bonus=50,
-            increased_percent=100,
-            more_multipliers=[1.15]
-        )
+        mods = ResourceModifiers(flat_bonus=50, increased_percent=100, more_multipliers=[1.15])
         # Base: 828 + 50 = 878
         # Increased: 878 * 2.0 = 1756
         # More: 1756 * 1.15 = 2019.4
@@ -138,10 +134,7 @@ class TestResourceCalculator(unittest.TestCase):
 
     def test_calculate_maximum_mana_with_modifiers(self):
         """Test mana calculation with modifiers."""
-        mods = ResourceModifiers(
-            flat_bonus=30,
-            increased_percent=50
-        )
+        mods = ResourceModifiers(flat_bonus=30, increased_percent=50)
         # Base: 474 + 30 = 504
         # Increased: 504 * 1.5 = 756
         max_mana = self.calculator.calculate_maximum_mana(mods)
@@ -154,18 +147,13 @@ class TestResourceCalculator(unittest.TestCase):
         # Increased: 40 * 1.5 = 60
         # Flat: 60 + 10 = 70
         regen = self.calculator.calculate_mana_regeneration(
-            maximum_mana=max_mana,
-            increased_regen_percent=50,
-            flat_regen_per_second=10
+            maximum_mana=max_mana, increased_regen_percent=50, flat_regen_per_second=10
         )
         self.assertEqual(regen, 70.0)
 
     def test_calculate_maximum_energy_shield(self):
         """Test energy shield calculation."""
-        mods = ResourceModifiers(
-            flat_bonus=200,
-            increased_percent=150
-        )
+        mods = ResourceModifiers(flat_bonus=200, increased_percent=150)
         # Base: 200
         # Increased: 200 * 2.5 = 500
         max_es = self.calculator.calculate_maximum_energy_shield(mods)
@@ -179,10 +167,7 @@ class TestResourceCalculator(unittest.TestCase):
 
     def test_calculate_maximum_spirit_with_modifiers(self):
         """Test Spirit calculation with modifiers (NEW in PoE2)."""
-        mods = ResourceModifiers(
-            flat_bonus=50,
-            increased_percent=20
-        )
+        mods = ResourceModifiers(flat_bonus=50, increased_percent=20)
         # Base: 100 + 50 = 150
         # Increased: 150 * 1.2 = 180
         max_spirit = self.calculator.calculate_maximum_spirit(mods)
@@ -252,18 +237,15 @@ class TestResourceCalculator(unittest.TestCase):
         # Base: (6 * 50) + (6 * 80) = 300 + 480 = 780
         # Flat: 780 + 200 = 980
         # Increased: 980 * 1.5 = 1470
-        accuracy = self.calculator.calculate_accuracy(
-            flat_bonus=200,
-            increased_percent=50
-        )
+        accuracy = self.calculator.calculate_accuracy(flat_bonus=200, increased_percent=50)
         self.assertEqual(accuracy, 1470)
 
     def test_get_attribute_bonuses(self):
         """Test attribute bonus calculation."""
         bonuses = self.calculator.get_attribute_bonuses()
-        self.assertEqual(bonuses['life_from_strength'], 200)  # 100 * 2
-        self.assertEqual(bonuses['mana_from_intelligence'], 240)  # 120 * 2
-        self.assertEqual(bonuses['accuracy_from_dexterity'], 480)  # 80 * 6
+        self.assertEqual(bonuses["life_from_strength"], 200)  # 100 * 2
+        self.assertEqual(bonuses["mana_from_intelligence"], 240)  # 120 * 2
+        self.assertEqual(bonuses["accuracy_from_dexterity"], 480)  # 80 * 6
 
     def test_create_resource_pool(self):
         """Test resource pool creation."""
@@ -277,17 +259,17 @@ class TestResourceCalculator(unittest.TestCase):
 
         summary = self.calculator.calculate_all_resources()
 
-        self.assertIn('level', summary)
-        self.assertIn('attributes', summary)
-        self.assertIn('resources', summary)
-        self.assertIn('accuracy', summary)
+        self.assertIn("level", summary)
+        self.assertIn("attributes", summary)
+        self.assertIn("resources", summary)
+        self.assertIn("accuracy", summary)
 
         # Check Spirit section
-        spirit = summary['resources']['spirit']
-        self.assertEqual(spirit['maximum'], 100)
-        self.assertEqual(spirit['reserved'], 30)
-        self.assertEqual(spirit['available'], 70)
-        self.assertFalse(spirit['is_overflowing'])
+        spirit = summary["resources"]["spirit"]
+        self.assertEqual(spirit["maximum"], 100)
+        self.assertEqual(spirit["reserved"], 30)
+        self.assertEqual(spirit["available"], 70)
+        self.assertFalse(spirit["is_overflowing"])
 
 
 class TestHitChanceCalculation(unittest.TestCase):
@@ -344,5 +326,5 @@ class TestPoE2Formulas(unittest.TestCase):
         self.assertEqual(ResourceCalculator.ACCURACY_PER_DEXTERITY, 6)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

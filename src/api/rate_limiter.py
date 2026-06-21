@@ -20,7 +20,7 @@ class RateLimiter:
         self,
         rate_limit: int = 10,  # requests per minute
         burst: int = 3,  # max burst size
-        adaptive: bool = True  # enable adaptive rate limiting
+        adaptive: bool = True,  # enable adaptive rate limiting
     ):
         self.rate_limit = rate_limit
         self.burst = burst
@@ -88,10 +88,7 @@ class RateLimiter:
     def record_failure(self):
         """Record a failed request (increases backoff)"""
         self.consecutive_failures += 1
-        self.current_backoff = min(
-            32.0,  # Max 32x backoff
-            2.0 ** self.consecutive_failures
-        )
+        self.current_backoff = min(32.0, 2.0**self.consecutive_failures)  # Max 32x backoff
 
         logger.warning(
             f"Request failed, backoff increased to {self.current_backoff}x "
@@ -105,12 +102,11 @@ class RateLimiter:
             "total_waits": self.total_waits,
             "total_wait_time": self.total_wait_time,
             "average_wait_time": (
-                self.total_wait_time / self.total_waits
-                if self.total_waits > 0 else 0
+                self.total_wait_time / self.total_waits if self.total_waits > 0 else 0
             ),
             "current_backoff": self.current_backoff,
             "consecutive_failures": self.consecutive_failures,
-            "tokens_available": self.tokens
+            "tokens_available": self.tokens,
         }
 
     def reset(self):
@@ -152,7 +148,4 @@ class MultiRateLimiter:
 
     def get_statistics(self) -> Dict[str, Dict[str, float]]:
         """Get statistics for all rate limiters"""
-        return {
-            endpoint: limiter.get_statistics()
-            for endpoint, limiter in self.limiters.items()
-        }
+        return {endpoint: limiter.get_statistics() for endpoint, limiter in self.limiters.items()}

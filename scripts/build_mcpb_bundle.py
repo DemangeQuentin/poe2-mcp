@@ -72,7 +72,10 @@ def _git_tracked_data_files() -> list[str]:
     try:
         out = subprocess.run(
             ["git", "ls-files", "data/"],
-            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []
@@ -80,7 +83,7 @@ def _git_tracked_data_files() -> list[str]:
     for line in out.splitlines():
         line = line.strip()
         if line.startswith("data/"):
-            rels.append(line[len("data/"):])
+            rels.append(line[len("data/") :])
     return rels
 
 
@@ -127,8 +130,7 @@ def assemble() -> None:
             ignore=shutil.ignore_patterns("*.zip", "__pycache__", "*.pyc"),
         )
     else:
-        print("  warn: pob_addon/ missing, live PoB bridge addon not bundled",
-              file=sys.stderr)
+        print("  warn: pob_addon/ missing, live PoB bridge addon not bundled", file=sys.stderr)
 
     # 3. Runtime data: git-tracked data/** UNION the canonical generated set.
     copied: set[str] = set()
@@ -147,15 +149,17 @@ def assemble() -> None:
     _copy_data_file("version.json", copied)
 
     if missing_canonical:
-        print("  WARNING: canonical runtime files absent from data/ "
-              "(run data sync / extract first):", file=sys.stderr)
+        print(
+            "  WARNING: canonical runtime files absent from data/ "
+            "(run data sync / extract first):",
+            file=sys.stderr,
+        )
         for m in missing_canonical:
             print(f"    - {m}", file=sys.stderr)
 
     n_files = sum(1 for _ in SERVER_DIR.rglob("*") if _.is_file())
     total = sum(p.stat().st_size for p in SERVER_DIR.rglob("*") if p.is_file())
-    print(f"Assembled server/ : {n_files} files, {total/1e6:.1f} MB "
-          f"({len(copied)} data files)")
+    print(f"Assembled server/ : {n_files} files, {total/1e6:.1f} MB " f"({len(copied)} data files)")
 
 
 def assemble_returns_missing() -> list[str]:
@@ -174,22 +178,28 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Assemble + pack the .mcpb bundle")
     ap.add_argument("--no-pack", action="store_true", help="assemble only, skip packing")
     ap.add_argument("--out", type=Path, default=None, help="output .mcpb path")
-    ap.add_argument("--require-canonical", action="store_true",
-                    help="exit non-zero if any canonical runtime file is missing "
-                         "(CI guard: never publish a data-less bundle)")
+    ap.add_argument(
+        "--require-canonical",
+        action="store_true",
+        help="exit non-zero if any canonical runtime file is missing "
+        "(CI guard: never publish a data-less bundle)",
+    )
     args = ap.parse_args()
 
     missing = assemble_returns_missing()
     if args.require_canonical and missing:
-        print(f"ERROR: {len(missing)} canonical file(s) missing — refusing to "
-              f"build a degraded bundle. Publish/download poe2-data.zip first.",
-              file=sys.stderr)
+        print(
+            f"ERROR: {len(missing)} canonical file(s) missing — refusing to "
+            f"build a degraded bundle. Publish/download poe2-data.zip first.",
+            file=sys.stderr,
+        )
         sys.exit(2)
 
     if args.no_pack:
         return
 
     import json
+
     manifest = json.loads((BUNDLE_DIR / "manifest.json").read_text(encoding="utf-8"))
     out = args.out or REPO_ROOT / f"{manifest['name']}-{manifest['version']}.mcpb"
     pack(out)

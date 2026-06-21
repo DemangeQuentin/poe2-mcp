@@ -26,6 +26,7 @@ class PassiveOptimizer:
         if self.passive_tree_extractor is None:
             try:
                 from ..parsers import PassiveTreeExtractor, get_all_keystones, get_all_notables
+
                 self.passive_tree_extractor = PassiveTreeExtractor(self.db_manager)
                 self.get_all_keystones = get_all_keystones
                 self.get_all_notables = get_all_notables
@@ -44,9 +45,11 @@ class PassiveOptimizer:
                 logger.warning("merged_passive_tree.json not found, falling back to extractor")
                 return {}
 
-            with open(merged_tree_path, 'r', encoding='utf-8') as f:
+            with open(merged_tree_path, "r", encoding="utf-8") as f:
                 self._merged_passive_tree = json.load(f)
-                logger.info(f"Loaded {len(self._merged_passive_tree)} passive nodes from merged tree")
+                logger.info(
+                    f"Loaded {len(self._merged_passive_tree)} passive nodes from merged tree"
+                )
                 return self._merged_passive_tree
         except Exception as e:
             logger.error(f"Failed to load merged passive tree: {e}")
@@ -58,14 +61,16 @@ class PassiveOptimizer:
         keystones = []
 
         for node_id, node_data in merged_tree.items():
-            if node_data.get('is_keystone', False):
-                keystones.append({
-                    'id': node_id,
-                    'name': node_data.get('name', ''),
-                    'stats': node_data.get('stats', []),
-                    'stats_source': node_data.get('stats_source', 'unknown'),
-                    'is_keystone': True
-                })
+            if node_data.get("is_keystone", False):
+                keystones.append(
+                    {
+                        "id": node_id,
+                        "name": node_data.get("name", ""),
+                        "stats": node_data.get("stats", []),
+                        "stats_source": node_data.get("stats_source", "unknown"),
+                        "is_keystone": True,
+                    }
+                )
 
         return keystones
 
@@ -75,14 +80,16 @@ class PassiveOptimizer:
         notables = []
 
         for node_id, node_data in merged_tree.items():
-            if node_data.get('is_notable', False):
-                notables.append({
-                    'id': node_id,
-                    'name': node_data.get('name', ''),
-                    'stats': node_data.get('stats', []),
-                    'stats_source': node_data.get('stats_source', 'unknown'),
-                    'is_notable': True
-                })
+            if node_data.get("is_notable", False):
+                notables.append(
+                    {
+                        "id": node_id,
+                        "name": node_data.get("name", ""),
+                        "stats": node_data.get("stats", []),
+                        "stats_source": node_data.get("stats_source", "unknown"),
+                        "is_notable": True,
+                    }
+                )
 
         return notables
 
@@ -91,7 +98,7 @@ class PassiveOptimizer:
         character_data: Dict[str, Any],
         available_points: int = 0,
         allow_respec: bool = False,
-        goal: str = "balanced"
+        goal: str = "balanced",
     ) -> Dict[str, Any]:
         """
         Generate passive tree recommendations using merged passive tree data.
@@ -115,10 +122,18 @@ class PassiveOptimizer:
                     "suggested_allocations": [
                         {"name": "Key Damage Node", "benefit": "+12% increased damage"}
                     ],
-                    "suggested_respecs": [] if not allow_respec else [
-                        {"current": "Lesser Node", "suggested": "Better Node", "benefit": "+8% more damage"}
-                    ],
-                    "data_source": "Fallback (passive tree data unavailable)"
+                    "suggested_respecs": (
+                        []
+                        if not allow_respec
+                        else [
+                            {
+                                "current": "Lesser Node",
+                                "suggested": "Better Node",
+                                "benefit": "+8% more damage",
+                            }
+                        ]
+                    ),
+                    "data_source": "Fallback (passive tree data unavailable)",
                 }
 
             keystones = self.get_all_keystones()
@@ -134,72 +149,144 @@ class PassiveOptimizer:
             # Prioritize defensive keystones and notables
             defensive_nodes = [n for n in keystones + notables if self._is_defensive_dict(n)]
             for node in defensive_nodes[:available_points]:
-                suggested_allocations.append({
-                    "name": node.get('name', ''),
-                    "type": "Keystone" if node.get('is_keystone') else "Notable",
-                    "benefit": ", ".join(node.get('stats', [])[:3]) if node.get('stats') else "Defensive bonuses",
-                    "stats_source": node.get('stats_source', 'unknown')
-                })
+                suggested_allocations.append(
+                    {
+                        "name": node.get("name", ""),
+                        "type": "Keystone" if node.get("is_keystone") else "Notable",
+                        "benefit": (
+                            ", ".join(node.get("stats", [])[:3])
+                            if node.get("stats")
+                            else "Defensive bonuses"
+                        ),
+                        "stats_source": node.get("stats_source", "unknown"),
+                    }
+                )
 
         elif goal == "damage":
             # Prioritize offensive keystones and notables
             offensive_nodes = [n for n in keystones + notables if self._is_offensive_dict(n)]
             for node in offensive_nodes[:available_points]:
-                suggested_allocations.append({
-                    "name": node.get('name', ''),
-                    "type": "Keystone" if node.get('is_keystone') else "Notable",
-                    "benefit": ", ".join(node.get('stats', [])[:3]) if node.get('stats') else "Damage bonuses",
-                    "stats_source": node.get('stats_source', 'unknown')
-                })
+                suggested_allocations.append(
+                    {
+                        "name": node.get("name", ""),
+                        "type": "Keystone" if node.get("is_keystone") else "Notable",
+                        "benefit": (
+                            ", ".join(node.get("stats", [])[:3])
+                            if node.get("stats")
+                            else "Damage bonuses"
+                        ),
+                        "stats_source": node.get("stats_source", "unknown"),
+                    }
+                )
 
         else:  # balanced
             # Mix of keystones and notables
-            all_priority_nodes = keystones[:2] + notables[:available_points-2] if len(keystones) >= 2 else keystones + notables
+            all_priority_nodes = (
+                keystones[:2] + notables[: available_points - 2]
+                if len(keystones) >= 2
+                else keystones + notables
+            )
             for node in all_priority_nodes[:available_points]:
-                suggested_allocations.append({
-                    "name": node.get('name', ''),
-                    "type": "Keystone" if node.get('is_keystone') else "Notable",
-                    "benefit": ", ".join(node.get('stats', [])[:3]) if node.get('stats') else "Various bonuses",
-                    "stats_source": node.get('stats_source', 'unknown')
-                })
+                suggested_allocations.append(
+                    {
+                        "name": node.get("name", ""),
+                        "type": "Keystone" if node.get("is_keystone") else "Notable",
+                        "benefit": (
+                            ", ".join(node.get("stats", [])[:3])
+                            if node.get("stats")
+                            else "Various bonuses"
+                        ),
+                        "stats_source": node.get("stats_source", "unknown"),
+                    }
+                )
 
         return {
             "suggested_allocations": suggested_allocations,
             "suggested_respecs": [],  # TODO: Implement respec logic with node value comparison
             "total_points_recommended": len(suggested_allocations),
-            "data_source": "merged_passive_tree.json (76.3% stats coverage)" if merged_tree else "passive_tree_extractor"
+            "data_source": (
+                "merged_passive_tree.json (76.3% stats coverage)"
+                if merged_tree
+                else "passive_tree_extractor"
+            ),
         }
 
     def _is_defensive(self, node) -> bool:
         """Check if node provides defensive bonuses (for extractor objects)"""
         stats_text = " ".join(node.stats).lower()
-        defensive_keywords = ["life", "resistance", "armour", "armor", "evasion", "energy shield",
-                              "block", "deflect", "stun", "immunity", "regeneration"]
+        defensive_keywords = [
+            "life",
+            "resistance",
+            "armour",
+            "armor",
+            "evasion",
+            "energy shield",
+            "block",
+            "deflect",
+            "stun",
+            "immunity",
+            "regeneration",
+        ]
         return any(kw in stats_text for kw in defensive_keywords)
 
     def _is_offensive(self, node) -> bool:
         """Check if node provides offensive bonuses (for extractor objects)"""
         stats_text = " ".join(node.stats).lower()
-        offensive_keywords = ["damage", "critical", "attack speed", "cast speed", "accuracy",
-                              "penetration", "multiplier", "chaos", "fire", "cold", "lightning", "physical"]
+        offensive_keywords = [
+            "damage",
+            "critical",
+            "attack speed",
+            "cast speed",
+            "accuracy",
+            "penetration",
+            "multiplier",
+            "chaos",
+            "fire",
+            "cold",
+            "lightning",
+            "physical",
+        ]
         return any(kw in stats_text for kw in offensive_keywords)
 
     def _is_defensive_dict(self, node: Dict[str, Any]) -> bool:
         """Check if node provides defensive bonuses (for dict objects)"""
-        stats = node.get('stats', [])
+        stats = node.get("stats", [])
         if not stats:
             return False
         stats_text = " ".join(stats).lower()
-        defensive_keywords = ["life", "resistance", "armour", "armor", "evasion", "energy shield",
-                              "block", "deflect", "stun", "immunity", "regeneration"]
+        defensive_keywords = [
+            "life",
+            "resistance",
+            "armour",
+            "armor",
+            "evasion",
+            "energy shield",
+            "block",
+            "deflect",
+            "stun",
+            "immunity",
+            "regeneration",
+        ]
         return any(kw in stats_text for kw in defensive_keywords)
 
     def _is_offensive_dict(self, node: Dict[str, Any]) -> bool:
         """Check if node provides offensive bonuses (for dict objects)"""
-        stats = node.get('stats', [])
+        stats = node.get("stats", [])
         if not stats:
             return False
         stats_text = " ".join(stats).lower()
-        offensive_keywords = ["damage", "critical", "attack speed", "cast speed", "accuracy",
-                              "penetration", "multiplier", "chaos", "fire", "cold", "lightning", "physical"]
+        offensive_keywords = [
+            "damage",
+            "critical",
+            "attack speed",
+            "cast speed",
+            "accuracy",
+            "penetration",
+            "multiplier",
+            "chaos",
+            "fire",
+            "cold",
+            "lightning",
+            "physical",
+        ]
         return any(kw in stats_text for kw in offensive_keywords)

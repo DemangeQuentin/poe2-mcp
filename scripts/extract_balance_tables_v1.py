@@ -102,8 +102,7 @@ def run_extraction(install: Path, output_root: Path) -> int:
         CANONICAL_BALANCE_RE,
     ]
     print(f"  $ {' '.join(cmd)}")
-    proc = subprocess.run(cmd, capture_output=True, text=True,
-                          encoding="utf-8", errors="replace")
+    proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if proc.stdout:
         # bun emits a "Done, X/Y extracted, Z missed" line we want to surface
         for line in proc.stdout.splitlines():
@@ -131,14 +130,19 @@ def main() -> int:
 
     if not BUN_EXTRACT.exists():
         print(f"ERROR: bun_extract_file not found at {BUN_EXTRACT}", file=sys.stderr)
-        print("Expected in-tree at ooz/build/Release/. Build the ooz "
-              "submodule first?", file=sys.stderr)
+        print(
+            "Expected in-tree at ooz/build/Release/. Build the ooz " "submodule first?",
+            file=sys.stderr,
+        )
         return 2
 
     install = find_poe2_install()
     if not install:
-        print("ERROR: PoE2 install not found. Set $POE2_PATH if Steam is "
-              "in a non-standard location.", file=sys.stderr)
+        print(
+            "ERROR: PoE2 install not found. Set $POE2_PATH if Steam is "
+            "in a non-standard location.",
+            file=sys.stderr,
+        )
         return 2
 
     print(f"PoE2 install: {install}")
@@ -167,8 +171,7 @@ def main() -> int:
     on_disk = count_extracted_balance_tables(args.output)
     print(f"\nVerification: {on_disk}/{index_count} canonical tables on disk")
     if on_disk != index_count:
-        print("WARNING: extraction count does not match index count",
-              file=sys.stderr)
+        print("WARNING: extraction count does not match index count", file=sys.stderr)
         return 1
     print("OK: full extraction successful")
     return 0

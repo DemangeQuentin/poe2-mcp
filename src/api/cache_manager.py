@@ -47,10 +47,9 @@ class CacheManager:
             if self.enable_redis:
                 try:
                     import aioredis
+
                     self.redis_client = await aioredis.from_url(
-                        settings.REDIS_URL,
-                        encoding="utf-8",
-                        decode_responses=True
+                        settings.REDIS_URL, encoding="utf-8", decode_responses=True
                     )
 
                     # Test the connection with a ping
@@ -72,8 +71,7 @@ class CacheManager:
 
                 except ImportError:
                     logger.warning(
-                        "aioredis module not installed. "
-                        "Install with: pip install aioredis"
+                        "aioredis module not installed. " "Install with: pip install aioredis"
                     )
                     self.redis_client = None
                     self.enable_redis = False
@@ -92,18 +90,22 @@ class CacheManager:
 
     async def _init_sqlite_schema(self):
         """Initialize SQLite cache schema"""
-        await self.sqlite_conn.execute("""
+        await self.sqlite_conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS cache (
                 key TEXT PRIMARY KEY,
                 value BLOB,
                 expires_at TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
-        await self.sqlite_conn.execute("""
+        """
+        )
+        await self.sqlite_conn.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_expires_at
             ON cache(expires_at)
-        """)
+        """
+        )
         await self.sqlite_conn.commit()
 
     async def get(self, key: str) -> Optional[Any]:
@@ -144,8 +146,7 @@ class CacheManager:
         if self.sqlite_conn:
             try:
                 async with self.sqlite_conn.execute(
-                    "SELECT value, expires_at FROM cache WHERE key = ?",
-                    (key,)
+                    "SELECT value, expires_at FROM cache WHERE key = ?", (key,)
                 ) as cursor:
                     row = await cursor.fetchone()
                     if row:
@@ -162,8 +163,7 @@ class CacheManager:
                         else:
                             # Expired, delete from SQLite
                             await self.sqlite_conn.execute(
-                                "DELETE FROM cache WHERE key = ?",
-                                (key,)
+                                "DELETE FROM cache WHERE key = ?", (key,)
                             )
                             await self.sqlite_conn.commit()
             except Exception as e:
@@ -199,7 +199,7 @@ class CacheManager:
                 value_blob = pickle.dumps(value)
                 await self.sqlite_conn.execute(
                     "INSERT OR REPLACE INTO cache (key, value, expires_at) VALUES (?, ?, ?)",
-                    (key, value_blob, expires_at.isoformat())
+                    (key, value_blob, expires_at.isoformat()),
                 )
                 await self.sqlite_conn.commit()
             except Exception as e:
@@ -211,10 +211,7 @@ class CacheManager:
         if len(self.memory_cache) >= self.max_memory_items:
             # Remove expired items first
             now = datetime.now()
-            expired_keys = [
-                k for k, (_, exp) in self.memory_cache.items()
-                if exp < now
-            ]
+            expired_keys = [k for k, (_, exp) in self.memory_cache.items() if exp < now]
             for k in expired_keys:
                 del self.memory_cache[k]
 
@@ -243,10 +240,7 @@ class CacheManager:
         # Delete from L3
         if self.sqlite_conn:
             try:
-                await self.sqlite_conn.execute(
-                    "DELETE FROM cache WHERE key = ?",
-                    (key,)
-                )
+                await self.sqlite_conn.execute("DELETE FROM cache WHERE key = ?", (key,))
                 await self.sqlite_conn.commit()
             except Exception as e:
                 logger.warning(f"SQLite delete error: {e}")
@@ -275,10 +269,7 @@ class CacheManager:
         """Remove expired entries from all caches"""
         # L1 cleanup
         now = datetime.now()
-        expired_keys = [
-            k for k, (_, exp) in self.memory_cache.items()
-            if exp < now
-        ]
+        expired_keys = [k for k, (_, exp) in self.memory_cache.items() if exp < now]
         for k in expired_keys:
             del self.memory_cache[k]
 
@@ -286,8 +277,7 @@ class CacheManager:
         if self.sqlite_conn:
             try:
                 await self.sqlite_conn.execute(
-                    "DELETE FROM cache WHERE expires_at < ?",
-                    (now.isoformat(),)
+                    "DELETE FROM cache WHERE expires_at < ?", (now.isoformat(),)
                 )
                 await self.sqlite_conn.commit()
             except Exception as e:
@@ -295,16 +285,11 @@ class CacheManager:
 
     async def get_statistics(self) -> Dict[str, Any]:
         """Get cache statistics"""
-        stats = {
-            "l1_memory_items": len(self.memory_cache),
-            "l1_max_items": self.max_memory_items
-        }
+        stats = {"l1_memory_items": len(self.memory_cache), "l1_max_items": self.max_memory_items}
 
         if self.sqlite_conn:
             try:
-                async with self.sqlite_conn.execute(
-                    "SELECT COUNT(*) FROM cache"
-                ) as cursor:
+                async with self.sqlite_conn.execute("SELECT COUNT(*) FROM cache") as cursor:
                     row = await cursor.fetchone()
                     stats["l3_sqlite_items"] = row[0] if row else 0
             except Exception as e:

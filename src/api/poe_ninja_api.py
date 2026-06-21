@@ -65,11 +65,17 @@ BASE_CLASSES = {"Warrior", "Ranger", "Huntress", "Witch", "Sorceress", "Mercenar
 # (league slug sits BETWEEN account and /character/).
 _POE_NINJA_URL_PATTERNS = [
     # /poe2/profile/{account}/{league}/character/{char} — current 0.5 format
-    re.compile(r"poe\.ninja/poe2/profile/(?P<account>[^/?#\s]+)/(?P<league>[^/?#\s]+)/character/(?P<character>[^/?#\s]+)"),
+    re.compile(
+        r"poe\.ninja/poe2/profile/(?P<account>[^/?#\s]+)/(?P<league>[^/?#\s]+)/character/(?P<character>[^/?#\s]+)"
+    ),
     # /poe2/profile/{account}/character/{char} — pre-0.5 / league-less form
-    re.compile(r"poe\.ninja/poe2/profile/(?P<account>[^/?#\s]+)/character/(?P<character>[^/?#\s]+)"),
+    re.compile(
+        r"poe\.ninja/poe2/profile/(?P<account>[^/?#\s]+)/character/(?P<character>[^/?#\s]+)"
+    ),
     # /poe2/builds/{league}/character/{account}/{char}
-    re.compile(r"poe\.ninja/poe2/builds/(?P<league>[^/?#\s]+)/character/(?P<account>[^/?#\s]+)/(?P<character>[^/?#\s]+)"),
+    re.compile(
+        r"poe\.ninja/poe2/builds/(?P<league>[^/?#\s]+)/character/(?P<account>[^/?#\s]+)/(?P<character>[^/?#\s]+)"
+    ),
     # /poe2/builds/character/{account}/{char} — legacy
     re.compile(r"poe\.ninja/poe2/builds/character/(?P<account>[^/?#\s]+)/(?P<character>[^/?#\s]+)"),
     # /builds/character/{account}/{char} — PoE1-style legacy
@@ -135,7 +141,6 @@ class PoeNinjaAPI:
         "Runes of Aldur SSF": "runesofaldurssf",
         "Runes of Aldur HC SSF": "runesofaldurhcssf",
         "Runes of Aldur Hardcore SSF": "runesofaldurhcssf",
-
         # Vaal League variants (Fate of the Vaal - previous league)
         "Fate of the Vaal": "vaal",
         "FotV": "vaal",
@@ -145,7 +150,6 @@ class PoeNinjaAPI:
         "Vaal SSF": "vaalssf",
         "Vaal HC SSF": "vaalhcssf",
         "Vaal Hardcore SSF": "vaalhcssf",
-
         # Abyss League variants
         "Rise of the Abyssal": "abyss",
         "Abyss": "abyss",
@@ -154,7 +158,6 @@ class PoeNinjaAPI:
         "Abyss SSF": "abyssssf",
         "Abyss HC SSF": "abysshcssf",
         "Abyss Hardcore SSF": "abysshcssf",
-
         # Dawn League variants
         "Dawn of the Hunt": "dawn",
         "Dawn": "dawn",
@@ -162,13 +165,11 @@ class PoeNinjaAPI:
         "Dawn HC": "dawnhc",
         "Dawn SSF": "dawnssf",
         "Dawn HC SSF": "dawnhcssf",
-
         # Standard leagues
         "Standard": "standard",
         "Hardcore": "hardcore",
         "SSF Standard": "ssf-standard",
         "SSF Hardcore": "ssf-hardcore",
-
         # Race events (add as discovered)
         "Act 4 Boss Kill Race 3 SSF": "act4bosskillrace3ssf",
     }
@@ -176,7 +177,7 @@ class PoeNinjaAPI:
     def __init__(
         self,
         rate_limiter: Optional[RateLimiter] = None,
-        cache_manager: Optional[CacheManager] = None
+        cache_manager: Optional[CacheManager] = None,
     ):
         self.base_url = "https://poe.ninja"
         self.api_base = f"{self.base_url}/api/data"
@@ -188,7 +189,7 @@ class PoeNinjaAPI:
             headers={
                 "User-Agent": "PoE2-MCP-Server/1.0",
                 "Accept": "application/json, text/html",
-            }
+            },
         )
 
     def _get_league_slug(self, league: str) -> str:
@@ -213,7 +214,9 @@ class PoeNinjaAPI:
         # Default: convert to lowercase and replace spaces with hyphens
         return league.lower().replace(" ", "-")
 
-    async def get_character(self, account: str, character: str, league: str = "Runes of Aldur") -> Optional[Dict[str, Any]]:
+    async def get_character(
+        self, account: str, character: str, league: str = "Runes of Aldur"
+    ) -> Optional[Dict[str, Any]]:
         """
         RETIRED (#133) — always returns None.
 
@@ -247,14 +250,14 @@ class PoeNinjaAPI:
         """Read the first ``data: {"version": N}`` message from an SSE URL."""
         await self.rate_limiter.acquire()
         try:
-            async with self.client.stream('GET', url) as response:
+            async with self.client.stream("GET", url) as response:
                 if response.status_code != 200:
                     logger.warning(f"SSE endpoint returned {response.status_code}: {url}")
                     return None
                 async for line in response.aiter_lines():
-                    if line.startswith('data:'):
+                    if line.startswith("data:"):
                         try:
-                            return json.loads(line[5:].strip()).get('version')
+                            return json.loads(line[5:].strip()).get("version")
                         except (json.JSONDecodeError, AttributeError):
                             continue
         except Exception as e:
@@ -295,7 +298,9 @@ class PoeNinjaAPI:
                 return None
             characters = response.json()
             if not isinstance(characters, list):
-                logger.warning(f"Unexpected character-list shape for {account}: {type(characters).__name__}")
+                logger.warning(
+                    f"Unexpected character-list shape for {account}: {type(characters).__name__}"
+                )
                 return None
             if self.cache_manager:
                 await self.cache_manager.set(cache_key, characters, ttl=600)
@@ -316,8 +321,8 @@ class PoeNinjaAPI:
             return None
         wanted = character.lower().strip()
         for entry in characters:
-            if str(entry.get('name', '')).lower() == wanted:
-                return entry.get('leagueUrl')
+            if str(entry.get("name", "")).lower() == wanted:
+                return entry.get("leagueUrl")
         logger.warning(f"Character {character} not in {account}'s profile list")
         return None
 
@@ -350,7 +355,7 @@ class PoeNinjaAPI:
         league: str = "Standard",
         class_name: Optional[str] = None,
         skill: Optional[str] = None,
-        limit: int = 10
+        limit: int = 10,
     ) -> List[Dict[str, Any]]:
         """
         Get top builds from poe.ninja ladder
@@ -393,7 +398,9 @@ class PoeNinjaAPI:
                 logger.info(f"Found {len(builds)} builds from poe.ninja")
                 return builds
             else:
-                logger.warning(f"poe.ninja builds page returned {response.status_code} for league '{league_slug}'")
+                logger.warning(
+                    f"poe.ninja builds page returned {response.status_code} for league '{league_slug}'"
+                )
                 return []
 
         except Exception as e:
@@ -401,43 +408,41 @@ class PoeNinjaAPI:
             return []
 
     async def _parse_builds_page(
-        self,
-        html: str,
-        class_filter: Optional[str],
-        skill_filter: Optional[str],
-        limit: int
+        self, html: str, class_filter: Optional[str], skill_filter: Optional[str], limit: int
     ) -> List[Dict[str, Any]]:
         """Parse builds from HTML page (NUXT data extraction)"""
         try:
-            soup = BeautifulSoup(html, 'html.parser')
+            soup = BeautifulSoup(html, "html.parser")
             builds = []
 
             # poe.ninja uses NUXT, so data is embedded in JavaScript
             # Look for __NUXT__ data
-            for script in soup.find_all('script'):
+            for script in soup.find_all("script"):
                 script_content = script.string
                 if not script_content:
                     continue
 
                 # Try to find NUXT data
-                if 'window.__NUXT__' in script_content or '__NUXT__=' in script_content:
+                if "window.__NUXT__" in script_content or "__NUXT__=" in script_content:
                     try:
                         # Extract JSON from the script
-                        start_marker = '__NUXT__='
+                        start_marker = "__NUXT__="
                         if start_marker in script_content:
                             json_start = script_content.find(start_marker) + len(start_marker)
                             # Find the end - it's usually a semicolon or end of script
-                            json_end = script_content.find('</script>', json_start)
+                            json_end = script_content.find("</script>", json_start)
                             if json_end == -1:
                                 json_end = len(script_content)
 
                             json_str = script_content[json_start:json_end].strip()
-                            if json_str.endswith(';'):
+                            if json_str.endswith(";"):
                                 json_str = json_str[:-1]
 
                             # Parse the NUXT data
                             nuxt_data = json.loads(json_str)
-                            builds = self._extract_builds_from_nuxt(nuxt_data, class_filter, skill_filter, limit)
+                            builds = self._extract_builds_from_nuxt(
+                                nuxt_data, class_filter, skill_filter, limit
+                            )
 
                             if builds:
                                 return builds
@@ -451,16 +456,19 @@ class PoeNinjaAPI:
             logger.warning("Could not find NUXT data, trying HTML fallback")
 
             # Look for build listings in HTML
-            build_elements = soup.find_all(class_=['build-row', 'build-item', 'character-row'])
+            build_elements = soup.find_all(class_=["build-row", "build-item", "character-row"])
 
-            for elem in build_elements[:limit * 2]:  # Get extra in case of filtering
+            for elem in build_elements[: limit * 2]:  # Get extra in case of filtering
                 build = self._extract_build_info(elem)
 
                 if build:
                     # Apply filters
                     if class_filter and build.get("class") != class_filter:
                         continue
-                    if skill_filter and skill_filter.lower() not in build.get("main_skill", "").lower():
+                    if (
+                        skill_filter
+                        and skill_filter.lower() not in build.get("main_skill", "").lower()
+                    ):
                         continue
 
                     builds.append(build)
@@ -475,11 +483,7 @@ class PoeNinjaAPI:
             return []
 
     def _extract_builds_from_nuxt(
-        self,
-        nuxt_data: Dict,
-        class_filter: Optional[str],
-        skill_filter: Optional[str],
-        limit: int
+        self, nuxt_data: Dict, class_filter: Optional[str], skill_filter: Optional[str], limit: int
     ) -> List[Dict[str, Any]]:
         """Extract build data from NUXT structure"""
         builds = []
@@ -491,9 +495,9 @@ class PoeNinjaAPI:
 
             # Try different paths
             data_sources = [
-                nuxt_data.get('data', []),
-                nuxt_data.get('state', {}).get('builds', []),
-                nuxt_data.get('state', {}).get('characters', []),
+                nuxt_data.get("data", []),
+                nuxt_data.get("state", {}).get("builds", []),
+                nuxt_data.get("state", {}).get("characters", []),
             ]
 
             # Also check nested structures
@@ -502,7 +506,7 @@ class PoeNinjaAPI:
                     val = nuxt_data[key]
                     if isinstance(val, list) and len(val) > 0:
                         # Check if this looks like build data
-                        if isinstance(val[0], dict) and ('character' in val[0] or 'name' in val[0]):
+                        if isinstance(val[0], dict) and ("character" in val[0] or "name" in val[0]):
                             data_sources.append(val)
 
             for data_source in data_sources:
@@ -517,9 +521,16 @@ class PoeNinjaAPI:
 
                             if build:
                                 # Apply filters
-                                if class_filter and build.get("class", "").lower() != class_filter.lower():
+                                if (
+                                    class_filter
+                                    and build.get("class", "").lower() != class_filter.lower()
+                                ):
                                     continue
-                                if skill_filter and skill_filter.lower() not in build.get("main_skill", "").lower():
+                                if (
+                                    skill_filter
+                                    and skill_filter.lower()
+                                    not in build.get("main_skill", "").lower()
+                                ):
                                     continue
 
                                 builds.append(build)
@@ -537,9 +548,17 @@ class PoeNinjaAPI:
 
                                     if build:
                                         # Apply filters
-                                        if class_filter and build.get("class", "").lower() != class_filter.lower():
+                                        if (
+                                            class_filter
+                                            and build.get("class", "").lower()
+                                            != class_filter.lower()
+                                        ):
                                             continue
-                                        if skill_filter and skill_filter.lower() not in build.get("main_skill", "").lower():
+                                        if (
+                                            skill_filter
+                                            and skill_filter.lower()
+                                            not in build.get("main_skill", "").lower()
+                                        ):
                                             continue
 
                                         builds.append(build)
@@ -558,8 +577,12 @@ class PoeNinjaAPI:
             # Try to extract common fields
             build = {
                 "account": raw_data.get("account", raw_data.get("accountName", "")),
-                "character": raw_data.get("character", raw_data.get("name", raw_data.get("characterName", ""))),
-                "class": raw_data.get("class", raw_data.get("className", raw_data.get("ascendancy", ""))),
+                "character": raw_data.get(
+                    "character", raw_data.get("name", raw_data.get("characterName", ""))
+                ),
+                "class": raw_data.get(
+                    "class", raw_data.get("className", raw_data.get("ascendancy", ""))
+                ),
                 "level": raw_data.get("level", 0),
                 "main_skill": raw_data.get("mainSkill", raw_data.get("skill", "")),
                 "dps": raw_data.get("dps", 0),
@@ -584,15 +607,15 @@ class PoeNinjaAPI:
                 "class": "",
                 "level": 0,
                 "main_skill": "",
-                "dps": 0
+                "dps": 0,
             }
 
             # Try to extract from data attributes or text content
-            class_elem = element.find(class_=['class', 'build-class'])
+            class_elem = element.find(class_=["class", "build-class"])
             if class_elem:
                 build["class"] = class_elem.text.strip()
 
-            level_elem = element.find(class_=['level', 'build-level'])
+            level_elem = element.find(class_=["level", "build-level"])
             if level_elem:
                 try:
                     build["level"] = int(level_elem.text.strip())
@@ -605,7 +628,9 @@ class PoeNinjaAPI:
             logger.debug(f"Failed to extract build info: {e}")
             return None
 
-    async def get_item_prices(self, league: str = "Standard", item_type: str = "UniqueWeapon") -> List[Dict[str, Any]]:
+    async def get_item_prices(
+        self, league: str = "Standard", item_type: str = "UniqueWeapon"
+    ) -> List[Dict[str, Any]]:
         """
         Get item prices from poe.ninja economy API
 
@@ -627,10 +652,7 @@ class PoeNinjaAPI:
             await self.rate_limiter.acquire()
 
             url = f"{self.api_base}/itemoverview"
-            params = {
-                "league": league,
-                "type": item_type
-            }
+            params = {"league": league, "type": item_type}
 
             response = await self.client.get(url, params=params)
 
@@ -690,8 +712,8 @@ class PoeNinjaAPI:
             if not model:
                 return None
 
-            char_model = model.get('charModel') or {}
-            pob_code = char_model.get('pathOfBuildingExport')
+            char_model = model.get("charModel") or {}
+            pob_code = char_model.get("pathOfBuildingExport")
 
             if pob_code:
                 logger.info(f"✅ Got PoB export from charModel for {character}")

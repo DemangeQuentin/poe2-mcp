@@ -8,6 +8,7 @@ API (account SSE -> char list; char SSE -> model) is the only fetch path.
 All network calls are stubbed — shapes mirror the 2026-06-02 HAR capture,
 re-verified live 2026-06-12.
 """
+
 from __future__ import annotations
 
 import sys
@@ -23,10 +24,22 @@ from src.api.poe_ninja_api import PoeNinjaAPI
 
 
 CHAR_LIST = [
-    {"name": "TomawarTheSeventh", "level": 87, "className": "Infernalist",
-     "league": "Runes of Aldur", "leagueUrl": "runesofaldur", "isCurrent": True},
-    {"name": "TomawarTheFifth", "level": 91, "className": "Shaman",
-     "league": "Fate of the Vaal", "leagueUrl": "vaal", "isCurrent": False},
+    {
+        "name": "TomawarTheSeventh",
+        "level": 87,
+        "className": "Infernalist",
+        "league": "Runes of Aldur",
+        "leagueUrl": "runesofaldur",
+        "isCurrent": True,
+    },
+    {
+        "name": "TomawarTheFifth",
+        "level": 91,
+        "className": "Shaman",
+        "league": "Fate of the Vaal",
+        "leagueUrl": "vaal",
+        "isCurrent": False,
+    },
 ]
 
 
@@ -64,8 +77,7 @@ class _FakeClient:
         self.list_payload = CHAR_LIST
         self.model_payload = {
             "type": "full",
-            "charModel": {"name": "TomawarTheSeventh",
-                          "pathOfBuildingExport": "eNrFAKEEXPORT"},
+            "charModel": {"name": "TomawarTheSeventh", "pathOfBuildingExport": "eNrFAKEEXPORT"},
         }
         self.sse_status = 200
         self.list_status = 200
@@ -99,6 +111,7 @@ def _api() -> PoeNinjaAPI:
 # Retirement
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_get_character_is_retired():
     """The snapshot-backed get_character always returns None and makes NO
@@ -111,15 +124,20 @@ async def test_get_character_is_retired():
 
 def test_dead_chain_methods_deleted():
     """The snapshot/HTML-scrape chain must not survive as dead code."""
-    for gone in ("_fetch_character_from_api", "_get_index_state",
-                 "_scrape_character_page", "_parse_character_html",
-                 "_normalize_api_character_data"):
+    for gone in (
+        "_fetch_character_from_api",
+        "_get_index_state",
+        "_scrape_character_page",
+        "_parse_character_html",
+        "_normalize_api_character_data",
+    ):
         assert not hasattr(PoeNinjaAPI, gone), f"{gone} should be deleted"
 
 
 # ---------------------------------------------------------------------------
 # Enumeration
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_list_account_characters():
@@ -161,6 +179,7 @@ async def test_resolve_unknown_character_returns_none():
 # ---------------------------------------------------------------------------
 # PoB export via profile flow
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_get_pob_import_via_profile_flow():

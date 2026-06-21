@@ -71,7 +71,9 @@ async def test_keystone_nodes_have_stats(db):
 
         # Count keystones with stats (by pattern)
         result = await session.execute(
-            text("SELECT COUNT(*) FROM passive_nodes WHERE node_id LIKE 'passive_keystone_%' AND stats IS NOT NULL AND stats != '[]'")
+            text(
+                "SELECT COUNT(*) FROM passive_nodes WHERE node_id LIKE 'passive_keystone_%' AND stats IS NOT NULL AND stats != '[]'"
+            )
         )
         keystones_with_stats = result.scalar()
 
@@ -108,7 +110,9 @@ async def test_notable_nodes_have_stats(db):
 
         # Count notables with stats (by pattern)
         result = await session.execute(
-            text("SELECT COUNT(*) FROM passive_nodes WHERE node_id LIKE 'passive_notable_%' AND stats IS NOT NULL AND stats != '[]'")
+            text(
+                "SELECT COUNT(*) FROM passive_nodes WHERE node_id LIKE 'passive_notable_%' AND stats IS NOT NULL AND stats != '[]'"
+            )
         )
         notables_with_stats = result.scalar()
 
@@ -124,14 +128,18 @@ async def test_resolute_technique_exists(db):
     async with db.async_session() as session:
         # Try by node_id pattern first (most reliable)
         result = await session.execute(
-            text("SELECT node_id, name, is_keystone, stats FROM passive_nodes WHERE node_id LIKE '%resolute%'")
+            text(
+                "SELECT node_id, name, is_keystone, stats FROM passive_nodes WHERE node_id LIKE '%resolute%'"
+            )
         )
         rows = result.fetchall()
 
         if not rows:
             # Try by name
             result = await session.execute(
-                text("SELECT node_id, name, is_keystone, stats FROM passive_nodes WHERE name LIKE '%Resolute%'")
+                text(
+                    "SELECT node_id, name, is_keystone, stats FROM passive_nodes WHERE name LIKE '%Resolute%'"
+                )
             )
             rows = result.fetchall()
 
@@ -152,7 +160,7 @@ async def test_resolute_technique_exists(db):
 @pytest.mark.asyncio
 async def test_keystone_stats_from_merged_data(merged_tree):
     """Verify keystones in merged data have human-readable stats"""
-    keystones = {k: v for k, v in merged_tree.items() if v.get('is_keystone')}
+    keystones = {k: v for k, v in merged_tree.items() if v.get("is_keystone")}
 
     assert len(keystones) > 0, "Should have keystones in merged data"
     assert len(keystones) >= 30, f"Expected >=30 keystones, found {len(keystones)}"
@@ -160,7 +168,7 @@ async def test_keystone_stats_from_merged_data(merged_tree):
     # Check that keystones have stats
     keystones_with_stats = 0
     for node_id, node_data in keystones.items():
-        stats = node_data.get('stats', [])
+        stats = node_data.get("stats", [])
         if stats and len(stats) > 0:
             keystones_with_stats += 1
 
@@ -179,14 +187,14 @@ async def test_keystone_stats_from_merged_data(merged_tree):
 @pytest.mark.asyncio
 async def test_notable_stats_from_merged_data(merged_tree):
     """Verify notables in merged data have stats (>=90% coverage)"""
-    notables = {k: v for k, v in merged_tree.items() if v.get('is_notable')}
+    notables = {k: v for k, v in merged_tree.items() if v.get("is_notable")}
 
     assert len(notables) > 0, "Should have notables in merged data"
 
     # Check that notables have stats
     notables_with_stats = 0
     for node_id, node_data in notables.items():
-        stats = node_data.get('stats', [])
+        stats = node_data.get("stats", [])
         if stats and len(stats) > 0:
             notables_with_stats += 1
 
@@ -204,7 +212,7 @@ async def test_overall_stats_coverage(merged_tree):
     nodes_with_stats = 0
 
     for node_id, node_data in merged_tree.items():
-        stats = node_data.get('stats', [])
+        stats = node_data.get("stats", [])
         if stats and len(stats) > 0:
             nodes_with_stats += 1
 
@@ -243,12 +251,14 @@ async def test_passive_node_positions_exist(db):
         result = await session.execute(text("PRAGMA table_info(passive_nodes)"))
         columns = [row[1] for row in result.fetchall()]
 
-        if 'position_x' not in columns or 'position_y' not in columns:
+        if "position_x" not in columns or "position_y" not in columns:
             print("Position columns not in database schema (may use different field names)")
             return
 
         result = await session.execute(
-            text("SELECT COUNT(*) FROM passive_nodes WHERE position_x IS NOT NULL AND position_y IS NOT NULL")
+            text(
+                "SELECT COUNT(*) FROM passive_nodes WHERE position_x IS NOT NULL AND position_y IS NOT NULL"
+            )
         )
         with_positions = result.scalar()
 
@@ -268,12 +278,12 @@ async def test_sample_keystones_cross_reference(db, merged_tree):
     """Cross-reference known keystones between source and database"""
     # Test a few well-known keystones
     test_keystones = [
-        'Resolute Technique',
-        'Avatar of Fire',
-        'Blood Magic',
+        "Resolute Technique",
+        "Avatar of Fire",
+        "Blood Magic",
     ]
 
-    keystones_in_merged = {v.get('name'): k for k, v in merged_tree.items() if v.get('is_keystone')}
+    keystones_in_merged = {v.get("name"): k for k, v in merged_tree.items() if v.get("is_keystone")}
 
     async with db.async_session() as session:
         for keystone_name in test_keystones:
@@ -284,7 +294,9 @@ async def test_sample_keystones_cross_reference(db, merged_tree):
 
                 # Check if it exists in database
                 result = await session.execute(
-                    text(f"SELECT name, is_keystone, stats FROM passive_nodes WHERE name = '{keystone_name}'")
+                    text(
+                        f"SELECT name, is_keystone, stats FROM passive_nodes WHERE name = '{keystone_name}'"
+                    )
                 )
                 row = result.first()
 
@@ -294,10 +306,14 @@ async def test_sample_keystones_cross_reference(db, merged_tree):
                 else:
                     # Check with LIKE in case of slight name differences
                     result = await session.execute(
-                        text(f"SELECT name, is_keystone FROM passive_nodes WHERE name LIKE '%{keystone_name.split()[0]}%'")
+                        text(
+                            f"SELECT name, is_keystone FROM passive_nodes WHERE name LIKE '%{keystone_name.split()[0]}%'"
+                        )
                     )
                     rows = result.fetchall()
-                    assert len(rows) > 0, f"{keystone_name} not found in database (even with fuzzy search)"
+                    assert (
+                        len(rows) > 0
+                    ), f"{keystone_name} not found in database (even with fuzzy search)"
 
 
 @pytest.mark.asyncio
@@ -308,7 +324,7 @@ async def test_jewel_sockets_identified(db):
         result = await session.execute(text("PRAGMA table_info(passive_nodes)"))
         columns = [row[1] for row in result.fetchall()]
 
-        if 'is_jewel_socket' not in columns:
+        if "is_jewel_socket" not in columns:
             print("is_jewel_socket column not in database schema (may not be implemented yet)")
             return
 
@@ -336,8 +352,9 @@ async def test_passive_stats_are_parseable(db):
         for row in rows:
             try:
                 stats = json.loads(row[2]) if isinstance(row[2], str) else row[2]
-                assert isinstance(stats, (list, dict)), \
-                    f"Stats should be list or dict, got {type(stats)} for node {row[1]}"
+                assert isinstance(
+                    stats, (list, dict)
+                ), f"Stats should be list or dict, got {type(stats)} for node {row[1]}"
             except json.JSONDecodeError:
                 parse_errors += 1
                 print(f"Failed to parse stats for {row[1]}: {row[2][:100]}")
@@ -355,9 +372,11 @@ async def test_stats_source_tracking(db):
         result = await session.execute(text("PRAGMA table_info(passive_nodes)"))
         columns = [row[1] for row in result.fetchall()]
 
-        if 'stats_source' in columns:
+        if "stats_source" in columns:
             result = await session.execute(
-                text("SELECT DISTINCT stats_source FROM passive_nodes WHERE stats_source IS NOT NULL")
+                text(
+                    "SELECT DISTINCT stats_source FROM passive_nodes WHERE stats_source IS NOT NULL"
+                )
             )
             sources = [row[0] for row in result.fetchall()]
 

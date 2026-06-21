@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class ContentDifficulty(Enum):
     """Difficulty tiers for content"""
+
     CAMPAIGN = "campaign"
     EARLY_MAPS = "early_maps"  # T1-T5
     MID_MAPS = "mid_maps"  # T6-T10
@@ -29,6 +30,7 @@ class ContentDifficulty(Enum):
 
 class ReadinessLevel(Enum):
     """Readiness assessment"""
+
     READY = "ready"
     MOSTLY_READY = "mostly_ready"
     RISKY = "risky"
@@ -38,6 +40,7 @@ class ReadinessLevel(Enum):
 @dataclass
 class DefenseRequirement:
     """Defense requirements for specific content"""
+
     content_name: str
     difficulty: ContentDifficulty
 
@@ -76,6 +79,7 @@ class DefenseRequirement:
 @dataclass
 class ReadinessReport:
     """Report on whether character is ready for content"""
+
     content_name: str
     readiness: ReadinessLevel
     confidence: float  # 0-100
@@ -120,7 +124,7 @@ class ContentReadinessChecker:
         reqs = {}
 
         # Campaign
-        reqs['campaign'] = DefenseRequirement(
+        reqs["campaign"] = DefenseRequirement(
             content_name="Campaign",
             difficulty=ContentDifficulty.CAMPAIGN,
             min_life=800,
@@ -140,12 +144,12 @@ class ContentReadinessChecker:
             tips=[
                 "Focus on life and resistances",
                 "Damage isn't critical yet",
-                "Learn boss mechanics"
-            ]
+                "Learn boss mechanics",
+            ],
         )
 
         # Early Maps (T1-T5)
-        reqs['early_maps'] = DefenseRequirement(
+        reqs["early_maps"] = DefenseRequirement(
             content_name="Early Maps (T1-T5)",
             difficulty=ContentDifficulty.EARLY_MAPS,
             min_life=2000,
@@ -166,12 +170,12 @@ class ContentReadinessChecker:
             tips=[
                 "Cap elemental resistances (75%)",
                 "3000+ life is comfortable",
-                "Focus on clearing speed"
-            ]
+                "Focus on clearing speed",
+            ],
         )
 
         # Mid Maps (T6-T10)
-        reqs['mid_maps'] = DefenseRequirement(
+        reqs["mid_maps"] = DefenseRequirement(
             content_name="Mid Maps (T6-T10)",
             difficulty=ContentDifficulty.MID_MAPS,
             min_life=3000,
@@ -193,12 +197,12 @@ class ContentReadinessChecker:
             tips=[
                 "Elemental resistances MUST be capped",
                 "Start investing in chaos res",
-                "Add defensive layers (armor, evasion, block)"
-            ]
+                "Add defensive layers (armor, evasion, block)",
+            ],
         )
 
         # High Maps (T11-T15)
-        reqs['high_maps'] = DefenseRequirement(
+        reqs["high_maps"] = DefenseRequirement(
             content_name="High Maps (T11-T15)",
             difficulty=ContentDifficulty.HIGH_MAPS,
             min_life=4000,
@@ -222,12 +226,12 @@ class ContentReadinessChecker:
                 "5000+ life strongly recommended",
                 "Overcap resistances for map mods",
                 "Multiple defense layers required",
-                "DPS becomes important for safety"
-            ]
+                "DPS becomes important for safety",
+            ],
         )
 
         # Pinnacle Maps (T16)
-        reqs['pinnacle_maps'] = DefenseRequirement(
+        reqs["pinnacle_maps"] = DefenseRequirement(
             content_name="Pinnacle Maps (T16+)",
             difficulty=ContentDifficulty.PINNACLE_MAPS,
             min_life=5000,
@@ -253,12 +257,12 @@ class ContentReadinessChecker:
                 "Heavily overcap resistances",
                 "Need 3+ defensive layers",
                 "High DPS = better defense (kill before they kill you)",
-                "Consider corrupted blood immunity"
-            ]
+                "Consider corrupted blood immunity",
+            ],
         )
 
         # Normal Bosses
-        reqs['boss_normal'] = DefenseRequirement(
+        reqs["boss_normal"] = DefenseRequirement(
             content_name="Normal Endgame Bosses",
             difficulty=ContentDifficulty.BOSS_NORMAL,
             min_life=4000,
@@ -280,12 +284,12 @@ class ContentReadinessChecker:
                 "Learn mechanics > raw tankiness",
                 "5000+ life recommended",
                 "Capped resistances mandatory",
-                "Practice dodge timing"
-            ]
+                "Practice dodge timing",
+            ],
         )
 
         # Pinnacle Bosses
-        reqs['boss_pinnacle'] = DefenseRequirement(
+        reqs["boss_pinnacle"] = DefenseRequirement(
             content_name="Pinnacle Bosses",
             difficulty=ContentDifficulty.BOSS_PINNACLE,
             min_life=5500,
@@ -304,23 +308,23 @@ class ContentReadinessChecker:
             min_dps=150000,
             min_phys_mitigation=50.0,
             requires_stun_immunity=True,
-            dangerous_mechanics=["One-shot mechanics", "Phase transitions", "Multiple damage types"],
+            dangerous_mechanics=[
+                "One-shot mechanics",
+                "Phase transitions",
+                "Multiple damage types",
+            ],
             tips=[
                 "7000+ life for safety",
                 "Know mechanics perfectly",
                 "High DPS shortens dangerous phases",
                 "Stun immunity highly recommended",
-                "Practice is essential"
-            ]
+                "Practice is essential",
+            ],
         )
 
         return reqs
 
-    def check_readiness(
-        self,
-        character_data: Dict[str, Any],
-        content: str
-    ) -> ReadinessReport:
+    def check_readiness(self, character_data: Dict[str, Any], content: str) -> ReadinessReport:
         """
         Check if character is ready for specific content
 
@@ -361,7 +365,7 @@ class ContentReadinessChecker:
             ehp_check="pass",
             resistance_check="pass",
             damage_check="pass",
-            immunity_check="pass"
+            immunity_check="pass",
         )
 
         # Check each requirement
@@ -381,29 +385,33 @@ class ContentReadinessChecker:
 
     def _extract_character_stats(self, character_data: Dict[str, Any]) -> Dict[str, float]:
         """Extract relevant stats"""
-        stats_nested = character_data.get('stats', {})
+        stats_nested = character_data.get("stats", {})
 
         return {
-            'life': stats_nested.get('life', character_data.get('life', 0)),
-            'ehp': stats_nested.get('effective_health_pool', character_data.get('effective_health_pool', stats_nested.get('life', character_data.get('life', 0)))),
-            'fire_res': stats_nested.get('fire_res', character_data.get('fire_res', 0)),
-            'cold_res': stats_nested.get('cold_res', character_data.get('cold_res', 0)),
-            'lightning_res': stats_nested.get('lightning_res', character_data.get('lightning_res', 0)),
-            'chaos_res': stats_nested.get('chaos_res', character_data.get('chaos_res', 0)),
-            'armor': stats_nested.get('armor', character_data.get('armor', 0)),
-            'evasion': stats_nested.get('evasion', character_data.get('evasion', 0)),
-            'block': stats_nested.get('block_chance', character_data.get('block_chance', 0)),
-            'dps': character_data.get('total_dps', 0),
+            "life": stats_nested.get("life", character_data.get("life", 0)),
+            "ehp": stats_nested.get(
+                "effective_health_pool",
+                character_data.get(
+                    "effective_health_pool", stats_nested.get("life", character_data.get("life", 0))
+                ),
+            ),
+            "fire_res": stats_nested.get("fire_res", character_data.get("fire_res", 0)),
+            "cold_res": stats_nested.get("cold_res", character_data.get("cold_res", 0)),
+            "lightning_res": stats_nested.get(
+                "lightning_res", character_data.get("lightning_res", 0)
+            ),
+            "chaos_res": stats_nested.get("chaos_res", character_data.get("chaos_res", 0)),
+            "armor": stats_nested.get("armor", character_data.get("armor", 0)),
+            "evasion": stats_nested.get("evasion", character_data.get("evasion", 0)),
+            "block": stats_nested.get("block_chance", character_data.get("block_chance", 0)),
+            "dps": character_data.get("total_dps", 0),
         }
 
     def _check_life(
-        self,
-        stats: Dict[str, float],
-        reqs: DefenseRequirement,
-        report: ReadinessReport
+        self, stats: Dict[str, float], reqs: DefenseRequirement, report: ReadinessReport
     ) -> ReadinessReport:
         """Check life pool"""
-        life = stats['life']
+        life = stats["life"]
 
         if life < reqs.min_life:
             report.life_check = "fail"
@@ -411,21 +419,22 @@ class ContentReadinessChecker:
             report.priority_upgrades.append(f"Increase life to at least {reqs.min_life}")
         elif life < reqs.rec_life:
             report.life_check = "warning"
-            report.warnings.append(f"Life below recommended: {life:.0f} (recommended {reqs.rec_life})")
-            report.recommendations.append(f"Consider increasing life to {reqs.rec_life}+ for safety")
+            report.warnings.append(
+                f"Life below recommended: {life:.0f} (recommended {reqs.rec_life})"
+            )
+            report.recommendations.append(
+                f"Consider increasing life to {reqs.rec_life}+ for safety"
+            )
         else:
             report.passes.append(f"Life: {life:.0f} ✅")
 
         return report
 
     def _check_ehp(
-        self,
-        stats: Dict[str, float],
-        reqs: DefenseRequirement,
-        report: ReadinessReport
+        self, stats: Dict[str, float], reqs: DefenseRequirement, report: ReadinessReport
     ) -> ReadinessReport:
         """Check effective HP"""
-        ehp = stats['ehp']
+        ehp = stats["ehp"]
 
         if ehp < reqs.min_ehp:
             report.ehp_check = "fail"
@@ -441,17 +450,14 @@ class ContentReadinessChecker:
         return report
 
     def _check_resistances(
-        self,
-        stats: Dict[str, float],
-        reqs: DefenseRequirement,
-        report: ReadinessReport
+        self, stats: Dict[str, float], reqs: DefenseRequirement, report: ReadinessReport
     ) -> ReadinessReport:
         """Check resistances"""
         resistances = {
-            'Fire': (stats['fire_res'], reqs.min_fire_res, reqs.rec_fire_res),
-            'Cold': (stats['cold_res'], reqs.min_cold_res, reqs.rec_cold_res),
-            'Lightning': (stats['lightning_res'], reqs.min_lightning_res, reqs.rec_lightning_res),
-            'Chaos': (stats['chaos_res'], reqs.min_chaos_res, reqs.rec_chaos_res),
+            "Fire": (stats["fire_res"], reqs.min_fire_res, reqs.rec_fire_res),
+            "Cold": (stats["cold_res"], reqs.min_cold_res, reqs.rec_cold_res),
+            "Lightning": (stats["lightning_res"], reqs.min_lightning_res, reqs.rec_lightning_res),
+            "Chaos": (stats["chaos_res"], reqs.min_chaos_res, reqs.rec_chaos_res),
         }
 
         res_fail = False
@@ -464,7 +470,9 @@ class ContentReadinessChecker:
                 report.priority_upgrades.append(f"Increase {res_name} resistance to {min_val}%")
             elif current < rec_val:
                 res_warning = True
-                report.warnings.append(f"{res_name} res below recommended: {current:.0f}% (recommended {rec_val}%)")
+                report.warnings.append(
+                    f"{res_name} res below recommended: {current:.0f}% (recommended {rec_val}%)"
+                )
             else:
                 report.passes.append(f"{res_name} Resistance: {current:.0f}% ✅")
 
@@ -478,13 +486,10 @@ class ContentReadinessChecker:
         return report
 
     def _check_damage(
-        self,
-        stats: Dict[str, float],
-        reqs: DefenseRequirement,
-        report: ReadinessReport
+        self, stats: Dict[str, float], reqs: DefenseRequirement, report: ReadinessReport
     ) -> ReadinessReport:
         """Check DPS"""
-        dps = stats['dps']
+        dps = stats["dps"]
 
         if dps == 0:
             report.damage_check = "unknown"
@@ -504,10 +509,7 @@ class ContentReadinessChecker:
         return report
 
     def _check_immunities(
-        self,
-        stats: Dict[str, float],
-        reqs: DefenseRequirement,
-        report: ReadinessReport
+        self, stats: Dict[str, float], reqs: DefenseRequirement, report: ReadinessReport
     ) -> ReadinessReport:
         """Check for required immunities"""
         # This would need actual immunity data from character
@@ -527,17 +529,10 @@ class ContentReadinessChecker:
         return report
 
     def _determine_readiness(
-        self,
-        report: ReadinessReport,
-        reqs: DefenseRequirement
+        self, report: ReadinessReport, reqs: DefenseRequirement
     ) -> ReadinessReport:
         """Determine overall readiness level"""
-        checks = [
-            report.life_check,
-            report.ehp_check,
-            report.resistance_check,
-            report.damage_check
-        ]
+        checks = [report.life_check, report.ehp_check, report.resistance_check, report.damage_check]
 
         fail_count = checks.count("fail")
         warning_count = checks.count("warning")
@@ -558,10 +553,7 @@ class ContentReadinessChecker:
         return report
 
     def _generate_recommendations(
-        self,
-        report: ReadinessReport,
-        reqs: DefenseRequirement,
-        stats: Dict[str, float]
+        self, report: ReadinessReport, reqs: DefenseRequirement, stats: Dict[str, float]
     ) -> ReadinessReport:
         """Generate final recommendations"""
         # Add dangerous mechanics warning
@@ -590,7 +582,7 @@ class ContentReadinessChecker:
             damage_check="unknown",
             immunity_check="unknown",
             gaps=[f"Unknown content: {content}"],
-            recommendations=["Please specify valid content (e.g., 'high_maps', 'boss_pinnacle')"]
+            recommendations=["Please specify valid content (e.g., 'high_maps', 'boss_pinnacle')"],
         )
 
     def format_report(self, report: ReadinessReport) -> str:
@@ -658,16 +650,16 @@ if __name__ == "__main__":
 
     # Example character
     character = {
-        'stats': {
-            'life': 4500,
-            'effective_health_pool': 8000,
-            'fire_res': 75,
-            'cold_res': 75,
-            'lightning_res': 68,
-            'chaos_res': -20,
-            'armor': 5000,
+        "stats": {
+            "life": 4500,
+            "effective_health_pool": 8000,
+            "fire_res": 75,
+            "cold_res": 75,
+            "lightning_res": 68,
+            "chaos_res": -20,
+            "armor": 5000,
         },
-        'total_dps': 60000
+        "total_dps": 60000,
     }
 
     # Check readiness for high maps

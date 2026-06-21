@@ -35,9 +35,7 @@ class PoE2DBSupportScraper:
         self.client = httpx.AsyncClient(
             timeout=30.0,
             follow_redirects=True,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            }
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
         )
         self.supports = {}
 
@@ -59,7 +57,7 @@ class PoE2DBSupportScraper:
                 logger.error(f"Failed to fetch support list: {response.status_code}")
                 return {}
 
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, "html.parser")
 
             # Find all support gem links
             support_links = self._extract_support_links(soup)
@@ -88,22 +86,22 @@ class PoE2DBSupportScraper:
         links = {}
 
         # Look for gem tables
-        tables = soup.find_all('table', class_='item')
+        tables = soup.find_all("table", class_="item")
 
         for table in tables:
-            rows = table.find_all('tr')
+            rows = table.find_all("tr")
             for row in rows:
                 # Find gem name link
-                name_cell = row.find('td', class_='name')
+                name_cell = row.find("td", class_="name")
                 if name_cell:
-                    link = name_cell.find('a')
-                    if link and link.get('href'):
+                    link = name_cell.find("a")
+                    if link and link.get("href"):
                         name = link.get_text(strip=True)
-                        href = link['href']
+                        href = link["href"]
 
                         # Make sure it's a support gem
-                        if 'Support' in name or 'support' in href.lower():
-                            full_url = f"{self.base_url}{href}" if href.startswith('/') else href
+                        if "Support" in name or "support" in href.lower():
+                            full_url = f"{self.base_url}{href}" if href.startswith("/") else href
                             links[name] = full_url
 
         return links
@@ -116,23 +114,23 @@ class PoE2DBSupportScraper:
                 logger.warning(f"Failed to fetch {name}: {response.status_code}")
                 return None
 
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, "html.parser")
 
             # Extract data
             support_data = {
-                'name': name,
-                'url': url,
-                'scraped_at': datetime.utcnow().isoformat(),
-                'tags': self._extract_tags(soup),
-                'type': self._extract_gem_type(soup),
-                'tier': self._extract_tier(soup),
-                'effects': self._extract_effects(soup),
-                'spirit_cost': self._extract_spirit_cost(soup),
-                'mana_multiplier': self._extract_mana_multiplier(soup),
-                'quality_bonus': self._extract_quality_bonus(soup),
-                'requirements': self._extract_requirements(soup),
-                'compatible_with': self._extract_compatible_tags(soup),
-                'level_progression': self._extract_level_progression(soup)
+                "name": name,
+                "url": url,
+                "scraped_at": datetime.utcnow().isoformat(),
+                "tags": self._extract_tags(soup),
+                "type": self._extract_gem_type(soup),
+                "tier": self._extract_tier(soup),
+                "effects": self._extract_effects(soup),
+                "spirit_cost": self._extract_spirit_cost(soup),
+                "mana_multiplier": self._extract_mana_multiplier(soup),
+                "quality_bonus": self._extract_quality_bonus(soup),
+                "requirements": self._extract_requirements(soup),
+                "compatible_with": self._extract_compatible_tags(soup),
+                "level_progression": self._extract_level_progression(soup),
             }
 
             return support_data
@@ -146,16 +144,29 @@ class PoE2DBSupportScraper:
         tags = []
 
         # Look for tag elements
-        tag_elements = soup.find_all('span', class_='tag')
+        tag_elements = soup.find_all("span", class_="tag")
         for tag in tag_elements:
             tags.append(tag.get_text(strip=True))
 
         # Also check in gem description
-        description = soup.find('div', class_='description')
+        description = soup.find("div", class_="description")
         if description:
             text = description.get_text()
             # Common tags
-            tag_keywords = ['Spell', 'Attack', 'Projectile', 'AoE', 'Melee', 'Fire', 'Cold', 'Lightning', 'Chaos', 'Physical', 'Duration', 'Minion']
+            tag_keywords = [
+                "Spell",
+                "Attack",
+                "Projectile",
+                "AoE",
+                "Melee",
+                "Fire",
+                "Cold",
+                "Lightning",
+                "Chaos",
+                "Physical",
+                "Duration",
+                "Minion",
+            ]
             for keyword in tag_keywords:
                 if keyword in text and keyword not in tags:
                     tags.append(keyword)
@@ -165,17 +176,17 @@ class PoE2DBSupportScraper:
     def _extract_gem_type(self, soup: BeautifulSoup) -> str:
         """Extract gem type (spell_support, attack_support, etc.)"""
         # Look in gem header
-        header = soup.find('h1')
+        header = soup.find("h1")
         if header:
             text = header.get_text().lower()
-            if 'spell' in text:
-                return 'spell_support'
-            elif 'attack' in text:
-                return 'attack_support'
-            elif 'projectile' in text:
-                return 'projectile_support'
+            if "spell" in text:
+                return "spell_support"
+            elif "attack" in text:
+                return "attack_support"
+            elif "projectile" in text:
+                return "projectile_support"
 
-        return 'support'
+        return "support"
 
     def _extract_tier(self, soup: BeautifulSoup) -> Optional[int]:
         """Extract tier number"""
@@ -183,22 +194,22 @@ class PoE2DBSupportScraper:
         text = soup.get_text()
 
         # Try to find "Tier X"
-        tier_match = re.search(r'Tier\s+(\d+)', text, re.IGNORECASE)
+        tier_match = re.search(r"Tier\s+(\d+)", text, re.IGNORECASE)
         if tier_match:
             return int(tier_match.group(1))
 
         # Try to find in gem name
-        if 'I' in soup.find('h1').get_text():
-            name = soup.find('h1').get_text()
-            if name.endswith(' I'):
+        if "I" in soup.find("h1").get_text():
+            name = soup.find("h1").get_text()
+            if name.endswith(" I"):
                 return 1
-            elif name.endswith(' II'):
+            elif name.endswith(" II"):
                 return 2
-            elif name.endswith(' III'):
+            elif name.endswith(" III"):
                 return 3
-            elif name.endswith(' IV'):
+            elif name.endswith(" IV"):
                 return 4
-            elif name.endswith(' V'):
+            elif name.endswith(" V"):
                 return 5
 
         return None
@@ -208,82 +219,84 @@ class PoE2DBSupportScraper:
         effects = {}
 
         # Look for stat blocks
-        stat_blocks = soup.find_all('div', class_='stat')
+        stat_blocks = soup.find_all("div", class_="stat")
 
         for stat in stat_blocks:
             text = stat.get_text(strip=True)
 
             # More multipliers
-            if 'more' in text.lower():
+            if "more" in text.lower():
                 # Extract percentage
-                match = re.search(r'(\d+(?:\.\d+)?)%\s+more', text, re.IGNORECASE)
+                match = re.search(r"(\d+(?:\.\d+)?)%\s+more", text, re.IGNORECASE)
                 if match:
                     value = float(match.group(1))
 
-                    if 'damage' in text.lower():
-                        effects['more_damage'] = value
-                    elif 'spell damage' in text.lower():
-                        effects['more_spell_damage'] = value
-                    elif 'attack damage' in text.lower():
-                        effects['more_attack_damage'] = value
-                    elif 'cast speed' in text.lower():
-                        effects['more_cast_speed'] = value
-                    elif 'attack speed' in text.lower():
-                        effects['more_attack_speed'] = value
-                    elif 'area' in text.lower() or 'aoe' in text.lower():
-                        effects['more_area'] = value
-                    elif 'crit' in text.lower() and 'damage' in text.lower():
-                        effects['more_crit_damage'] = value
-                    elif 'crit' in text.lower() and 'chance' in text.lower():
-                        effects['more_crit_chance'] = value
+                    if "damage" in text.lower():
+                        effects["more_damage"] = value
+                    elif "spell damage" in text.lower():
+                        effects["more_spell_damage"] = value
+                    elif "attack damage" in text.lower():
+                        effects["more_attack_damage"] = value
+                    elif "cast speed" in text.lower():
+                        effects["more_cast_speed"] = value
+                    elif "attack speed" in text.lower():
+                        effects["more_attack_speed"] = value
+                    elif "area" in text.lower() or "aoe" in text.lower():
+                        effects["more_area"] = value
+                    elif "crit" in text.lower() and "damage" in text.lower():
+                        effects["more_crit_damage"] = value
+                    elif "crit" in text.lower() and "chance" in text.lower():
+                        effects["more_crit_chance"] = value
 
             # Less multipliers (negative)
-            elif 'less' in text.lower():
-                match = re.search(r'(\d+(?:\.\d+)?)%\s+less', text, re.IGNORECASE)
+            elif "less" in text.lower():
+                match = re.search(r"(\d+(?:\.\d+)?)%\s+less", text, re.IGNORECASE)
                 if match:
                     value = -float(match.group(1))
 
-                    if 'damage' in text.lower():
-                        effects['more_damage'] = value
-                    elif 'cast speed' in text.lower():
-                        effects['more_cast_speed'] = value
-                    elif 'attack speed' in text.lower():
-                        effects['more_attack_speed'] = value
+                    if "damage" in text.lower():
+                        effects["more_damage"] = value
+                    elif "cast speed" in text.lower():
+                        effects["more_cast_speed"] = value
+                    elif "attack speed" in text.lower():
+                        effects["more_attack_speed"] = value
 
             # Increased modifiers
-            elif 'increased' in text.lower():
-                match = re.search(r'(\d+(?:\.\d+)?)%\s+increased', text, re.IGNORECASE)
+            elif "increased" in text.lower():
+                match = re.search(r"(\d+(?:\.\d+)?)%\s+increased", text, re.IGNORECASE)
                 if match:
                     value = float(match.group(1))
 
-                    if 'damage' in text.lower():
-                        effects['increased_damage'] = value
-                    elif 'cast speed' in text.lower():
-                        effects['increased_cast_speed'] = value
-                    elif 'crit' in text.lower() and 'chance' in text.lower():
-                        effects['increased_crit_chance'] = value
+                    if "damage" in text.lower():
+                        effects["increased_damage"] = value
+                    elif "cast speed" in text.lower():
+                        effects["increased_cast_speed"] = value
+                    elif "crit" in text.lower() and "chance" in text.lower():
+                        effects["increased_crit_chance"] = value
 
             # Added damage
-            if 'adds' in text.lower() and 'to' in text.lower() and 'damage' in text.lower():
+            if "adds" in text.lower() and "to" in text.lower() and "damage" in text.lower():
                 # Example: "Adds 10 to 20 Fire Damage"
-                match = re.search(r'adds\s+(\d+)\s+to\s+(\d+)\s+(\w+)\s+damage', text, re.IGNORECASE)
+                match = re.search(
+                    r"adds\s+(\d+)\s+to\s+(\d+)\s+(\w+)\s+damage", text, re.IGNORECASE
+                )
                 if match:
                     min_dmg = int(match.group(1))
                     max_dmg = int(match.group(2))
                     dmg_type = match.group(3).lower()
 
-                    effects[f'added_{dmg_type}_min'] = min_dmg
-                    effects[f'added_{dmg_type}_max'] = max_dmg
+                    effects[f"added_{dmg_type}_min"] = min_dmg
+                    effects[f"added_{dmg_type}_max"] = max_dmg
 
             # Special mechanics
-            if 'chain' in text.lower():
-                effects['grants_chain'] = True
-            if 'fork' in text.lower():
-                effects['grants_fork'] = True
-            if 'pierce' in text.lower():
-                effects['grants_pierce'] = True
-            if 'culling strike' in text.lower():
-                effects['grants_culling'] = True
+            if "chain" in text.lower():
+                effects["grants_chain"] = True
+            if "fork" in text.lower():
+                effects["grants_fork"] = True
+            if "pierce" in text.lower():
+                effects["grants_pierce"] = True
+            if "culling strike" in text.lower():
+                effects["grants_culling"] = True
 
         return effects
 
@@ -292,7 +305,7 @@ class PoE2DBSupportScraper:
         text = soup.get_text()
 
         # Look for "Spirit Cost: X"
-        match = re.search(r'spirit\s+cost:?\s*(\d+)', text, re.IGNORECASE)
+        match = re.search(r"spirit\s+cost:?\s*(\d+)", text, re.IGNORECASE)
         if match:
             return int(match.group(1))
 
@@ -303,7 +316,7 @@ class PoE2DBSupportScraper:
         text = soup.get_text()
 
         # Look for mana multiplier
-        match = re.search(r'(\d+)%\s+(?:of\s+)?mana\s+(?:cost|multiplier)', text, re.IGNORECASE)
+        match = re.search(r"(\d+)%\s+(?:of\s+)?mana\s+(?:cost|multiplier)", text, re.IGNORECASE)
         if match:
             return float(match.group(1))
 
@@ -313,7 +326,7 @@ class PoE2DBSupportScraper:
     def _extract_quality_bonus(self, soup: BeautifulSoup) -> Optional[str]:
         """Extract quality bonus description"""
         # Look for quality section
-        quality_section = soup.find('div', class_='quality')
+        quality_section = soup.find("div", class_="quality")
         if quality_section:
             return quality_section.get_text(strip=True)
 
@@ -324,27 +337,27 @@ class PoE2DBSupportScraper:
         reqs = {}
 
         # Look for requirement section
-        req_section = soup.find('div', class_='requirements')
+        req_section = soup.find("div", class_="requirements")
         if req_section:
             text = req_section.get_text()
 
             # Level
-            level_match = re.search(r'level:?\s*(\d+)', text, re.IGNORECASE)
+            level_match = re.search(r"level:?\s*(\d+)", text, re.IGNORECASE)
             if level_match:
-                reqs['level'] = int(level_match.group(1))
+                reqs["level"] = int(level_match.group(1))
 
             # Str/Dex/Int
-            str_match = re.search(r'str(?:ength)?:?\s*(\d+)', text, re.IGNORECASE)
+            str_match = re.search(r"str(?:ength)?:?\s*(\d+)", text, re.IGNORECASE)
             if str_match:
-                reqs['str'] = int(str_match.group(1))
+                reqs["str"] = int(str_match.group(1))
 
-            dex_match = re.search(r'dex(?:terity)?:?\s*(\d+)', text, re.IGNORECASE)
+            dex_match = re.search(r"dex(?:terity)?:?\s*(\d+)", text, re.IGNORECASE)
             if dex_match:
-                reqs['dex'] = int(dex_match.group(1))
+                reqs["dex"] = int(dex_match.group(1))
 
-            int_match = re.search(r'int(?:elligence)?:?\s*(\d+)', text, re.IGNORECASE)
+            int_match = re.search(r"int(?:elligence)?:?\s*(\d+)", text, re.IGNORECASE)
             if int_match:
-                reqs['int'] = int(int_match.group(1))
+                reqs["int"] = int(int_match.group(1))
 
         return reqs
 
@@ -353,22 +366,22 @@ class PoE2DBSupportScraper:
         compatible = []
 
         # Look in description for "Supports X skills"
-        description = soup.find('div', class_='description')
+        description = soup.find("div", class_="description")
         if description:
             text = description.get_text()
 
-            if 'supports spell' in text.lower():
-                compatible.append('spell')
-            if 'supports attack' in text.lower():
-                compatible.append('attack')
-            if 'supports projectile' in text.lower():
-                compatible.append('projectile')
-            if 'supports melee' in text.lower():
-                compatible.append('melee')
-            if 'supports area' in text.lower():
-                compatible.append('aoe')
-            if 'supports minion' in text.lower():
-                compatible.append('minion')
+            if "supports spell" in text.lower():
+                compatible.append("spell")
+            if "supports attack" in text.lower():
+                compatible.append("attack")
+            if "supports projectile" in text.lower():
+                compatible.append("projectile")
+            if "supports melee" in text.lower():
+                compatible.append("melee")
+            if "supports area" in text.lower():
+                compatible.append("aoe")
+            if "supports minion" in text.lower():
+                compatible.append("minion")
 
         return compatible
 
@@ -377,7 +390,7 @@ class PoE2DBSupportScraper:
         progression = {}
 
         # Look for level table
-        level_table = soup.find('table', class_='level')
+        level_table = soup.find("table", class_="level")
         if level_table:
             # This is complex and would need detailed parsing
             # For now, we'll skip this and focus on max level stats
@@ -388,24 +401,24 @@ class PoE2DBSupportScraper:
     def _normalize_id(self, name: str) -> str:
         """Convert gem name to normalized ID"""
         # Remove tier suffix
-        name = re.sub(r'\s+[IVX]+$', '', name)
+        name = re.sub(r"\s+[IVX]+$", "", name)
         # Convert to lowercase, replace spaces
-        return name.lower().replace(' ', '_').replace('-', '_')
+        return name.lower().replace(" ", "_").replace("-", "_")
 
     async def save_to_json(self, output_path: Path):
         """Save scraped data to JSON file"""
         output = {
-            'metadata': {
-                'game': 'Path of Exile 2',
-                'scraped_at': datetime.utcnow().isoformat(),
-                'total_supports': len(self.supports),
-                'source': 'poe2db.tw',
-                'scraper_version': '1.0'
+            "metadata": {
+                "game": "Path of Exile 2",
+                "scraped_at": datetime.utcnow().isoformat(),
+                "total_supports": len(self.supports),
+                "source": "poe2db.tw",
+                "scraper_version": "1.0",
             },
-            'support_gems': self.supports
+            "support_gems": self.supports,
         }
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(output, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Saved {len(self.supports)} supports to {output_path}")
@@ -417,9 +430,9 @@ class PoE2DBSupportScraper:
 
 async def main():
     """Main scraping function"""
-    print("="*80)
+    print("=" * 80)
     print("poe2db.tw Support Gem Scraper")
-    print("="*80)
+    print("=" * 80)
     print()
 
     scraper = PoE2DBSupportScraper()
@@ -434,9 +447,9 @@ async def main():
             await scraper.save_to_json(output_file)
 
             print()
-            print("="*80)
+            print("=" * 80)
             print("Scraping Complete!")
-            print("="*80)
+            print("=" * 80)
             print(f"Total supports scraped: {len(supports)}")
             print(f"Output file: {output_file}")
             print()
@@ -448,9 +461,11 @@ async def main():
                 print(f"   Type: {gem_data['type']}")
                 print(f"   Tier: {gem_data.get('tier', 'N/A')}")
                 print(f"   Tags: {', '.join(gem_data['tags'])}")
-                effects = gem_data.get('effects', {})
+                effects = gem_data.get("effects", {})
                 if effects:
-                    print(f"   Effects: {', '.join(f'{k}={v}' for k, v in list(effects.items())[:3])}")
+                    print(
+                        f"   Effects: {', '.join(f'{k}={v}' for k, v in list(effects.items())[:3])}"
+                    )
                 print()
 
         else:

@@ -60,6 +60,7 @@ from src.parsers.specifications.mods_spec import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_row(
     *,
     size: int = MOD_ROW_SIZE,
@@ -82,7 +83,7 @@ def make_row(
     buf = bytearray(size)
     struct.pack_into("<Q", buf, 0, mod_id_ptr)
     struct.pack_into("<H", buf, 8, hash_value)
-    struct.pack_into("<Q", buf, 10, type_key_low)         # low 8 of 16-byte key
+    struct.pack_into("<Q", buf, 10, type_key_low)  # low 8 of 16-byte key
     # offsets 18..25 (high 8 of type_key) left zero
     struct.pack_into("<i", buf, 26, level)
     for i, key in enumerate(stat_keys):
@@ -99,6 +100,7 @@ def make_row(
 # ---------------------------------------------------------------------------
 # Enum values
 # ---------------------------------------------------------------------------
+
 
 def test_generation_type_values():
     """The four documented generation types — these are wire values from the
@@ -118,6 +120,7 @@ def test_domain_flag_values():
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
+
 
 def test_row_size_constants():
     """Documented pre-0.5 and 0.5 row sizes — both must hold or extractors will
@@ -170,6 +173,7 @@ def test_null_key_marker():
 # StatEntry
 # ---------------------------------------------------------------------------
 
+
 def test_stat_entry_is_empty_for_zero_key():
     assert StatEntry(stat_key=0, stat_key_high=0, min_value=0, max_value=0).is_empty
 
@@ -186,12 +190,16 @@ def test_stat_entry_stat_index():
     assert StatEntry(stat_key=42, stat_key_high=0, min_value=0, max_value=0).stat_index == 42
     # Empty slots return 0
     assert StatEntry(stat_key=0, stat_key_high=0, min_value=0, max_value=0).stat_index == 0
-    assert StatEntry(stat_key=NULL_KEY_MARKER, stat_key_high=0, min_value=0, max_value=0).stat_index == 0
+    assert (
+        StatEntry(stat_key=NULL_KEY_MARKER, stat_key_high=0, min_value=0, max_value=0).stat_index
+        == 0
+    )
 
 
 # ---------------------------------------------------------------------------
 # ModRecord properties
 # ---------------------------------------------------------------------------
+
 
 def _make_record(gen_type: int, stats: list = None) -> ModRecord:
     return ModRecord(
@@ -207,12 +215,15 @@ def _make_record(gen_type: int, stats: list = None) -> ModRecord:
     )
 
 
-@pytest.mark.parametrize("gen_type, prop", [
-    (GenerationType.PREFIX,    "is_prefix"),
-    (GenerationType.SUFFIX,    "is_suffix"),
-    (GenerationType.IMPLICIT,  "is_implicit"),
-    (GenerationType.CORRUPTED, "is_corrupted"),
-])
+@pytest.mark.parametrize(
+    "gen_type, prop",
+    [
+        (GenerationType.PREFIX, "is_prefix"),
+        (GenerationType.SUFFIX, "is_suffix"),
+        (GenerationType.IMPLICIT, "is_implicit"),
+        (GenerationType.CORRUPTED, "is_corrupted"),
+    ],
+)
 def test_mod_record_generation_props_set_for_matching_type(gen_type, prop):
     rec = _make_record(int(gen_type))
     assert getattr(rec, prop) is True
@@ -235,7 +246,7 @@ def test_mod_record_generation_type_name_unknown():
 def test_mod_record_active_stats_filters_empty():
     stats = [
         StatEntry(stat_key=10, stat_key_high=0, min_value=1, max_value=3),
-        StatEntry(stat_key=0,  stat_key_high=0, min_value=0, max_value=0),  # empty
+        StatEntry(stat_key=0, stat_key_high=0, min_value=0, max_value=0),  # empty
         StatEntry(stat_key=NULL_KEY_MARKER, stat_key_high=0, min_value=0, max_value=0),  # empty
         StatEntry(stat_key=42, stat_key_high=0, min_value=5, max_value=7),
     ]
@@ -250,6 +261,7 @@ def test_mod_record_active_stats_filters_empty():
 # ---------------------------------------------------------------------------
 # read_key / read_interval
 # ---------------------------------------------------------------------------
+
 
 def test_read_key_unpacks_two_uint64():
     buf = struct.pack("<QQ", 0xDEADBEEF, 0xCAFEBABE)
@@ -272,7 +284,7 @@ def test_read_interval_unpacks_two_int32():
 
 
 def test_read_interval_respects_offset():
-    buf = b"\xFF" * 8 + struct.pack("<ii", 0, 42)
+    buf = b"\xff" * 8 + struct.pack("<ii", 0, 42)
     mn, mx = read_interval(buf, 8)
     assert (mn, mx) == (0, 42)
 
@@ -280,6 +292,7 @@ def test_read_interval_respects_offset():
 # ---------------------------------------------------------------------------
 # parse_mod_row
 # ---------------------------------------------------------------------------
+
 
 def test_parse_mod_row_rejects_truncated():
     """Anything shorter than MOD_ROW_SIZE must raise — silent acceptance would
@@ -359,14 +372,18 @@ def test_parse_mod_row_handles_negative_value_range():
 # extract_mod_family
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("mod_id, expected", [
-    ("Strength5", ("Strength", 5)),
-    ("Strength1", ("Strength", 1)),
-    ("LifeRegeneration12", ("LifeRegeneration", 12)),
-    # Mods without trailing digits → tier 0, full ID as family
-    ("LocalIncreasedPhysicalDamagePercent", ("LocalIncreasedPhysicalDamagePercent", 0)),
-    ("", ("", 0)),
-])
+
+@pytest.mark.parametrize(
+    "mod_id, expected",
+    [
+        ("Strength5", ("Strength", 5)),
+        ("Strength1", ("Strength", 1)),
+        ("LifeRegeneration12", ("LifeRegeneration", 12)),
+        # Mods without trailing digits → tier 0, full ID as family
+        ("LocalIncreasedPhysicalDamagePercent", ("LocalIncreasedPhysicalDamagePercent", 0)),
+        ("", ("", 0)),
+    ],
+)
 def test_extract_mod_family(mod_id, expected):
     assert extract_mod_family(mod_id) == expected
 
@@ -374,6 +391,7 @@ def test_extract_mod_family(mod_id, expected):
 # ---------------------------------------------------------------------------
 # Validation functions
 # ---------------------------------------------------------------------------
+
 
 def test_validate_stat_key_empty_slots_valid():
     assert validate_stat_key(0)
@@ -390,24 +408,31 @@ def test_validate_stat_key_out_of_range():
     assert not validate_stat_key(24156)
 
 
-@pytest.mark.parametrize("gen_type, expected", [
-    (1, True),   # PREFIX
-    (2, True),   # SUFFIX
-    (3, True),   # IMPLICIT
-    (4, False),  # no such enum
-    (5, True),   # CORRUPTED
-    (0, False),
-    (999, False),
-])
+@pytest.mark.parametrize(
+    "gen_type, expected",
+    [
+        (1, True),  # PREFIX
+        (2, True),  # SUFFIX
+        (3, True),  # IMPLICIT
+        (4, False),  # no such enum
+        (5, True),  # CORRUPTED
+        (0, False),
+        (999, False),
+    ],
+)
 def test_validate_generation_type(gen_type, expected):
     assert validate_generation_type(gen_type) is expected
 
 
 def test_validate_mod_record_clean_record_has_no_errors():
     rec = ModRecord(
-        row_index=0, mod_id_ptr=0, hash_value=0, type_key=0,
+        row_index=0,
+        mod_id_ptr=0,
+        hash_value=0,
+        type_key=0,
         level_requirement=85,
-        domain=0, name_ptr=0,
+        domain=0,
+        name_ptr=0,
         generation_type=int(GenerationType.PREFIX),
         stats=[StatEntry(stat_key=42, stat_key_high=0, min_value=1, max_value=5)],
     )
@@ -416,8 +441,13 @@ def test_validate_mod_record_clean_record_has_no_errors():
 
 def test_validate_mod_record_flags_bad_generation_type():
     rec = ModRecord(
-        row_index=0, mod_id_ptr=0, hash_value=0, type_key=0,
-        level_requirement=10, domain=0, name_ptr=0,
+        row_index=0,
+        mod_id_ptr=0,
+        hash_value=0,
+        type_key=0,
+        level_requirement=10,
+        domain=0,
+        name_ptr=0,
         generation_type=999,
         stats=[],
     )
@@ -427,9 +457,13 @@ def test_validate_mod_record_flags_bad_generation_type():
 
 def test_validate_mod_record_flags_bad_level_requirement():
     rec = ModRecord(
-        row_index=0, mod_id_ptr=0, hash_value=0, type_key=0,
+        row_index=0,
+        mod_id_ptr=0,
+        hash_value=0,
+        type_key=0,
         level_requirement=150,  # > 100
-        domain=0, name_ptr=0,
+        domain=0,
+        name_ptr=0,
         generation_type=int(GenerationType.PREFIX),
         stats=[],
     )
@@ -439,8 +473,13 @@ def test_validate_mod_record_flags_bad_level_requirement():
 
 def test_validate_mod_record_flags_bad_stat_key():
     rec = ModRecord(
-        row_index=0, mod_id_ptr=0, hash_value=0, type_key=0,
-        level_requirement=10, domain=0, name_ptr=0,
+        row_index=0,
+        mod_id_ptr=0,
+        hash_value=0,
+        type_key=0,
+        level_requirement=10,
+        domain=0,
+        name_ptr=0,
         generation_type=int(GenerationType.PREFIX),
         stats=[StatEntry(stat_key=99999, stat_key_high=0, min_value=0, max_value=0)],
     )
@@ -452,10 +491,11 @@ def test_validate_mod_record_flags_bad_stat_key():
 # SpawnTags parsing (Bug 3 — item-class eligibility, 2026-06-16)
 # ---------------------------------------------------------------------------
 
+
 def test_read_list_header_unpacks_count_and_offset():
     buf = bytearray(32)
-    struct.pack_into("<Q", buf, 0, 16)     # count
-    struct.pack_into("<Q", buf, 8, 74)     # data offset
+    struct.pack_into("<Q", buf, 0, 16)  # count
+    struct.pack_into("<Q", buf, 8, 74)  # data offset
     count, off = read_list_header(buf, 0)
     assert count == 16
     assert off == 74
@@ -477,8 +517,8 @@ def _build_mod_with_spawn_tags(tag_indices):
         keys += struct.pack("<Q", ti) + struct.pack("<Q", 0)
     data_section_start = 1000
     full = bytearray(data_section_start) + keys
-    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET, len(tag_indices))   # count
-    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET + 8, 0)              # data offset
+    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET, len(tag_indices))  # count
+    struct.pack_into("<Q", row, SPAWN_TAGS_LIST_OFFSET + 8, 0)  # data offset
     return bytes(row), bytes(full), data_section_start
 
 

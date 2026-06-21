@@ -15,6 +15,7 @@ from typing import Optional
 # Skip all tests if PoB client cannot be imported
 try:
     from src.pob.client import PoBClient, PoBConnectionError, PoBCommandError
+
     POB_CLIENT_AVAILABLE = True
 except ImportError:
     POB_CLIENT_AVAILABLE = False
@@ -45,8 +46,7 @@ def pob_is_running() -> bool:
 
 # Skip decorator for tests that require PoB
 pob_required = pytest.mark.skipif(
-    not pob_is_running(),
-    reason="Path of Building is not running or MCP Bridge addon not installed"
+    not pob_is_running(), reason="Path of Building is not running or MCP Bridge addon not installed"
 )
 
 

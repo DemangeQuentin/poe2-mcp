@@ -8,6 +8,7 @@ Two layers:
   - get_available_mods handler `item_class` filtering — skipped when the real
     data/game/mods/spawn_tags.json is absent (older checkout / no data release).
 """
+
 from __future__ import annotations
 
 import json
@@ -27,6 +28,7 @@ from src import mod_data
 # ---------------------------------------------------------------------------
 # mod_data loaders (synthetic data dir)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def fake_data_dir(tmp_path):
@@ -64,12 +66,15 @@ def test_available_spawn_tags_is_sorted_union(fake_data_dir):
     assert "wand" in tags and "amulet" in tags and "staff" in tags
 
 
-@pytest.mark.parametrize("raw, expected", [
-    ("Wand", "wand"),
-    ("Body Armour", "body_armour"),
-    ("  Ring  ", "ring"),
-    ("one-hand-sword", "one_hand_sword"),
-])
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("Wand", "wand"),
+        ("Body Armour", "body_armour"),
+        ("  Ring  ", "ring"),
+        ("one-hand-sword", "one_hand_sword"),
+    ],
+)
 def test_normalize_item_class(raw, expected):
     assert mod_data.normalize_item_class(raw) == expected
 
@@ -85,6 +90,7 @@ _HAS_DATA = REAL_SPAWN_TAGS.exists()
 @pytest_asyncio.fixture(scope="module")
 async def mcp():
     from src.mcp_server import PoE2BuildOptimizerMCP
+
     instance = PoE2BuildOptimizerMCP()
     await instance.initialize()
     return instance
@@ -128,9 +134,7 @@ async def test_get_available_mods_unknown_class_suggests(mcp):
 @pytest.mark.skipif(not _HAS_DATA, reason="spawn_tags.json not present")
 async def test_get_available_mods_no_filter_unchanged(mcp):
     """Without item_class the tool behaves as before (all item types)."""
-    r = await mcp._handle_get_available_mods(
-        {"generation_type": "SUFFIX", "limit": 5}
-    )
+    r = await mcp._handle_get_available_mods({"generation_type": "SUFFIX", "limit": 5})
     text = r[0].text
     assert "Item class filter" not in text
     assert "Available SUFFIX Mods" in text

@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class DamageType(Enum):
     """Damage type enumeration for stun bonus calculation."""
+
     PHYSICAL = "physical"
     FIRE = "fire"
     COLD = "cold"
@@ -32,6 +33,7 @@ class DamageType(Enum):
 
 class AttackType(Enum):
     """Attack type enumeration for stun bonus calculation."""
+
     MELEE = "melee"
     RANGED = "ranged"
     SPELL = "spell"
@@ -39,6 +41,7 @@ class AttackType(Enum):
 
 class StunState(Enum):
     """Current stun state of an entity."""
+
     NORMAL = "normal"
     PRIMED = "primed"  # 50-99% Heavy Stun meter
     HEAVY_STUNNED = "heavy_stunned"
@@ -58,6 +61,7 @@ class StunModifiers:
         minimum_stun_chance: Minimum chance to stun (overrides 15% default)
         immune_to_stun: Complete immunity to stuns
     """
+
     increased_stun_chance: float = 0.0
     more_stun_chance: float = 1.0
     increased_stun_threshold: float = 1.0
@@ -81,6 +85,7 @@ class LightStunResult:
         damage: Damage dealt for this calculation
         target_max_life: Target's maximum life
     """
+
     base_chance: float
     damage_type_bonus: float
     attack_type_bonus: float
@@ -113,6 +118,7 @@ class HeavyStunMeter:
         hits_received: Number of hits contributing to buildup
         hit_history: History of hits and their buildup contributions
     """
+
     current_buildup: float = 0.0
     max_buildup: float = 0.0
     buildup_percentage: float = 0.0
@@ -168,6 +174,7 @@ class HeavyStunResult:
         triggered_crushing_blow: Whether this hit triggered Crushing Blow (primed + would stun)
         hits_to_heavy_stun: Estimated hits needed to reach Heavy Stun with similar damage
     """
+
     buildup_added: float
     total_buildup: float
     meter: HeavyStunMeter
@@ -205,6 +212,7 @@ class CompleteStunResult:
         damage_type: Type of damage dealt
         attack_type: Type of attack used
     """
+
     light_stun: LightStunResult
     heavy_stun: HeavyStunResult
     damage: float
@@ -244,7 +252,7 @@ class StunCalculator:
         target_max_life: float,
         damage_type: DamageType,
         attack_type: AttackType,
-        modifiers: Optional[StunModifiers] = None
+        modifiers: Optional[StunModifiers] = None,
     ) -> LightStunResult:
         """
         Calculate Light Stun chance for a hit.
@@ -286,7 +294,7 @@ class StunCalculator:
                 final_chance=0.0,
                 will_stun=False,
                 damage=damage,
-                target_max_life=target_max_life
+                target_max_life=target_max_life,
             )
 
         # Calculate base chance
@@ -294,34 +302,25 @@ class StunCalculator:
 
         # Apply damage type bonus
         damage_type_bonus = (
-            self.PHYSICAL_DAMAGE_BONUS
-            if damage_type == DamageType.PHYSICAL
-            else 1.0
+            self.PHYSICAL_DAMAGE_BONUS if damage_type == DamageType.PHYSICAL else 1.0
         )
 
         # Apply attack type bonus
-        attack_type_bonus = (
-            self.MELEE_ATTACK_BONUS
-            if attack_type == AttackType.MELEE
-            else 1.0
-        )
+        attack_type_bonus = self.MELEE_ATTACK_BONUS if attack_type == AttackType.MELEE else 1.0
 
         # Calculate chance with bonuses
         chance = base_chance * damage_type_bonus * attack_type_bonus
 
         # Apply increased modifier (additive)
         if modifiers.increased_stun_chance != 0:
-            chance *= (1.0 + modifiers.increased_stun_chance / 100.0)
+            chance *= 1.0 + modifiers.increased_stun_chance / 100.0
 
         # Apply more modifier (multiplicative)
         chance *= modifiers.more_stun_chance
 
         # Apply stun threshold modifiers (affects the "effective damage")
         # Reduced threshold = easier to stun = higher effective chance
-        threshold_multiplier = (
-            modifiers.increased_stun_threshold *
-            modifiers.reduced_stun_threshold
-        )
+        threshold_multiplier = modifiers.increased_stun_threshold * modifiers.reduced_stun_threshold
         if threshold_multiplier != 1.0:
             # Inverse relationship: lower threshold = higher chance
             chance /= threshold_multiplier
@@ -347,7 +346,7 @@ class StunCalculator:
             final_chance=final_chance,
             will_stun=will_stun,
             damage=damage,
-            target_max_life=target_max_life
+            target_max_life=target_max_life,
         )
 
         logger.debug(f"Light Stun calculated: {result}")
@@ -361,7 +360,7 @@ class StunCalculator:
         attack_type: AttackType,
         entity_id: str = "default",
         modifiers: Optional[StunModifiers] = None,
-        light_stun_would_occur: bool = False
+        light_stun_would_occur: bool = False,
     ) -> HeavyStunResult:
         """
         Calculate Heavy Stun buildup for a hit and update the entity's meter.
@@ -394,9 +393,7 @@ class StunCalculator:
 
         # Get or create meter for this entity
         if entity_id not in self._entity_meters:
-            self._entity_meters[entity_id] = HeavyStunMeter(
-                max_buildup=target_max_life
-            )
+            self._entity_meters[entity_id] = HeavyStunMeter(max_buildup=target_max_life)
             logger.debug(f"Created Heavy Stun meter for entity: {entity_id}")
 
         meter = self._entity_meters[entity_id]
@@ -407,7 +404,8 @@ class StunCalculator:
             meter.max_buildup = target_max_life
             meter.buildup_percentage = (
                 (meter.current_buildup / meter.max_buildup * 100.0)
-                if meter.max_buildup > 0 else 0.0
+                if meter.max_buildup > 0
+                else 0.0
             )
             logger.debug(
                 f"Updated max buildup for {entity_id}: "
@@ -426,7 +424,7 @@ class StunCalculator:
                 meter=meter,
                 triggered_heavy_stun=False,
                 triggered_crushing_blow=False,
-                hits_to_heavy_stun=float('inf')
+                hits_to_heavy_stun=float("inf"),
             )
 
         # Check Primed state before adding buildup (for Crushing Blow)
@@ -437,24 +435,18 @@ class StunCalculator:
 
         # Apply damage type bonus
         damage_type_bonus = (
-            self.PHYSICAL_DAMAGE_BONUS
-            if damage_type == DamageType.PHYSICAL
-            else 1.0
+            self.PHYSICAL_DAMAGE_BONUS if damage_type == DamageType.PHYSICAL else 1.0
         )
 
         # Apply attack type bonus
-        attack_type_bonus = (
-            self.MELEE_ATTACK_BONUS
-            if attack_type == AttackType.MELEE
-            else 1.0
-        )
+        attack_type_bonus = self.MELEE_ATTACK_BONUS if attack_type == AttackType.MELEE else 1.0
 
         # Calculate buildup with bonuses
         buildup = base_buildup * damage_type_bonus * attack_type_bonus
 
         # Apply increased modifier (additive)
         if modifiers.increased_stun_chance != 0:
-            buildup *= (1.0 + modifiers.increased_stun_chance / 100.0)
+            buildup *= 1.0 + modifiers.increased_stun_chance / 100.0
 
         # Apply more modifier (multiplicative)
         buildup *= modifiers.more_stun_chance
@@ -463,26 +455,24 @@ class StunCalculator:
         buildup *= modifiers.stun_buildup_multiplier
 
         # Apply stun threshold modifiers
-        threshold_multiplier = (
-            modifiers.increased_stun_threshold *
-            modifiers.reduced_stun_threshold
-        )
+        threshold_multiplier = modifiers.increased_stun_threshold * modifiers.reduced_stun_threshold
         if threshold_multiplier != 1.0:
             buildup /= threshold_multiplier
 
         # Add to meter
         meter.current_buildup += buildup
         meter.buildup_percentage = (
-            (meter.current_buildup / meter.max_buildup * 100.0)
-            if meter.max_buildup > 0 else 0.0
+            (meter.current_buildup / meter.max_buildup * 100.0) if meter.max_buildup > 0 else 0.0
         )
         meter.hits_received += 1
-        meter.hit_history.append({
-            'damage': damage,
-            'buildup': buildup,
-            'total_buildup': meter.current_buildup,
-            'percentage': meter.buildup_percentage
-        })
+        meter.hit_history.append(
+            {
+                "damage": damage,
+                "buildup": buildup,
+                "total_buildup": meter.current_buildup,
+                "percentage": meter.buildup_percentage,
+            }
+        )
 
         # Update state
         meter.update_state()
@@ -500,7 +490,7 @@ class StunCalculator:
         elif meter.is_heavy_stunned():
             hits_to_heavy_stun = 0.0
         else:
-            hits_to_heavy_stun = float('inf')
+            hits_to_heavy_stun = float("inf")
 
         result = HeavyStunResult(
             buildup_added=buildup,
@@ -508,7 +498,7 @@ class StunCalculator:
             meter=meter,
             triggered_heavy_stun=triggered_heavy_stun,
             triggered_crushing_blow=triggered_crushing_blow,
-            hits_to_heavy_stun=hits_to_heavy_stun
+            hits_to_heavy_stun=hits_to_heavy_stun,
         )
 
         if triggered_heavy_stun:
@@ -526,7 +516,7 @@ class StunCalculator:
         damage_type: DamageType,
         attack_type: AttackType,
         entity_id: str = "default",
-        modifiers: Optional[StunModifiers] = None
+        modifiers: Optional[StunModifiers] = None,
     ) -> CompleteStunResult:
         """
         Calculate both Light Stun and Heavy Stun for a single hit.
@@ -551,7 +541,7 @@ class StunCalculator:
             target_max_life=target_max_life,
             damage_type=damage_type,
             attack_type=attack_type,
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         # Calculate Heavy Stun with Light Stun result
@@ -562,7 +552,7 @@ class StunCalculator:
             attack_type=attack_type,
             entity_id=entity_id,
             modifiers=modifiers,
-            light_stun_would_occur=light_stun.will_stun
+            light_stun_would_occur=light_stun.will_stun,
         )
 
         result = CompleteStunResult(
@@ -571,7 +561,7 @@ class StunCalculator:
             damage=damage,
             target_max_life=target_max_life,
             damage_type=damage_type,
-            attack_type=attack_type
+            attack_type=attack_type,
         )
 
         logger.debug(f"Complete stun calculated for entity {entity_id}")
@@ -632,7 +622,7 @@ class StunCalculator:
         target_max_life: float,
         damage_type: DamageType,
         attack_type: AttackType,
-        modifiers: Optional[StunModifiers] = None
+        modifiers: Optional[StunModifiers] = None,
     ) -> Tuple[float, float]:
         """
         Calculate theoretical hits needed for both Light and Heavy stun.
@@ -655,12 +645,12 @@ class StunCalculator:
             target_max_life=target_max_life,
             damage_type=damage_type,
             attack_type=attack_type,
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         # Calculate hits needed to reach 15% threshold
         if light_result.base_chance == 0:
-            hits_for_light = float('inf')
+            hits_for_light = float("inf")
         else:
             # We need final_chance to be >= 15%
             # final_chance = base_chance × bonuses
@@ -668,12 +658,12 @@ class StunCalculator:
             # We need: (damage × hits / life) × 100 × bonuses >= 15
             # hits = (15 / (base_per_hit × bonuses))
             chance_per_hit = (
-                light_result.base_chance *
-                light_result.damage_type_bonus *
-                light_result.attack_type_bonus
+                light_result.base_chance
+                * light_result.damage_type_bonus
+                * light_result.attack_type_bonus
             )
             if modifiers.increased_stun_chance != 0:
-                chance_per_hit *= (1.0 + modifiers.increased_stun_chance / 100.0)
+                chance_per_hit *= 1.0 + modifiers.increased_stun_chance / 100.0
             chance_per_hit *= modifiers.more_stun_chance
 
             minimum_threshold = (
@@ -687,32 +677,23 @@ class StunCalculator:
             elif light_result.base_chance > 0:
                 hits_for_light = minimum_threshold / chance_per_hit
             else:
-                hits_for_light = float('inf')
+                hits_for_light = float("inf")
 
         # Calculate Heavy Stun buildup per hit
         base_buildup = damage_per_hit
         damage_type_bonus = (
-            self.PHYSICAL_DAMAGE_BONUS
-            if damage_type == DamageType.PHYSICAL
-            else 1.0
+            self.PHYSICAL_DAMAGE_BONUS if damage_type == DamageType.PHYSICAL else 1.0
         )
-        attack_type_bonus = (
-            self.MELEE_ATTACK_BONUS
-            if attack_type == AttackType.MELEE
-            else 1.0
-        )
+        attack_type_bonus = self.MELEE_ATTACK_BONUS if attack_type == AttackType.MELEE else 1.0
 
         buildup_per_hit = base_buildup * damage_type_bonus * attack_type_bonus
 
         if modifiers.increased_stun_chance != 0:
-            buildup_per_hit *= (1.0 + modifiers.increased_stun_chance / 100.0)
+            buildup_per_hit *= 1.0 + modifiers.increased_stun_chance / 100.0
         buildup_per_hit *= modifiers.more_stun_chance
         buildup_per_hit *= modifiers.stun_buildup_multiplier
 
-        threshold_multiplier = (
-            modifiers.increased_stun_threshold *
-            modifiers.reduced_stun_threshold
-        )
+        threshold_multiplier = modifiers.increased_stun_threshold * modifiers.reduced_stun_threshold
         if threshold_multiplier != 1.0:
             buildup_per_hit /= threshold_multiplier
 
@@ -720,21 +701,16 @@ class StunCalculator:
         if buildup_per_hit > 0:
             hits_for_heavy = target_max_life / buildup_per_hit
         else:
-            hits_for_heavy = float('inf')
+            hits_for_heavy = float("inf")
 
-        logger.debug(
-            f"Hits to stun: Light={hits_for_light:.2f}, Heavy={hits_for_heavy:.2f}"
-        )
+        logger.debug(f"Hits to stun: Light={hits_for_light:.2f}, Heavy={hits_for_heavy:.2f}")
 
         return (hits_for_light, hits_for_heavy)
 
 
 # Convenience function for quick calculations
 def quick_stun_calculation(
-    damage: float,
-    target_max_life: float,
-    is_physical: bool = False,
-    is_melee: bool = False
+    damage: float, target_max_life: float, is_physical: bool = False, is_melee: bool = False
 ) -> str:
     """
     Quick stun calculation with simplified parameters.
@@ -757,7 +733,7 @@ def quick_stun_calculation(
         damage=damage,
         target_max_life=target_max_life,
         damage_type=damage_type,
-        attack_type=attack_type
+        attack_type=attack_type,
     )
 
     return str(result)
@@ -766,8 +742,7 @@ def quick_stun_calculation(
 if __name__ == "__main__":
     # Configure logging for demonstration
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     print("=" * 80)
@@ -784,7 +759,7 @@ if __name__ == "__main__":
         target_max_life=5000,
         damage_type=DamageType.PHYSICAL,
         attack_type=AttackType.MELEE,
-        entity_id="enemy1"
+        entity_id="enemy1",
     )
     print(result1)
 
@@ -797,7 +772,7 @@ if __name__ == "__main__":
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
             attack_type=AttackType.MELEE,
-            entity_id="enemy2"
+            entity_id="enemy2",
         )
         print(f"\nHit {i+1}:")
         print(result)
@@ -810,7 +785,7 @@ if __name__ == "__main__":
         target_max_life=5000,
         damage_type=DamageType.FIRE,
         attack_type=AttackType.SPELL,
-        entity_id="enemy3"
+        entity_id="enemy3",
     )
     print(result3)
 
@@ -824,7 +799,7 @@ if __name__ == "__main__":
         damage_type=DamageType.PHYSICAL,
         attack_type=AttackType.MELEE,
         entity_id="enemy4",
-        modifiers=modifiers
+        modifiers=modifiers,
     )
     print(result4)
 
@@ -835,7 +810,7 @@ if __name__ == "__main__":
         damage_per_hit=500,
         target_max_life=5000,
         damage_type=DamageType.PHYSICAL,
-        attack_type=AttackType.MELEE
+        attack_type=AttackType.MELEE,
     )
     print(f"Hits for Light Stun threshold: {hits_light:.2f}")
     print(f"Hits for Heavy Stun: {hits_heavy:.2f}")

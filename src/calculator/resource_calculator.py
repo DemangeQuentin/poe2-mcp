@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 class ResourceType(Enum):
     """Enumeration of resource types in PoE2."""
+
     LIFE = "life"
     MANA = "mana"
     ENERGY_SHIELD = "energy_shield"
@@ -35,6 +36,7 @@ class ResourceType(Enum):
 
 class ReservationType(Enum):
     """Enumeration of reservation types in PoE2."""
+
     MANA_FLAT = "mana_flat"
     MANA_PERCENT = "mana_percent"
     LIFE_FLAT = "life_flat"
@@ -45,6 +47,7 @@ class ReservationType(Enum):
 @dataclass
 class AttributeStats:
     """Character attribute statistics."""
+
     strength: int = 0
     dexterity: int = 0
     intelligence: int = 0
@@ -65,6 +68,7 @@ class ResourceModifiers:
         increased_percent: Additive increased % (e.g., 120% increased life)
         more_multipliers: List of multiplicative more % (e.g., [1.15, 1.10] for 15% more and 10% more)
     """
+
     flat_bonus: float = 0.0
     increased_percent: float = 0.0
     more_multipliers: List[float] = field(default_factory=list)
@@ -87,6 +91,7 @@ class SpiritReservation:
     - Auras and buffs
     - Meta-gems that persist
     """
+
     name: str
     base_cost: int
     support_multipliers: List[float] = field(default_factory=list)
@@ -113,6 +118,7 @@ class SpiritReservation:
 @dataclass
 class ResourcePool:
     """Represents a character's resource pool (Life/Mana/ES/Spirit)."""
+
     maximum: float = 0.0
     current: float = 0.0
     reserved_flat: float = 0.0
@@ -188,10 +194,7 @@ class ResourceCalculator:
 
         logger.info(f"Initialized ResourceCalculator for level {character_level}")
 
-    def calculate_maximum_life(
-        self,
-        modifiers: Optional[ResourceModifiers] = None
-    ) -> float:
+    def calculate_maximum_life(self, modifiers: Optional[ResourceModifiers] = None) -> float:
         """
         Calculate maximum Life using PoE2 formula.
 
@@ -210,9 +213,9 @@ class ResourceCalculator:
 
         # Calculate base life
         base_life = (
-            self.BASE_LIFE_AT_LEVEL_1 +
-            (self.LIFE_PER_LEVEL * self.level) +
-            (self.LIFE_PER_STRENGTH * self.attributes.strength)
+            self.BASE_LIFE_AT_LEVEL_1
+            + (self.LIFE_PER_LEVEL * self.level)
+            + (self.LIFE_PER_STRENGTH * self.attributes.strength)
         )
 
         # Add flat bonuses
@@ -233,10 +236,7 @@ class ResourceCalculator:
 
         return round(final_life, 1)
 
-    def calculate_maximum_mana(
-        self,
-        modifiers: Optional[ResourceModifiers] = None
-    ) -> float:
+    def calculate_maximum_mana(self, modifiers: Optional[ResourceModifiers] = None) -> float:
         """
         Calculate maximum Mana using PoE2 formula.
 
@@ -255,9 +255,9 @@ class ResourceCalculator:
 
         # Calculate base mana
         base_mana = (
-            self.BASE_MANA_AT_LEVEL_1 +
-            (self.MANA_PER_LEVEL * self.level) +
-            (self.MANA_PER_INTELLIGENCE * self.attributes.intelligence)
+            self.BASE_MANA_AT_LEVEL_1
+            + (self.MANA_PER_LEVEL * self.level)
+            + (self.MANA_PER_INTELLIGENCE * self.attributes.intelligence)
         )
 
         # Add flat bonuses
@@ -282,7 +282,7 @@ class ResourceCalculator:
         self,
         maximum_mana: float,
         increased_regen_percent: float = 0.0,
-        flat_regen_per_second: float = 0.0
+        flat_regen_per_second: float = 0.0,
     ) -> float:
         """
         Calculate mana regeneration per second.
@@ -307,8 +307,7 @@ class ResourceCalculator:
         return round(final_regen, 2)
 
     def calculate_maximum_energy_shield(
-        self,
-        modifiers: Optional[ResourceModifiers] = None
+        self, modifiers: Optional[ResourceModifiers] = None
     ) -> float:
         """
         Calculate maximum Energy Shield.
@@ -346,10 +345,7 @@ class ResourceCalculator:
 
         return round(final_es, 1)
 
-    def calculate_maximum_spirit(
-        self,
-        modifiers: Optional[ResourceModifiers] = None
-    ) -> int:
+    def calculate_maximum_spirit(self, modifiers: Optional[ResourceModifiers] = None) -> int:
         """
         Calculate maximum Spirit (NEW in PoE2).
 
@@ -398,10 +394,7 @@ class ResourceCalculator:
         return final_spirit_int
 
     def add_spirit_reservation(
-        self,
-        name: str,
-        base_cost: int,
-        support_multipliers: Optional[List[float]] = None
+        self, name: str, base_cost: int, support_multipliers: Optional[List[float]] = None
     ) -> None:
         """
         Add a Spirit reservation (minion/aura/meta-gem).
@@ -415,9 +408,7 @@ class ResourceCalculator:
             support_multipliers = []
 
         reservation = SpiritReservation(
-            name=name,
-            base_cost=base_cost,
-            support_multipliers=support_multipliers
+            name=name, base_cost=base_cost, support_multipliers=support_multipliers
         )
 
         self.spirit_reservations.append(reservation)
@@ -437,9 +428,7 @@ class ResourceCalculator:
             True if removed, False if not found
         """
         initial_length = len(self.spirit_reservations)
-        self.spirit_reservations = [
-            r for r in self.spirit_reservations if r.name != name
-        ]
+        self.spirit_reservations = [r for r in self.spirit_reservations if r.name != name]
 
         removed = len(self.spirit_reservations) < initial_length
         if removed:
@@ -479,17 +468,13 @@ class ResourceCalculator:
             Total Spirit reserved
         """
         total_reserved = sum(
-            reservation.calculate_cost()
-            for reservation in self.spirit_reservations
+            reservation.calculate_cost() for reservation in self.spirit_reservations
         )
 
         logger.debug(f"Total Spirit reserved: {total_reserved}")
         return total_reserved
 
-    def calculate_spirit_available(
-        self,
-        maximum_spirit: int
-    ) -> int:
+    def calculate_spirit_available(self, maximum_spirit: int) -> int:
         """
         Calculate available Spirit after reservations.
 
@@ -503,17 +488,12 @@ class ResourceCalculator:
         available = maximum_spirit - reserved
 
         logger.debug(
-            f"Spirit: max={maximum_spirit}, "
-            f"reserved={reserved}, "
-            f"available={available}"
+            f"Spirit: max={maximum_spirit}, " f"reserved={reserved}, " f"available={available}"
         )
 
         return available
 
-    def check_spirit_overflow(
-        self,
-        maximum_spirit: int
-    ) -> Tuple[bool, int, List[str]]:
+    def check_spirit_overflow(self, maximum_spirit: int) -> Tuple[bool, int, List[str]]:
         """
         Check if Spirit reservations exceed maximum (overflow).
 
@@ -528,9 +508,7 @@ class ResourceCalculator:
         overflow_amount = abs(available) if is_overflowing else 0
 
         active_reservations = [
-            f"{r.name} ({r.calculate_cost()})"
-            for r in self.spirit_reservations
-            if r.enabled
+            f"{r.name} ({r.calculate_cost()})" for r in self.spirit_reservations if r.enabled
         ]
 
         if is_overflowing:
@@ -550,21 +528,19 @@ class ResourceCalculator:
         """
         details = []
         for reservation in self.spirit_reservations:
-            details.append({
-                'name': reservation.name,
-                'base_cost': reservation.base_cost,
-                'final_cost': reservation.calculate_cost(),
-                'support_multipliers': reservation.support_multipliers,
-                'enabled': reservation.enabled
-            })
+            details.append(
+                {
+                    "name": reservation.name,
+                    "base_cost": reservation.base_cost,
+                    "final_cost": reservation.calculate_cost(),
+                    "support_multipliers": reservation.support_multipliers,
+                    "enabled": reservation.enabled,
+                }
+            )
 
         return details
 
-    def calculate_accuracy(
-        self,
-        flat_bonus: float = 0.0,
-        increased_percent: float = 0.0
-    ) -> int:
+    def calculate_accuracy(self, flat_bonus: float = 0.0, increased_percent: float = 0.0) -> int:
         """
         Calculate Accuracy rating using PoE2 formula.
 
@@ -580,9 +556,8 @@ class ResourceCalculator:
             Accuracy rating (integer)
         """
         # Calculate base accuracy
-        base_accuracy = (
-            (self.ACCURACY_PER_LEVEL * self.level) +
-            (self.ACCURACY_PER_DEXTERITY * self.attributes.dexterity)
+        base_accuracy = (self.ACCURACY_PER_LEVEL * self.level) + (
+            self.ACCURACY_PER_DEXTERITY * self.attributes.dexterity
         )
 
         # Add flat bonus
@@ -608,18 +583,16 @@ class ResourceCalculator:
             Dictionary of attribute bonuses
         """
         return {
-            'life_from_strength': self.LIFE_PER_STRENGTH * self.attributes.strength,
-            'mana_from_intelligence': self.MANA_PER_INTELLIGENCE * self.attributes.intelligence,
-            'accuracy_from_dexterity': self.ACCURACY_PER_DEXTERITY * self.attributes.dexterity,
-            'strength': self.attributes.strength,
-            'dexterity': self.attributes.dexterity,
-            'intelligence': self.attributes.intelligence
+            "life_from_strength": self.LIFE_PER_STRENGTH * self.attributes.strength,
+            "mana_from_intelligence": self.MANA_PER_INTELLIGENCE * self.attributes.intelligence,
+            "accuracy_from_dexterity": self.ACCURACY_PER_DEXTERITY * self.attributes.dexterity,
+            "strength": self.attributes.strength,
+            "dexterity": self.attributes.dexterity,
+            "intelligence": self.attributes.intelligence,
         }
 
     def create_resource_pool(
-        self,
-        resource_type: ResourceType,
-        modifiers: Optional[ResourceModifiers] = None
+        self, resource_type: ResourceType, modifiers: Optional[ResourceModifiers] = None
     ) -> ResourcePool:
         """
         Create a complete resource pool with calculated maximum.
@@ -655,7 +628,7 @@ class ResourceCalculator:
         life_mods: Optional[ResourceModifiers] = None,
         mana_mods: Optional[ResourceModifiers] = None,
         es_mods: Optional[ResourceModifiers] = None,
-        spirit_mods: Optional[ResourceModifiers] = None
+        spirit_mods: Optional[ResourceModifiers] = None,
     ) -> Dict[str, Any]:
         """
         Calculate all resources and return a comprehensive summary.
@@ -676,46 +649,46 @@ class ResourceCalculator:
 
         spirit_reserved = self.calculate_spirit_reserved()
         spirit_available = self.calculate_spirit_available(max_spirit)
-        spirit_overflow, overflow_amount, active_reservations = self.check_spirit_overflow(max_spirit)
+        spirit_overflow, overflow_amount, active_reservations = self.check_spirit_overflow(
+            max_spirit
+        )
 
         mana_regen = self.calculate_mana_regeneration(max_mana)
         accuracy = self.calculate_accuracy()
         attribute_bonuses = self.get_attribute_bonuses()
 
         summary = {
-            'level': self.level,
-            'attributes': {
-                'strength': self.attributes.strength,
-                'dexterity': self.attributes.dexterity,
-                'intelligence': self.attributes.intelligence
+            "level": self.level,
+            "attributes": {
+                "strength": self.attributes.strength,
+                "dexterity": self.attributes.dexterity,
+                "intelligence": self.attributes.intelligence,
             },
-            'resources': {
-                'life': {
-                    'maximum': max_life,
-                    'from_strength': attribute_bonuses['life_from_strength']
+            "resources": {
+                "life": {
+                    "maximum": max_life,
+                    "from_strength": attribute_bonuses["life_from_strength"],
                 },
-                'mana': {
-                    'maximum': max_mana,
-                    'regeneration_per_second': mana_regen,
-                    'from_intelligence': attribute_bonuses['mana_from_intelligence']
+                "mana": {
+                    "maximum": max_mana,
+                    "regeneration_per_second": mana_regen,
+                    "from_intelligence": attribute_bonuses["mana_from_intelligence"],
                 },
-                'energy_shield': {
-                    'maximum': max_es
+                "energy_shield": {"maximum": max_es},
+                "spirit": {
+                    "maximum": max_spirit,
+                    "reserved": spirit_reserved,
+                    "available": spirit_available,
+                    "is_overflowing": spirit_overflow,
+                    "overflow_amount": overflow_amount,
+                    "active_reservations": active_reservations,
+                    "reservation_details": self.get_spirit_reservation_details(),
                 },
-                'spirit': {
-                    'maximum': max_spirit,
-                    'reserved': spirit_reserved,
-                    'available': spirit_available,
-                    'is_overflowing': spirit_overflow,
-                    'overflow_amount': overflow_amount,
-                    'active_reservations': active_reservations,
-                    'reservation_details': self.get_spirit_reservation_details()
-                }
             },
-            'accuracy': {
-                'rating': accuracy,
-                'from_dexterity': attribute_bonuses['accuracy_from_dexterity']
-            }
+            "accuracy": {
+                "rating": accuracy,
+                "from_dexterity": attribute_bonuses["accuracy_from_dexterity"],
+            },
         }
 
         logger.info("Calculated all resources")
@@ -756,8 +729,7 @@ def calculate_hit_chance(attacker_accuracy: int, defender_evasion: int) -> float
 if __name__ == "__main__":
     # Configure logging for testing
     logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     print("=" * 80)
@@ -778,7 +750,7 @@ if __name__ == "__main__":
     life_mods = ResourceModifiers(
         flat_bonus=50,  # +50 from gear
         increased_percent=120,  # 120% increased
-        more_multipliers=[1.15]  # 15% more
+        more_multipliers=[1.15],  # 15% more
     )
     max_life = calculator.calculate_maximum_life(life_mods)
     print(f"Maximum Life: {max_life}")
@@ -788,15 +760,9 @@ if __name__ == "__main__":
     print("-" * 80)
     print("MANA CALCULATION")
     print("-" * 80)
-    mana_mods = ResourceModifiers(
-        flat_bonus=30,
-        increased_percent=80
-    )
+    mana_mods = ResourceModifiers(flat_bonus=30, increased_percent=80)
     max_mana = calculator.calculate_maximum_mana(mana_mods)
-    mana_regen = calculator.calculate_mana_regeneration(
-        max_mana,
-        increased_regen_percent=50
-    )
+    mana_regen = calculator.calculate_mana_regeneration(max_mana, increased_regen_percent=50)
     print(f"Maximum Mana: {max_mana}")
     print(f"Mana Regen: {mana_regen}/s")
     print()
@@ -805,10 +771,7 @@ if __name__ == "__main__":
     print("-" * 80)
     print("ENERGY SHIELD CALCULATION")
     print("-" * 80)
-    es_mods = ResourceModifiers(
-        flat_bonus=200,  # ES only from gear
-        increased_percent=150
-    )
+    es_mods = ResourceModifiers(flat_bonus=200, increased_percent=150)  # ES only from gear
     max_es = calculator.calculate_maximum_energy_shield(es_mods)
     print(f"Maximum Energy Shield: {max_es}")
     print()
@@ -818,8 +781,7 @@ if __name__ == "__main__":
     print("SPIRIT CALCULATION (NEW IN POE2)")
     print("-" * 80)
     spirit_mods = ResourceModifiers(
-        flat_bonus=50,  # +50 from gear
-        increased_percent=20  # 20% increased (rare!)
+        flat_bonus=50, increased_percent=20  # +50 from gear  # 20% increased (rare!)
     )
     max_spirit = calculator.calculate_maximum_spirit(spirit_mods)
     print(f"Maximum Spirit: {max_spirit}")
@@ -846,19 +808,18 @@ if __name__ == "__main__":
     # Test reservation details
     print("Reservation Details:")
     for detail in calculator.get_spirit_reservation_details():
-        print(f"  - {detail['name']}: {detail['base_cost']} -> {detail['final_cost']} "
-              f"(multipliers: {detail['support_multipliers']}) "
-              f"[{'ON' if detail['enabled'] else 'OFF'}]")
+        print(
+            f"  - {detail['name']}: {detail['base_cost']} -> {detail['final_cost']} "
+            f"(multipliers: {detail['support_multipliers']}) "
+            f"[{'ON' if detail['enabled'] else 'OFF'}]"
+        )
     print()
 
     # Test Accuracy
     print("-" * 80)
     print("ACCURACY CALCULATION")
     print("-" * 80)
-    accuracy = calculator.calculate_accuracy(
-        flat_bonus=200,
-        increased_percent=50
-    )
+    accuracy = calculator.calculate_accuracy(flat_bonus=200, increased_percent=50)
     hit_chance = calculate_hit_chance(accuracy, 1500)
     print(f"Accuracy Rating: {accuracy}")
     print(f"Hit Chance vs 1500 Evasion: {hit_chance}%")
@@ -878,13 +839,11 @@ if __name__ == "__main__":
     print("COMPLETE CHARACTER SUMMARY")
     print("=" * 80)
     summary = calculator.calculate_all_resources(
-        life_mods=life_mods,
-        mana_mods=mana_mods,
-        es_mods=es_mods,
-        spirit_mods=spirit_mods
+        life_mods=life_mods, mana_mods=mana_mods, es_mods=es_mods, spirit_mods=spirit_mods
     )
 
     import json
+
     print(json.dumps(summary, indent=2))
     print()
 

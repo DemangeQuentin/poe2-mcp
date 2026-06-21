@@ -34,7 +34,7 @@ Where:
             "More%": "Each 'more' modifier is MULTIPLICATIVE (applied separately)",
             "Attack_Speed": "Attacks per second (or cast speed for spells)",
             "Crit_Chance": "Chance to critically strike (0.0 to 1.0, capped at 1.0)",
-            "Crit_Multi": "Critical strike multiplier (default 1.5 = 150%)"
+            "Crit_Multi": "Critical strike multiplier (default 1.5 = 150%)",
         },
         "calculation_order": [
             "1. Calculate base damage (weapon + flat added damage)",
@@ -42,14 +42,14 @@ Where:
             "3. Apply increased: Base × (1 + increased_sum)",
             "4. Apply each 'more' multiplier separately (multiplicative)",
             "5. Apply attack/cast speed",
-            "6. Apply effective crit multiplier"
+            "6. Apply effective crit multiplier",
         ],
         "key_rules": [
             "'Increased' modifiers ADD together, then multiply once",
             "'More' modifiers each MULTIPLY separately",
             "100% increased + 50% increased = 150% increased (one 2.5× multiplier)",
             "50% more + 30% more = 1.5 × 1.3 = 1.95× (two separate multipliers)",
-            "Crit chance is capped at 100%"
+            "Crit chance is capped at 100%",
         ],
         "example": {
             "scenario": "Skill with 100 base damage, 200% increased, 50% more, 30% more, 2.0 APS, 50% crit, 200% multi",
@@ -62,10 +62,9 @@ Speed: 585 × 2.0 = 1170
 Crit Factor: 1 + (0.5 × (2.0 - 1)) = 1.5
 Final: 1170 × 1.5 = 1755 DPS
 """,
-            "result": "1,755 DPS"
-        }
+            "result": "1,755 DPS",
+        },
     },
-
     # =========================================================================
     # EFFECTIVE HP
     # =========================================================================
@@ -86,20 +85,20 @@ EHP ≈ Life × Armor_Factor × Resistance_Factor × Other_Mitigation
             "Life": "Maximum life pool",
             "Armor_Reduction": "Physical damage reduction from armor (vs specific hit size)",
             "Resistance": "Elemental resistance (capped at 90% in PoE2)",
-            "Other_Mitigation": "Additional damage reduction sources (fortify, endurance charges, etc.)"
+            "Other_Mitigation": "Additional damage reduction sources (fortify, endurance charges, etc.)",
         },
         "calculation_order": [
             "1. Calculate armor reduction for expected hit size",
             "2. Calculate resistance reduction",
             "3. Calculate other mitigation layers",
-            "4. Combine multiplicatively: EHP = Life / ((1-r1) × (1-r2) × ...)"
+            "4. Combine multiplicatively: EHP = Life / ((1-r1) × (1-r2) × ...)",
         ],
         "key_rules": [
             "Damage reduction sources are multiplicative, not additive",
             "50% reduction + 50% reduction = 75% total (not 100%)",
             "Formula: 1 - (1-0.5) × (1-0.5) = 1 - 0.25 = 0.75",
             "Armor effectiveness varies by hit size",
-            "Resistance cap is 90% in PoE2 (was 75% base in PoE1)"
+            "Resistance cap is 90% in PoE2 (was 75% base in PoE1)",
         ],
         "example": {
             "scenario": "3000 life, 50% armor reduction (vs 1000 hit), 75% fire resistance",
@@ -110,10 +109,9 @@ EHP = 3000 / (1 - 0.50) = 3000 / 0.50 = 6000
 Fire EHP:
 EHP = 3000 / (1 - 0.75) = 3000 / 0.25 = 12000
 """,
-            "result": "6,000 Physical EHP / 12,000 Fire EHP"
-        }
+            "result": "6,000 Physical EHP / 12,000 Fire EHP",
+        },
     },
-
     # =========================================================================
     # ARMOR
     # =========================================================================
@@ -132,7 +130,7 @@ Rule of thumb:
         "variables": {
             "Armor": "Total armor rating",
             "Incoming_Damage": "Size of the physical hit before reduction",
-            "Reduction": "Percentage of physical damage mitigated (0.0 to 0.9)"
+            "Reduction": "Percentage of physical damage mitigated (0.0 to 0.9)",
         },
         "key_rules": [
             "Armor is MORE effective against small hits",
@@ -140,7 +138,7 @@ Rule of thumb:
             "90% cap on damage reduction",
             "Only reduces HITS, not DoT (bleed, etc.)",
             "Works against physical spells too",
-            "Formula changed from 12× to 10× in patch 0.1.1"
+            "Formula changed from 12× to 10× in patch 0.1.1",
         ],
         "reference_table": """
 Hit Size | Armor for 50% | Armor for 66%
@@ -161,10 +159,9 @@ Reduction = 10000 / (10000 + 10 × 1000)
 
 Damage taken = 1000 × (1 - 0.50) = 500
 """,
-            "result": "50% reduction, 500 damage taken"
-        }
+            "result": "50% reduction, 500 damage taken",
+        },
     },
-
     # =========================================================================
     # RESISTANCE
     # =========================================================================
@@ -183,7 +180,7 @@ Where:
             "Resistance": "Total elemental resistance percentage",
             "Max_Resistance": "Maximum resistance (75% default, 90% hard cap)",
             "Penetration": "Enemy resistance penetration",
-            "Exposure": "Debuff that reduces resistance (stacks additively)"
+            "Exposure": "Debuff that reduces resistance (stacks additively)",
         },
         "key_rules": [
             "Default cap is 75%",
@@ -191,7 +188,7 @@ Where:
             "Negative resistance means taking MORE damage",
             "-60% chaos resistance = 160% chaos damage taken",
             "Penetration applies AFTER your resistance calculation",
-            "Each 1% max res above cap is very valuable"
+            "Each 1% max res above cap is very valuable",
         ],
         "reference_table": """
 Resistance | Damage Multiplier | EHP Multiplier
@@ -211,10 +208,9 @@ Damage = 1000 × (1 - 75/100)
        = 1000 × 0.25
        = 250 fire damage taken
 """,
-            "result": "250 fire damage taken (75% mitigated)"
-        }
+            "result": "250 fire damage taken (75% mitigated)",
+        },
     },
-
     # =========================================================================
     # LEECH
     # =========================================================================
@@ -237,7 +233,7 @@ Overleech:
             "Leech_Rate": "Percentage of damage leeched (e.g., 5% = 0.05)",
             "Instance_Rate": "How fast each leech instance heals (default 2%/sec of max life)",
             "Max_Leech_Rate": "Maximum total leech per second (default 20% of max life)",
-            "Overleech": "Whether leech continues past full life"
+            "Overleech": "Whether leech continues past full life",
         },
         "calculation_order": [
             "1. Calculate damage dealt by hit",
@@ -245,7 +241,7 @@ Overleech:
             "3. Create leech instance (heals over time)",
             "4. Sum all active leech instances",
             "5. Cap at max leech rate (20% of max life/sec default)",
-            "6. If overleech: continue healing past full life"
+            "6. If overleech: continue healing past full life",
         ],
         "key_rules": [
             "Leech is based on DAMAGE DEALT, not damage before mitigation",
@@ -254,7 +250,7 @@ Overleech:
             "Without overleech, leech stops at full life",
             "Overleech creates healing buffer above max life",
             "Physical damage leech is most common (some items/gems)",
-            "Elemental damage leech requires specific sources"
+            "Elemental damage leech requires specific sources",
         ],
         "reference_table": """
 Max Life | 20% Leech Cap/sec | Time to Full (from 0%)
@@ -278,10 +274,9 @@ If hitting rapidly, instances stack:
 5 hits = 5 instances = 300 life/sec
 But capped at 20%: 3000 × 0.20 = 600 life/sec max
 """,
-            "result": "100 life per hit, capped at 600 life/sec recovery"
-        }
+            "result": "100 life per hit, capped at 600 life/sec recovery",
+        },
     },
-
     # =========================================================================
     # SPIRIT
     # =========================================================================
@@ -305,14 +300,14 @@ Spirit Sources:
             "Base_Spirit": "Spirit from level/class",
             "Gear_Spirit": "Spirit from equipped items",
             "Passive_Spirit": "Spirit from passive tree",
-            "Reserved_Spirit": "Spirit used by active auras/minions"
+            "Reserved_Spirit": "Spirit used by active auras/minions",
         },
         "key_rules": [
             "Spirit is a HARD LIMIT - can't reserve more than you have",
             "Different from mana reservation (which is percentage-based)",
             "Minions and auras compete for the same Spirit pool",
             "Higher level gems often cost more Spirit",
-            "Spirit appears on weapons, amulets, body armor, focus items"
+            "Spirit appears on weapons, amulets, body armor, focus items",
         ],
         "example": {
             "scenario": "100 base spirit, +50 from gear, Herald (30) + Wolf Pack (45)",
@@ -321,10 +316,9 @@ Total Spirit = 100 + 50 = 150
 Reserved = 30 + 45 = 75
 Remaining = 150 - 75 = 75 Spirit available
 """,
-            "result": "75 Spirit remaining for additional skills"
-        }
+            "result": "75 Spirit remaining for additional skills",
+        },
     },
-
     # =========================================================================
     # STUN
     # =========================================================================
@@ -342,14 +336,14 @@ Stun occurs when:
             "Damage": "Hit damage BEFORE mitigation",
             "Stun_Threshold": "Target's stun threshold (based on max life)",
             "Max_Life": "Target's maximum life",
-            "Stun_Duration": "How long the stun lasts"
+            "Stun_Duration": "How long the stun lasts",
         },
         "key_rules": [
             "Stun is checked BEFORE damage mitigation",
             "Higher life = harder to stun",
             "Stun threshold increases make you harder to stun",
             "Stun avoidance/immunity exists on gear and passives",
-            "Bosses often have stun immunity phases"
+            "Bosses often have stun immunity phases",
         ],
         "example": {
             "scenario": "500 damage hit vs target with 1000 stun threshold",
@@ -358,10 +352,9 @@ Stun Chance = 500 / (500 + 1000)
             = 500 / 1500
             = 0.33 (33%)
 """,
-            "result": "33% chance to stun"
-        }
+            "result": "33% chance to stun",
+        },
     },
-
     # =========================================================================
     # CRITICAL STRIKES
     # =========================================================================
@@ -378,7 +371,7 @@ Where Crit_Chance is capped at 100% (1.0)
             "Base_Crit": "Skill or weapon base critical strike chance",
             "Increased_Crit": "Sum of all 'increased critical strike chance' modifiers",
             "Crit_Multi": "Critical strike multiplier (default 150%)",
-            "Lucky_Crits": "Roll twice, take higher (from Diamond Flask or other sources)"
+            "Lucky_Crits": "Roll twice, take higher (from Diamond Flask or other sources)",
         },
         "key_rules": [
             "Crit chance is capped at 100%",
@@ -386,7 +379,7 @@ Where Crit_Chance is capped at 100% (1.0)
             "Increased crit is ADDITIVE with itself",
             "Crit multi default is 150% (1.5×)",
             "Lucky crits effectively square your miss chance",
-            "Elemental Overload alternative: no crit multi but damage bonus"
+            "Elemental Overload alternative: no crit multi but damage bonus",
         ],
         "reference_table": """
 Crit Chance | Crit Multi | Effective DPS Multiplier
@@ -409,10 +402,9 @@ DPS Factor = 1 + (0.42 × (2.0 - 1))
            = 1 + (0.42 × 1.0)
            = 1.42 (+42% effective DPS)
 """,
-            "result": "42% crit chance, 1.42× DPS multiplier"
-        }
+            "result": "42% crit chance, 1.42× DPS multiplier",
+        },
     },
-
     # =========================================================================
     # DAMAGE CONVERSION
     # =========================================================================
@@ -432,7 +424,7 @@ Rules:
         "variables": {
             "Base_Damage": "Original damage before conversion",
             "Conversion%": "Percentage converted to new type",
-            "Added_As": "Extra damage added as another type (not conversion)"
+            "Added_As": "Extra damage added as another type (not conversion)",
         },
         "key_rules": [
             "Conversion is one-way only (follows the chain)",
@@ -440,7 +432,7 @@ Rules:
             "Cannot convert backwards (Fire cannot become Cold)",
             "Converted damage gains bonuses from BOTH types",
             "'Added as X' is NOT conversion - it's extra damage",
-            "Over 100% conversion normalizes proportionally"
+            "Over 100% conversion normalizes proportionally",
         ],
         "example": {
             "scenario": "100 physical, 50% converted to cold, +50% phys, +100% cold",
@@ -454,10 +446,9 @@ Cold portion: 50 × (1 + 0.5 + 1.0) = 125
 
 Total: 75 + 125 = 200 damage
 """,
-            "result": "200 total damage (75 phys + 125 cold)"
-        }
+            "result": "200 total damage (75 phys + 125 cold)",
+        },
     },
-
     # =========================================================================
     # DAMAGE OVER TIME
     # =========================================================================
@@ -473,7 +464,7 @@ DoT has its own 'increased' and 'more' modifiers
             "Base_DoT": "Base damage per second of the DoT",
             "Duration": "How long the DoT lasts",
             "Increased_DoT": "Sum of increased DoT damage modifiers",
-            "More_DoT": "More DoT damage multipliers"
+            "More_DoT": "More DoT damage multipliers",
         },
         "key_rules": [
             "DoT cannot crit by default",
@@ -481,7 +472,7 @@ DoT has its own 'increased' and 'more' modifiers
             "DoT ignores armor (physical DoT still does physical damage type)",
             "DoT benefits from 'damage over time' modifiers",
             "Ailment DoTs (ignite, poison, bleed) scale differently",
-            "Poison/Ignite/Bleed have their own specific formulas"
+            "Poison/Ignite/Bleed have their own specific formulas",
         ],
         "example": {
             "scenario": "100 base DoT, 200% increased DoT, 50% more DoT",
@@ -490,10 +481,9 @@ DoT = 100 × (1 + 2.0) × (1 + 0.5)
     = 100 × 3.0 × 1.5
     = 450 DPS
 """,
-            "result": "450 DoT DPS"
-        }
+            "result": "450 DoT DPS",
+        },
     },
-
     # =========================================================================
     # BLOCK
     # =========================================================================
@@ -509,7 +499,7 @@ Shield is primary source of block
             "Base_Block": "Block from shield or other sources",
             "Increased_Block": "Additional block chance",
             "Max_Block": "Block cap (usually 75%)",
-            "Spell_Block": "Separate chance to block spells"
+            "Spell_Block": "Separate chance to block spells",
         },
         "key_rules": [
             "Block is checked before damage calculation",
@@ -517,7 +507,7 @@ Shield is primary source of block
             "Attack block and spell block are separate",
             "Block cap is typically 75%",
             "Glancing Blows: double block chance but take 65% damage on block",
-            "Recovery on block exists (life/ES gained when blocking)"
+            "Recovery on block exists (life/ES gained when blocking)",
         ],
         "example": {
             "scenario": "30% base block (shield), +20% block from passives",
@@ -527,10 +517,9 @@ Capped at 75%, so Block = 50%
 
 With 50% block: Half of incoming attacks are negated
 """,
-            "result": "50% attack block chance"
-        }
+            "result": "50% attack block chance",
+        },
     },
-
     # =========================================================================
     # CHARGES
     # =========================================================================
@@ -559,14 +548,14 @@ POWER CHARGES:
             "Charges": "Current number of charges",
             "Max_Charges": "Maximum charges (default 3, can be increased)",
             "Duration": "Charge duration (default 10 seconds)",
-            "Generation": "How charges are gained (skills, on-kill, on-hit)"
+            "Generation": "How charges are gained (skills, on-kill, on-hit)",
         },
         "key_rules": [
             "Charges expire after duration (default 10 sec)",
             "Gaining a charge refreshes ALL charges of that type",
             "Max charges can be increased by passives/gear",
             "Some skills CONSUME charges for bonus effects",
-            "Charge generation varies (on-kill, on-hit, on-crit, skills)"
+            "Charge generation varies (on-kill, on-hit, on-crit, skills)",
         ],
         "reference_table": """
 Charges | Endurance (Phys Red) | Frenzy (More Dmg) | Power (Crit)
@@ -584,10 +573,9 @@ DPS = 1000 × (1 + 0.12) = 1120 DPS
 
 Also: +12% attack speed, +12% cast speed
 """,
-            "result": "1,120 DPS (+12%), +12% attack/cast speed"
-        }
+            "result": "1,120 DPS (+12%), +12% attack/cast speed",
+        },
     },
-
     # =========================================================================
     # ACCURACY
     # =========================================================================
@@ -604,7 +592,7 @@ Capped at 100% (always hit) and floored at 5% (always 5% minimum)
             "Accuracy": "Your accuracy rating",
             "Enemy_Evasion": "Target's evasion rating",
             "Hit_Chance": "Probability of hitting (5% to 100%)",
-            "Level_Penalty": "Higher level enemies have more evasion"
+            "Level_Penalty": "Higher level enemies have more evasion",
         },
         "key_rules": [
             "Attacks can miss, spells always hit (unless dodged)",
@@ -612,7 +600,7 @@ Capped at 100% (always hit) and floored at 5% (always 5% minimum)
             "Maximum hit chance is 100%",
             "Resolute Technique: Always hit but never crit",
             "Accuracy scales with Dexterity",
-            "Level difference affects effective evasion"
+            "Level difference affects effective evasion",
         ],
         "example": {
             "scenario": "2000 accuracy vs enemy with 1000 evasion",
@@ -622,9 +610,9 @@ Hit Chance = 2000 / (2000 + 1000/4)
            = 2000 / 2250
            = 0.889 (88.9%)
 """,
-            "result": "88.9% chance to hit"
-        }
-    }
+            "result": "88.9% chance to hit",
+        },
+    },
 }
 
 
@@ -666,7 +654,7 @@ def get_formulas_by_category(category: str) -> Dict[str, Dict[str, Any]]:
         "damage": ["dps", "crit", "conversion", "dot"],
         "defense": ["ehp", "armor", "resistance", "block", "evasion"],
         "resources": ["leech", "spirit", "charges"],
-        "utility": ["stun", "accuracy"]
+        "utility": ["stun", "accuracy"],
     }
 
     category = category.lower().strip()

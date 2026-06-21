@@ -19,6 +19,7 @@ Data flow:
         -> read_all()      # full {section: {key: value}}
         -> get_summary()   # the handful of fields useful to a build optimizer
 """
+
 from __future__ import annotations
 
 import configparser
@@ -133,9 +134,8 @@ class GameConfigReader:
                 return default
 
         account_name = get("LOGIN", "account_name") or None
-        input_mode = (
-            get("GENERAL", "user_input_mode")
-            or get("GENERAL", "last_selected_KBM_input_mode")
+        input_mode = get("GENERAL", "user_input_mode") or get(
+            "GENERAL", "last_selected_KBM_input_mode"
         )
         act_env = get("CACHED_DATA", "current_act_environment")
 
@@ -151,7 +151,8 @@ class GameConfigReader:
             "account_name_note": (
                 "empty — Steam auth does not write account_name; use the live "
                 "client log (Client.txt) for character identity"
-                if not account_name else None
+                if not account_name
+                else None
             ),
             "gateway": get("LOGIN", "gateway_id"),
             "gateway_auto_select": get("LOGIN", "gateway_auto_select"),

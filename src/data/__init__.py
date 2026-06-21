@@ -30,9 +30,9 @@ from . import game_data
 from . import update_manager
 
 __all__ = [
-    'FreshDataProvider',
-    'get_fresh_data_provider',
-    'data_distributor',
-    'game_data',
-    'update_manager',
+    "FreshDataProvider",
+    "get_fresh_data_provider",
+    "data_distributor",
+    "game_data",
+    "update_manager",
 ]

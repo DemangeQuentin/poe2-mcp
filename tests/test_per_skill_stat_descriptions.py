@@ -110,8 +110,7 @@ def test_parser_handles_empty_input():
 # ---------------------------------------------------------------------------
 
 BUNDLE_PATH = (
-    PROJECT_ROOT / "data" / "game" / "stat_descriptions"
-    / "per_skill_stat_descriptions.json"
+    PROJECT_ROOT / "data" / "game" / "stat_descriptions" / "per_skill_stat_descriptions.json"
 )
 needs_bundle = pytest.mark.skipif(
     not BUNDLE_PATH.exists(),
@@ -131,19 +130,13 @@ def test_bundle_loads():
 @needs_bundle
 def test_bundle_record_count_consistent_with_metadata():
     """metadata.json's record_count should equal the actual description tally."""
-    meta_path = (
-        PROJECT_ROOT / "data" / "game" / "stat_descriptions"
-        / "per_skill_metadata.json"
-    )
+    meta_path = PROJECT_ROOT / "data" / "game" / "stat_descriptions" / "per_skill_metadata.json"
     assert meta_path.exists()
     with open(meta_path, "r", encoding="utf-8") as f:
         meta = json.load(f)
     bundle = load_per_skill_stat_descriptions()
     assert bundle is not None
-    actual = sum(
-        len(p.get("descriptions") or [])
-        for p in bundle.get("per_skill", {}).values()
-    )
+    actual = sum(len(p.get("descriptions") or []) for p in bundle.get("per_skill", {}).values())
     assert actual == meta["description_count"]
 
 

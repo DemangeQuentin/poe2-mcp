@@ -23,9 +23,7 @@ class RecommendationEngine:
             self.client = None
 
     async def generate_recommendations(
-        self,
-        character_data: Dict[str, Any],
-        analysis: Dict[str, Any]
+        self, character_data: Dict[str, Any], analysis: Dict[str, Any]
     ) -> str:
         """Generate AI recommendations based on character analysis"""
         if not self.client:
@@ -49,7 +47,7 @@ Provide 3-5 specific, actionable recommendations to improve this build."""
             response = await self.client.messages.create(
                 model=settings.AI_MODEL,
                 max_tokens=1024,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
 
             return response.content[0].text

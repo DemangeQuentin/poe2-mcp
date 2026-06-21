@@ -27,6 +27,7 @@ from src.api.poe_ninja_spa_detect import (  # noqa: E402
 # is_astro_spa_shell()
 # ---------------------------------------------------------------------------
 
+
 def test_astro_spa_shell_detects_typical_post_0_5_response():
     """Real-shape sample: Astro markers present, no legacy data markers."""
     html = """
@@ -79,7 +80,7 @@ def test_astro_spa_shell_false_on_arbitrary_html():
 
 def test_astro_spa_shell_detects_via_data_astro_attribute_only():
     """Real Astro pages have data-astro-* attributes even without /_astro/ refs."""
-    html = '<html><body><div data-astro-cid-abc>x</div></body></html>'
+    html = "<html><body><div data-astro-cid-abc>x</div></body></html>"
     assert is_astro_spa_shell(html) is True
 
 
@@ -92,6 +93,7 @@ def test_astro_spa_shell_detects_via_astro_island_tag_only():
 # has_embedded_build_data()
 # ---------------------------------------------------------------------------
 
+
 def test_has_embedded_build_data_true_on_nuxt():
     assert has_embedded_build_data("<script>window.__NUXT__={x:1};</script>")
 
@@ -102,7 +104,7 @@ def test_has_embedded_build_data_true_on_data_var():
 
 def test_has_embedded_build_data_false_on_astro_shell():
     """The post-0.5 SPA shell carries neither legacy marker."""
-    html = '<div data-astro-cid-x><astro-island/></div>'
+    html = "<div data-astro-cid-x><astro-island/></div>"
     assert has_embedded_build_data(html) is False
 
 
@@ -113,6 +115,7 @@ def test_has_embedded_build_data_false_on_empty():
 # ---------------------------------------------------------------------------
 # spa_migration_notice()
 # ---------------------------------------------------------------------------
+
 
 def test_notice_mentions_issue_number():
     out = spa_migration_notice()

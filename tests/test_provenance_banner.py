@@ -25,13 +25,18 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.provenance import (  # noqa: E402
-    CANONICAL, COMPUTED, INTERPRETED, EXTERNAL, format_banner,
+    CANONICAL,
+    COMPUTED,
+    INTERPRETED,
+    EXTERNAL,
+    format_banner,
 )
 
 
 # ---------------------------------------------------------------------------
 # Helper-direct mode — no MCP init
 # ---------------------------------------------------------------------------
+
 
 def test_helper_tier_vocab_constants():
     """The four tier constants are stable, lowercase strings."""
@@ -106,10 +111,12 @@ def test_helper_ascii_safe_output():
 # Handler mode — lazy fixture per docs/TESTING.md
 # ---------------------------------------------------------------------------
 
+
 @pytest_asyncio.fixture(scope="module")
 async def mcp():
     """Canonical lazy-import fixture (see PR #120)."""
     from src.mcp_server import PoE2BuildOptimizerMCP
+
     instance = PoE2BuildOptimizerMCP()
     await instance.initialize()
     return instance
@@ -130,7 +137,9 @@ async def test_inspect_passive_node_has_banner(mcp):
     name = keystones[0].name
     r = await mcp._handle_inspect_passive_node({"node_name": name})
     text = r[0].text
-    assert _banner_present(text), f"banner missing from inspect_passive_node response: {text[-300:]}"
+    assert _banner_present(
+        text
+    ), f"banner missing from inspect_passive_node response: {text[-300:]}"
     assert "passive_tree" in text
 
 

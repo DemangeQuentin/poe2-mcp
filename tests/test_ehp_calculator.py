@@ -19,7 +19,7 @@ from src.calculator.ehp_calculator import (
     DamageType,
     DefenseGap,
     quick_physical_ehp,
-    quick_elemental_ehp
+    quick_elemental_ehp,
 )
 from src.calculator.defense_calculator import DefenseConstants
 
@@ -29,12 +29,7 @@ class TestDefensiveStats:
 
     def test_valid_stats(self):
         """Test creating valid defensive stats."""
-        stats = DefensiveStats(
-            life=5000,
-            energy_shield=2000,
-            armor=10000,
-            fire_res=75
-        )
+        stats = DefensiveStats(life=5000, energy_shield=2000, armor=10000, fire_res=75)
 
         assert stats.life == 5000
         assert stats.energy_shield == 2000
@@ -235,12 +230,7 @@ class TestLayeredDefenses:
 
     def test_all_layers_physical(self):
         """Test all defense layers for physical damage."""
-        stats = DefensiveStats(
-            life=5000,
-            armor=10000,
-            evasion=5000,
-            block_chance=40
-        )
+        stats = DefensiveStats(life=5000, armor=10000, evasion=5000, block_chance=40)
 
         result = self.calc.calculate_ehp(stats, DamageType.PHYSICAL, self.threat)
 
@@ -253,11 +243,7 @@ class TestLayeredDefenses:
     def test_all_layers_elemental(self):
         """Test all defense layers for elemental damage."""
         stats = DefensiveStats(
-            life=5000,
-            energy_shield=2000,
-            evasion=5000,
-            block_chance=40,
-            fire_res=75
+            life=5000, energy_shield=2000, evasion=5000, block_chance=40, fire_res=75
         )
 
         result = self.calc.calculate_ehp(stats, DamageType.FIRE, self.threat)
@@ -296,7 +282,7 @@ class TestHitSizeAnalysis:
 
         # DR should decrease as hit size increases
         hit_sizes = sorted(analysis.keys())
-        drs = [analysis[h]['dr_percent'] for h in hit_sizes]
+        drs = [analysis[h]["dr_percent"] for h in hit_sizes]
 
         for i in range(len(drs) - 1):
             assert drs[i] >= drs[i + 1]  # DR decreases or stays same
@@ -324,7 +310,7 @@ class TestHitSizeAnalysis:
 
         for i in range(len(armors) - 1):
             # Each higher DR should need more armor (or be infinite)
-            if armors[i] != float('inf') and armors[i + 1] != float('inf'):
+            if armors[i] != float("inf") and armors[i + 1] != float("inf"):
                 assert armors[i] <= armors[i + 1]
 
     def test_armor_breakpoint_90_percent_unreachable(self):
@@ -346,17 +332,13 @@ class TestDefenseGaps:
     def test_uncapped_resistance_gap(self):
         """Test identification of uncapped resistances."""
         stats = DefensiveStats(
-            life=5000,
-            fire_res=50,  # 25% below cap
-            cold_res=75,
-            lightning_res=75,
-            chaos_res=0
+            life=5000, fire_res=50, cold_res=75, lightning_res=75, chaos_res=0  # 25% below cap
         )
 
         gaps = self.calc.identify_defense_gaps(stats, self.threat)
 
         # Should identify fire res gap
-        fire_gaps = [g for g in gaps if 'fire' in g.gap_type]
+        fire_gaps = [g for g in gaps if "fire" in g.gap_type]
         assert len(fire_gaps) > 0
 
         fire_gap = fire_gaps[0]
@@ -365,17 +347,12 @@ class TestDefenseGaps:
 
     def test_low_hp_pool_gap(self):
         """Test identification of low HP pool."""
-        stats = DefensiveStats(
-            life=2000,  # Very low
-            fire_res=75,
-            cold_res=75,
-            lightning_res=75
-        )
+        stats = DefensiveStats(life=2000, fire_res=75, cold_res=75, lightning_res=75)  # Very low
 
         gaps = self.calc.identify_defense_gaps(stats, self.threat)
 
         # Should identify low HP
-        hp_gaps = [g for g in gaps if 'low_hp' in g.gap_type]
+        hp_gaps = [g for g in gaps if "low_hp" in g.gap_type]
         assert len(hp_gaps) > 0
 
     def test_no_layered_defenses_gap(self):
@@ -388,29 +365,25 @@ class TestDefenseGaps:
             energy_shield=0,
             fire_res=75,
             cold_res=75,
-            lightning_res=75
+            lightning_res=75,
         )
 
         gaps = self.calc.identify_defense_gaps(stats, self.threat)
 
         # Should identify lack of layers
-        layer_gaps = [g for g in gaps if 'layered' in g.gap_type or 'layer' in g.gap_type]
+        layer_gaps = [g for g in gaps if "layered" in g.gap_type or "layer" in g.gap_type]
         assert len(layer_gaps) > 0
 
     def test_overcapped_block_gap(self):
         """Test identification of wasted block chance."""
         stats = DefensiveStats(
-            life=5000,
-            block_chance=70,  # 20% over cap
-            fire_res=75,
-            cold_res=75,
-            lightning_res=75
+            life=5000, block_chance=70, fire_res=75, cold_res=75, lightning_res=75  # 20% over cap
         )
 
         gaps = self.calc.identify_defense_gaps(stats, self.threat)
 
         # Should identify overcapped block
-        block_gaps = [g for g in gaps if 'block' in g.gap_type]
+        block_gaps = [g for g in gaps if "block" in g.gap_type]
         assert len(block_gaps) > 0
 
         block_gap = block_gaps[0]
@@ -420,17 +393,13 @@ class TestDefenseGaps:
     def test_negative_chaos_res_gap(self):
         """Test identification of negative chaos resistance."""
         stats = DefensiveStats(
-            life=5000,
-            fire_res=75,
-            cold_res=75,
-            lightning_res=75,
-            chaos_res=-60  # Very negative
+            life=5000, fire_res=75, cold_res=75, lightning_res=75, chaos_res=-60  # Very negative
         )
 
         gaps = self.calc.identify_defense_gaps(stats, self.threat)
 
         # Should identify negative chaos res
-        chaos_gaps = [g for g in gaps if 'chaos' in g.gap_type]
+        chaos_gaps = [g for g in gaps if "chaos" in g.gap_type]
         assert len(chaos_gaps) > 0
 
     def test_gaps_sorted_by_severity(self):
@@ -440,7 +409,7 @@ class TestDefenseGaps:
             fire_res=70,  # Slightly low (lower severity)
             cold_res=75,
             lightning_res=75,
-            chaos_res=-20
+            chaos_res=-20,
         )
 
         gaps = self.calc.identify_defense_gaps(stats, self.threat)
@@ -459,7 +428,7 @@ class TestDefenseGaps:
             fire_res=75,
             cold_res=75,
             lightning_res=75,
-            chaos_res=20
+            chaos_res=20,
         )
 
         gaps = self.calc.identify_defense_gaps(stats, self.threat)
@@ -485,8 +454,8 @@ class TestComparisons:
         comparison = self.calc.compare_upgrade(current, upgraded, self.threat)
 
         # Physical EHP should increase
-        assert comparison['physical']['absolute_gain'] > 0
-        assert comparison['physical']['percent_gain'] > 0
+        assert comparison["physical"]["absolute_gain"] > 0
+        assert comparison["physical"]["percent_gain"] > 0
 
     def test_compare_resistance_upgrade(self):
         """Test comparing resistance upgrade."""
@@ -496,8 +465,8 @@ class TestComparisons:
         comparison = self.calc.compare_upgrade(current, upgraded, self.threat)
 
         # Fire EHP should increase significantly (capping res is powerful)
-        assert comparison['fire']['absolute_gain'] > 0
-        assert comparison['fire']['percent_gain'] > 10  # Should be meaningful gain
+        assert comparison["fire"]["absolute_gain"] > 0
+        assert comparison["fire"]["percent_gain"] > 10  # Should be meaningful gain
 
     def test_compare_life_upgrade(self):
         """Test comparing life upgrade."""
@@ -507,8 +476,8 @@ class TestComparisons:
         comparison = self.calc.compare_upgrade(current, upgraded, self.threat)
 
         # All damage types should benefit equally from life
-        phys_gain = comparison['physical']['percent_gain']
-        fire_gain = comparison['fire']['percent_gain']
+        phys_gain = comparison["physical"]["percent_gain"]
+        fire_gain = comparison["fire"]["percent_gain"]
 
         # Gains should be similar (within 1% due to rounding)
         assert abs(phys_gain - fire_gain) < 1
@@ -518,28 +487,22 @@ class TestComparisons:
         stats = DefensiveStats(life=5000, armor=10000, fire_res=75)
 
         # Test armor value
-        armor_value = self.calc.calculate_defense_value(
-            stats, 'armor', 5000, self.threat
-        )
+        armor_value = self.calc.calculate_defense_value(stats, "armor", 5000, self.threat)
 
-        assert 'physical_ehp_gain' in armor_value
-        assert armor_value['physical_ehp_gain'] > 0
+        assert "physical_ehp_gain" in armor_value
+        assert armor_value["physical_ehp_gain"] > 0
 
         # Test resistance value
-        res_value = self.calc.calculate_defense_value(
-            stats, 'fire_res', 5, self.threat
-        )
+        res_value = self.calc.calculate_defense_value(stats, "fire_res", 5, self.threat)
 
-        assert 'fire_ehp_gain' in res_value
+        assert "fire_ehp_gain" in res_value
 
     def test_invalid_defense_type(self):
         """Test that invalid defense type raises error."""
         stats = DefensiveStats(life=5000)
 
         with pytest.raises(ValueError, match="Unknown defense type"):
-            self.calc.calculate_defense_value(
-                stats, 'invalid_type', 100, self.threat
-            )
+            self.calc.calculate_defense_value(stats, "invalid_type", 100, self.threat)
 
 
 class TestAllEHP:
@@ -553,12 +516,7 @@ class TestAllEHP:
     def test_calculate_all_ehp(self):
         """Test calculating EHP for all damage types."""
         stats = DefensiveStats(
-            life=5000,
-            armor=10000,
-            fire_res=75,
-            cold_res=75,
-            lightning_res=75,
-            chaos_res=0
+            life=5000, armor=10000, fire_res=75, cold_res=75, lightning_res=75, chaos_res=0
         )
 
         results = self.calc.calculate_all_ehp(stats, self.threat)
@@ -570,12 +528,7 @@ class TestAllEHP:
 
     def test_elemental_ehp_similar(self):
         """Test that elemental EHP is similar when resistances are equal."""
-        stats = DefensiveStats(
-            life=5000,
-            fire_res=75,
-            cold_res=75,
-            lightning_res=75
-        )
+        stats = DefensiveStats(life=5000, fire_res=75, cold_res=75, lightning_res=75)
 
         results = self.calc.calculate_all_ehp(stats, self.threat)
 
@@ -589,12 +542,7 @@ class TestAllEHP:
 
     def test_chaos_lower_with_es(self):
         """Test that chaos EHP is lower when relying on ES."""
-        stats = DefensiveStats(
-            life=3000,
-            energy_shield=2000,
-            fire_res=75,
-            chaos_res=0
-        )
+        stats = DefensiveStats(life=3000, energy_shield=2000, fire_res=75, chaos_res=0)
 
         results = self.calc.calculate_all_ehp(stats, self.threat)
 
@@ -662,10 +610,7 @@ class TestEdgeCases:
     def test_maximum_mitigation(self):
         """Test near-maximum mitigation doesn't cause overflow."""
         stats = DefensiveStats(
-            life=5000,
-            armor=100000,  # Very high armor
-            block_chance=50,
-            fire_res=90  # At hard cap
+            life=5000, armor=100000, block_chance=50, fire_res=90  # Very high armor  # At hard cap
         )
 
         threat = ThreatProfile(expected_hit_size=100)  # Small hit (high armor DR)
@@ -675,7 +620,7 @@ class TestEdgeCases:
         # Fire damage: 50% block + 75% res (capped) = 87.5% mitigation
         # EHP = 5000 / 0.125 = 40000
         assert result.effective_hp == pytest.approx(40000, rel=1e-2)
-        assert result.effective_hp != float('inf')
+        assert result.effective_hp != float("inf")
         assert result.resistance_dr <= 0.75  # Resistance capped at 75% for non-90% cap scenarios
 
     def test_negative_resistance(self):
@@ -707,23 +652,17 @@ class TestLayersBreakdown:
 
     def test_breakdown_structure(self):
         """Test that breakdown has correct structure."""
-        stats = DefensiveStats(
-            life=5000,
-            armor=10000,
-            evasion=5000,
-            block_chance=40,
-            fire_res=75
-        )
+        stats = DefensiveStats(life=5000, armor=10000, evasion=5000, block_chance=40, fire_res=75)
 
         result = self.calc.calculate_ehp(stats, DamageType.PHYSICAL, self.threat)
 
         # Check breakdown exists
-        assert 'raw_hp' in result.layers_breakdown
-        assert 'evasion' in result.layers_breakdown
-        assert 'block' in result.layers_breakdown
-        assert 'armor' in result.layers_breakdown
-        assert 'resistance' in result.layers_breakdown
-        assert 'combined' in result.layers_breakdown
+        assert "raw_hp" in result.layers_breakdown
+        assert "evasion" in result.layers_breakdown
+        assert "block" in result.layers_breakdown
+        assert "armor" in result.layers_breakdown
+        assert "resistance" in result.layers_breakdown
+        assert "combined" in result.layers_breakdown
 
     def test_breakdown_multipliers(self):
         """Test that breakdown multipliers are calculated correctly."""
@@ -731,10 +670,10 @@ class TestLayersBreakdown:
         result = self.calc.calculate_ehp(stats, DamageType.FIRE, self.threat)
 
         # 75% res should give 4× multiplier
-        res_multiplier = result.layers_breakdown['resistance']['multiplier']
+        res_multiplier = result.layers_breakdown["resistance"]["multiplier"]
         assert res_multiplier == pytest.approx(4.0, rel=1e-2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Run tests with pytest
-    pytest.main([__file__, '-v', '--tb=short'])
+    pytest.main([__file__, "-v", "--tb=short"])

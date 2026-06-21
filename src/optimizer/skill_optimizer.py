@@ -33,7 +33,7 @@ class SkillOptimizer:
 
         try:
             support_gems_path = DATA_DIR / "poe2_support_gems_database.json"
-            with open(support_gems_path, 'r', encoding='utf-8') as f:
+            with open(support_gems_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 self._support_gems_cache = data.get("support_gems", {})
                 return self._support_gems_cache
@@ -48,7 +48,7 @@ class SkillOptimizer:
 
         try:
             pob_skills_path = DATA_DIR / "pob_complete_skills.json"
-            with open(pob_skills_path, 'r', encoding='utf-8') as f:
+            with open(pob_skills_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 self._pob_skills_cache = data.get("skills", {})
                 return self._pob_skills_cache
@@ -65,19 +65,22 @@ class SkillOptimizer:
 
         # Normalize search term: convert CamelCase to snake_case and lowercase
         import re
-        normalized = re.sub(r'([A-Z])', r'_\1', skill_name).lower().strip('_')
-        normalized_no_underscore = skill_name.lower().replace('_', '').replace(' ', '')
+
+        normalized = re.sub(r"([A-Z])", r"_\1", skill_name).lower().strip("_")
+        normalized_no_underscore = skill_name.lower().replace("_", "").replace(" ", "")
 
         # Try case-insensitive search
         all_skills = self._fresh_provider.get_all_active_skills()
         for skill_id, skill_data in all_skills.items():
-            skill_id_normalized = skill_id.lower().replace('_', '')
-            skill_name_normalized = skill_data.get('name', '').lower().replace(' ', '')
+            skill_id_normalized = skill_id.lower().replace("_", "")
+            skill_name_normalized = skill_data.get("name", "").lower().replace(" ", "")
 
             # Match by normalized ID or name
-            if (normalized_no_underscore in skill_id_normalized or
-                normalized_no_underscore in skill_name_normalized or
-                skill_name.lower() in skill_data.get('name', '').lower()):
+            if (
+                normalized_no_underscore in skill_id_normalized
+                or normalized_no_underscore in skill_name_normalized
+                or skill_name.lower() in skill_data.get("name", "").lower()
+            ):
                 return skill_data
 
         return {}
@@ -98,24 +101,27 @@ class SkillOptimizer:
             if not isinstance(skill_data, dict):
                 continue
 
-            skill_data_name = skill_data.get('name', '')
-            if skill_data_name.lower() == skill_name.lower() or skill_id.lower() == skill_name.lower():
+            skill_data_name = skill_data.get("name", "")
+            if (
+                skill_data_name.lower() == skill_name.lower()
+                or skill_id.lower() == skill_name.lower()
+            ):
                 # Exact match found
-                levels = skill_data.get('levels', {})
+                levels = skill_data.get("levels", {})
                 level_key = str(gem_level)
-                level_data = levels.get(level_key, levels.get('1', {}))
+                level_data = levels.get(level_key, levels.get("1", {}))
 
                 return {
-                    'id': skill_id,
-                    'name': skill_data.get('name', skill_name),
-                    'description': skill_data.get('description', ''),
-                    'skill_types': skill_data.get('skillTypes', []),
-                    'weapon_types': skill_data.get('weaponTypes', []),
-                    'cast_time': skill_data.get('castTime', 1.0),
-                    'level_data': level_data,
-                    'stat_sets': skill_data.get('statSets', []),
-                    'quality_stats': skill_data.get('qualityStats', []),
-                    'full_skill_data': skill_data  # Include full data for advanced processing
+                    "id": skill_id,
+                    "name": skill_data.get("name", skill_name),
+                    "description": skill_data.get("description", ""),
+                    "skill_types": skill_data.get("skillTypes", []),
+                    "weapon_types": skill_data.get("weaponTypes", []),
+                    "cast_time": skill_data.get("castTime", 1.0),
+                    "level_data": level_data,
+                    "stat_sets": skill_data.get("statSets", []),
+                    "quality_stats": skill_data.get("qualityStats", []),
+                    "full_skill_data": skill_data,  # Include full data for advanced processing
                 }
 
         # Second pass: partial matches (only if no exact match found)
@@ -123,24 +129,24 @@ class SkillOptimizer:
             if not isinstance(skill_data, dict):
                 continue
 
-            skill_data_name = skill_data.get('name', '')
+            skill_data_name = skill_data.get("name", "")
             if skill_name.lower() in skill_data_name.lower():
                 # Partial match found
-                levels = skill_data.get('levels', {})
+                levels = skill_data.get("levels", {})
                 level_key = str(gem_level)
-                level_data = levels.get(level_key, levels.get('1', {}))
+                level_data = levels.get(level_key, levels.get("1", {}))
 
                 return {
-                    'id': skill_id,
-                    'name': skill_data.get('name', skill_name),
-                    'description': skill_data.get('description', ''),
-                    'skill_types': skill_data.get('skillTypes', []),
-                    'weapon_types': skill_data.get('weaponTypes', []),
-                    'cast_time': skill_data.get('castTime', 1.0),
-                    'level_data': level_data,
-                    'stat_sets': skill_data.get('statSets', []),
-                    'quality_stats': skill_data.get('qualityStats', []),
-                    'full_skill_data': skill_data  # Include full data for advanced processing
+                    "id": skill_id,
+                    "name": skill_data.get("name", skill_name),
+                    "description": skill_data.get("description", ""),
+                    "skill_types": skill_data.get("skillTypes", []),
+                    "weapon_types": skill_data.get("weaponTypes", []),
+                    "cast_time": skill_data.get("castTime", 1.0),
+                    "level_data": level_data,
+                    "stat_sets": skill_data.get("statSets", []),
+                    "quality_stats": skill_data.get("qualityStats", []),
+                    "full_skill_data": skill_data,  # Include full data for advanced processing
                 }
 
         return {}
@@ -170,12 +176,14 @@ class SkillOptimizer:
 
             try:
                 # Search activeskills for the skill
-                query = text("""
+                query = text(
+                    """
                     SELECT data FROM datc64.activeskills
                     WHERE json_extract(data, '$.DisplayedName') LIKE :name
                        OR json_extract(data, '$.Id') LIKE :name
                     LIMIT 1
-                """)
+                """
+                )
                 result = await session.execute(query, {"name": f"%{skill_name}%"})
                 row = result.fetchone()
 
@@ -187,9 +195,7 @@ class SkillOptimizer:
                 await session.execute(text("DETACH DATABASE datc64"))
 
     async def optimize(
-        self,
-        character_data: Dict[str, Any],
-        goal: str = "balanced"
+        self, character_data: Dict[str, Any], goal: str = "balanced"
     ) -> Dict[str, Any]:
         """
         Generate skill setup recommendations using PoB complete skills data with per-level stats.
@@ -221,38 +227,44 @@ class SkillOptimizer:
             skill_type = self._classify_skill(skill_data, main_skill)
 
             # Find compatible supports based on skill type and goal
-            recommended_supports = self._find_compatible_supports(
-                skill_type, support_gems, goal
-            )
+            recommended_supports = self._find_compatible_supports(skill_type, support_gems, goal)
 
             # Extract per-level data if available (from PoB)
-            level_data = skill_data.get('level_data', {})
-            stat_sets = skill_data.get('stat_sets', [])
+            level_data = skill_data.get("level_data", {})
+            stat_sets = skill_data.get("stat_sets", [])
 
             # Build response
             response = {
-                "skill_analyzed": skill_data.get("name", skill_data.get("DisplayedName", main_skill)),
+                "skill_analyzed": skill_data.get(
+                    "name", skill_data.get("DisplayedName", main_skill)
+                ),
                 "skill_id": skill_data.get("id", skill_data.get("Id", "")),
-                "skill_description": skill_data.get("description", skill_data.get("Description", "")),
+                "skill_description": skill_data.get(
+                    "description", skill_data.get("Description", "")
+                ),
                 "skill_type": skill_type,
-                "suggested_setups": [{
-                    "skill_name": skill_data.get("name", skill_data.get("DisplayedName", main_skill)),
-                    "supports": recommended_supports[:5],  # PoE2 max 5 support gems per skill
-                    "priority": "high",
-                    "reasoning": f"Optimized for {goal} with {skill_type} skill"
-                }],
-                "data_source": "PoB Complete Skills (with per-level stats) + Fresh game data extraction"
+                "suggested_setups": [
+                    {
+                        "skill_name": skill_data.get(
+                            "name", skill_data.get("DisplayedName", main_skill)
+                        ),
+                        "supports": recommended_supports[:5],  # PoE2 max 5 support gems per skill
+                        "priority": "high",
+                        "reasoning": f"Optimized for {goal} with {skill_type} skill",
+                    }
+                ],
+                "data_source": "PoB Complete Skills (with per-level stats) + Fresh game data extraction",
             }
 
             # Add per-level stats if available
             if level_data:
                 response["level_stats"] = {
                     "gem_level": gem_level,
-                    "mana_cost": level_data.get('cost', {}).get('Mana', 0),
-                    "base_multiplier": level_data.get('baseMultiplier', 0),
-                    "crit_chance": level_data.get('critChance'),
-                    "cooldown": level_data.get('cooldown'),
-                    "cast_time": skill_data.get('cast_time', 1.0)
+                    "mana_cost": level_data.get("cost", {}).get("Mana", 0),
+                    "base_multiplier": level_data.get("baseMultiplier", 0),
+                    "crit_chance": level_data.get("critChance"),
+                    "cooldown": level_data.get("cooldown"),
+                    "cast_time": skill_data.get("cast_time", 1.0),
                 }
 
             # Add damage effectiveness from statSets if available
@@ -260,18 +272,15 @@ class SkillOptimizer:
                 primary_stat_set = stat_sets[0] if isinstance(stat_sets, list) else stat_sets
                 if isinstance(primary_stat_set, dict):
                     response["damage_effectiveness"] = {
-                        "base": primary_stat_set.get('baseEffectiveness', 0),
-                        "incremental": primary_stat_set.get('incrementalEffectiveness', 0)
+                        "base": primary_stat_set.get("baseEffectiveness", 0),
+                        "incremental": primary_stat_set.get("incrementalEffectiveness", 0),
                     }
 
             return response
 
         except Exception as e:
             logger.error(f"Skill optimization failed: {e}")
-            return {
-                "error": str(e),
-                "suggested_setups": []
-            }
+            return {"error": str(e), "suggested_setups": []}
 
     def _classify_skill(self, skill_data: Dict[str, Any], skill_name: str) -> str:
         """
@@ -290,7 +299,10 @@ class SkillOptimizer:
             skill_types_lower = [st.lower() for st in skill_types]
 
             # Check for attack types
-            if any(t in skill_types_lower for t in ["attack", "melee", "rangedattack", "bow", "crossbow"]):
+            if any(
+                t in skill_types_lower
+                for t in ["attack", "melee", "rangedattack", "bow", "crossbow"]
+            ):
                 return "attack"
             # Check for spell types
             elif any(t in skill_types_lower for t in ["spell", "cast", "totem"]):
@@ -310,10 +322,25 @@ class SkillOptimizer:
         displayed_name = skill_data.get("name", skill_data.get("DisplayedName", "")).lower()
 
         # Check description for attack keywords first (more specific)
-        if any(word in description for word in ["attack", "strike", "slam", "swing", "weapon", "mace", "sword", "bow", "arrow"]):
+        if any(
+            word in description
+            for word in [
+                "attack",
+                "strike",
+                "slam",
+                "swing",
+                "weapon",
+                "mace",
+                "sword",
+                "bow",
+                "arrow",
+            ]
+        ):
             return "attack"
         # Then check for spell keywords
-        elif any(word in description for word in ["spell", "cast", "conjure", "channel", "projectile"]):
+        elif any(
+            word in description for word in ["spell", "cast", "conjure", "channel", "projectile"]
+        ):
             # But exclude attack projectiles
             if any(word in description for word in ["bow", "arrow", "shot"]):
                 return "attack"
@@ -331,10 +358,7 @@ class SkillOptimizer:
             return "spell"
 
     def _find_compatible_supports(
-        self,
-        skill_type: str,
-        support_gems: Dict[str, Any],
-        goal: str
+        self, skill_type: str, support_gems: Dict[str, Any], goal: str
     ) -> List[str]:
         """Find compatible support gems based on skill type and goal"""
         compatible = []
@@ -349,9 +373,10 @@ class SkillOptimizer:
                 # Prioritize based on goal
                 if goal == "dps":
                     # Prefer damage multipliers
-                    if any(key in gem_data.get("effects", {}) for key in [
-                        "more_spell_damage", "more_attack_damage", "more_damage"
-                    ]):
+                    if any(
+                        key in gem_data.get("effects", {})
+                        for key in ["more_spell_damage", "more_attack_damage", "more_damage"]
+                    ):
                         compatible.insert(0, gem_name)
                     else:
                         compatible.append(gem_name)

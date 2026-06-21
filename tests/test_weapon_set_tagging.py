@@ -7,6 +7,7 @@ swap-set stats (e.g. a swap staff's chaos/spirit) to the active build.
 Tagging each item with weapon_set is the data foundation for fixing
 that in the analyze_character formatter (follow-up, mcp_server.py).
 """
+
 from __future__ import annotations
 
 import sys
@@ -68,10 +69,10 @@ Conjurer Mantle
 def test_items_tagged_with_weapon_set():
     build = PoBImporter().import_xml_sync(SAMPLE_XML)
     by_name = {i["name"]: i for i in build["items"]}
-    assert by_name["Torment Song"]["weapon_set"] == 1       # Weapon 1
-    assert by_name["The Dark Defiler"]["weapon_set"] == 1   # Weapon 2 (still set 1)
-    assert by_name["The Unborn Lich"]["weapon_set"] == 2    # Weapon 1 Swap = set 2
-    assert by_name["Necromantle"]["weapon_set"] is None     # body armour, set-independent
+    assert by_name["Torment Song"]["weapon_set"] == 1  # Weapon 1
+    assert by_name["The Dark Defiler"]["weapon_set"] == 1  # Weapon 2 (still set 1)
+    assert by_name["The Unborn Lich"]["weapon_set"] == 2  # Weapon 1 Swap = set 2
+    assert by_name["Necromantle"]["weapon_set"] is None  # body armour, set-independent
 
 
 def test_swap_set_item_separable():
@@ -83,5 +84,5 @@ def test_swap_set_item_separable():
     set1_names = {i["name"] for i in set1}
     set2_names = {i["name"] for i in set2}
     assert "The Unborn Lich" in set2_names
-    assert "The Unborn Lich" not in set1_names   # never both
+    assert "The Unborn Lich" not in set1_names  # never both
     assert "Torment Song" in set1_names

@@ -67,7 +67,9 @@ def analyze_single_seed(socket_id: int, seed: int, tribute: str) -> SeedAnalysis
 
     analysis = analyze_undying_hate(socket_id, seed, tribute)
 
-    print(f"\nSocket: {analysis.socket.node_id} at ({analysis.socket.x:.1f}, {analysis.socket.y:.1f})")
+    print(
+        f"\nSocket: {analysis.socket.node_id} at ({analysis.socket.x:.1f}, {analysis.socket.y:.1f})"
+    )
     print(f"Seed: {analysis.seed}")
     print(f"Tribute to: {analysis.tribute_name}")
     print(f"Keystone granted: {analysis.keystone}")
@@ -82,7 +84,7 @@ def analyze_single_seed(socket_id: int, seed: int, tribute: str) -> SeedAnalysis
 
     # Group notables by transformation
     print_subheader("Notable Transformations")
-    notable_transforms = [n for n in analysis.transformed_nodes if n.original_type == 'notable']
+    notable_transforms = [n for n in analysis.transformed_nodes if n.original_type == "notable"]
 
     # Count each new notable
     notable_counts = {}
@@ -96,11 +98,11 @@ def analyze_single_seed(socket_id: int, seed: int, tribute: str) -> SeedAnalysis
 
     print_subheader("Notable Distribution")
     for name, count in sorted(notable_counts.items(), key=lambda x: -x[1]):
-        bar = '#' * count
+        bar = "#" * count
         print(f"  {name:<25} {count:>2}x {bar}")
 
     # Show keystone if replaced
-    keystone_transforms = [n for n in analysis.transformed_nodes if n.original_type == 'keystone']
+    keystone_transforms = [n for n in analysis.transformed_nodes if n.original_type == "keystone"]
     if keystone_transforms:
         print_subheader("Keystone Transformation")
         for n in keystone_transforms:
@@ -129,10 +131,14 @@ def compare_seeds(socket_id: int, seeds: list, tribute: str) -> None:
         top_notable = max(dist.items(), key=lambda x: x[1])[0] if dist else "N/A"
         top_count = dist.get(top_notable, 0)
 
-        print(f"{analysis.seed:<10} {analysis.notable_count:<10} {analysis.total_tribute:<10} {top_notable} ({top_count}x)")
+        print(
+            f"{analysis.seed:<10} {analysis.notable_count:<10} {analysis.total_tribute:<10} {top_notable} ({top_count}x)"
+        )
 
 
-def find_notable_seeds(socket_id: int, notable: str, node_id: int, tribute: str, max_seeds: int = 10) -> None:
+def find_notable_seeds(
+    socket_id: int, notable: str, node_id: int, tribute: str, max_seeds: int = 10
+) -> None:
     """Find seeds that give a specific notable at a specific node."""
     print_header(f"SEARCHING FOR '{notable}' AT NODE {node_id}")
 
@@ -144,7 +150,7 @@ def find_notable_seeds(socket_id: int, notable: str, node_id: int, tribute: str,
         target_notable=notable,
         target_node_id=node_id,
         tribute=tribute,
-        max_results=max_seeds
+        max_results=max_seeds,
     )
 
     if seeds:
@@ -159,7 +165,8 @@ def demo_mode() -> None:
     """Run interactive demo mode."""
     print_header("UNDYING HATE SEED CALCULATOR - DEMO MODE")
 
-    print("""
+    print(
+        """
 This calculator determines how an Undying Hate Timeless Jewel transforms
 passive nodes based on its seed number and Tribute name.
 
@@ -171,7 +178,8 @@ Available Tribute names (determine keystone):
   - Doryani  -> Sacrifice of Sight
 
 Seed range: 79 - 30,977
-    """)
+    """
+    )
 
     # List sockets
     list_sockets()
@@ -206,24 +214,30 @@ Examples:
   %(prog)s --socket 2491 --seed 12345         # Analyze specific seed
   %(prog)s --socket 2491 --compare 100,500,1000
   %(prog)s --socket 2491 --find "Disciple of Darkness" --at-node 12345
-        """
+        """,
     )
 
     parser.add_argument("--list-sockets", action="store_true", help="List all jewel socket IDs")
     parser.add_argument("--socket", type=int, help="Jewel socket node ID")
     parser.add_argument("--seed", type=int, help="Seed to analyze (79-30977)")
-    parser.add_argument("--tribute", type=str, default="Amanamu",
-                       help="Tribute name (Amanamu, Ulaman, Kurgal, Tacati, Doryani)")
+    parser.add_argument(
+        "--tribute",
+        type=str,
+        default="Amanamu",
+        help="Tribute name (Amanamu, Ulaman, Kurgal, Tacati, Doryani)",
+    )
     parser.add_argument("--compare", type=str, help="Comma-separated seeds to compare")
     parser.add_argument("--find", type=str, help="Notable name to search for")
-    parser.add_argument("--at-node", type=int, help="Node ID where notable should appear (use with --find)")
+    parser.add_argument(
+        "--at-node", type=int, help="Node ID where notable should appear (use with --find)"
+    )
 
     args = parser.parse_args()
 
     if args.list_sockets:
         list_sockets()
     elif args.socket and args.compare:
-        seeds = [int(s.strip()) for s in args.compare.split(',')]
+        seeds = [int(s.strip()) for s in args.compare.split(",")]
         compare_seeds(args.socket, seeds, args.tribute)
     elif args.socket and args.find and args.at_node:
         find_notable_seeds(args.socket, args.find, args.at_node, args.tribute)

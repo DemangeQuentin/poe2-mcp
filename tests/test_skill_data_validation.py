@@ -60,12 +60,13 @@ async def test_total_skill_count(db):
 async def test_plasma_blast_base_multiplier(db, source_skills):
     """Verify Plasma Blast has baseMultiplier 8.3 at level 1"""
     # Check source data first
-    plasma_source = source_skills['skills'].get('PlasmaBlastPlayer', {})
+    plasma_source = source_skills["skills"].get("PlasmaBlastPlayer", {})
     assert plasma_source, "PlasmaBlastPlayer not found in source data"
 
-    level_1_data = plasma_source.get('levels', {}).get('1', {})
-    assert level_1_data.get('baseMultiplier') == 8.3, \
-        f"Expected baseMultiplier 8.3 in source, found {level_1_data.get('baseMultiplier')}"
+    level_1_data = plasma_source.get("levels", {}).get("1", {})
+    assert (
+        level_1_data.get("baseMultiplier") == 8.3
+    ), f"Expected baseMultiplier 8.3 in source, found {level_1_data.get('baseMultiplier')}"
 
     # Check database
     async with db.async_session() as session:
@@ -78,12 +79,13 @@ async def test_plasma_blast_base_multiplier(db, source_skills):
         assert row, "Plasma Blast not found in database"
 
         per_level_stats = json.loads(row[1]) if row[1] else {}
-        level_1_stats = per_level_stats.get('1', {})
+        level_1_stats = per_level_stats.get("1", {})
 
         # Check if baseMultiplier is stored in the database
-        if 'baseMultiplier' in level_1_stats:
-            assert level_1_stats['baseMultiplier'] == 8.3, \
-                f"Expected baseMultiplier 8.3 in DB, found {level_1_stats.get('baseMultiplier')}"
+        if "baseMultiplier" in level_1_stats:
+            assert (
+                level_1_stats["baseMultiplier"] == 8.3
+            ), f"Expected baseMultiplier 8.3 in DB, found {level_1_stats.get('baseMultiplier')}"
 
 
 @pytest.mark.asyncio
@@ -106,27 +108,27 @@ async def test_arc_exists_and_has_levels(db):
         # Verify it has level progression
         per_level_stats = json.loads(row[2]) if row[2] else {}
         assert len(per_level_stats) > 0, "Arc should have per-level stats"
-        assert '1' in per_level_stats, "Arc should have level 1 stats"
+        assert "1" in per_level_stats, "Arc should have level 1 stats"
 
 
 @pytest.mark.asyncio
 async def test_arc_conversion_in_source(source_skills):
     """Verify Arc has lightning conversion data in source"""
-    arc_source = source_skills['skills'].get('ArcPlayer', {})
+    arc_source = source_skills["skills"].get("ArcPlayer", {})
     assert arc_source, "ArcPlayer not found in source data"
 
     # Check for conversion in statSets or constantStats
-    stat_sets = arc_source.get('statSets', [])
+    stat_sets = arc_source.get("statSets", [])
     if stat_sets:
         # Arc has multiple stat sets
         for stat_set in stat_sets:
-            const_stats = stat_set.get('constantStats', [])
+            const_stats = stat_set.get("constantStats", [])
             # Check if there's conversion data
             if const_stats:
                 print(f"Arc constantStats in statSet {stat_set.get('index')}: {const_stats[:3]}")
 
     # Test passes if Arc exists in source (conversion data structure may vary)
-    assert arc_source.get('name') == "Arc"
+    assert arc_source.get("name") == "Arc"
 
 
 @pytest.mark.asyncio
@@ -141,7 +143,9 @@ async def test_support_gems_have_tags(db):
         # Note: PoB data doesn't include skillTypes for support gems like it does for active skills
         # So most support gems may not have tags populated
         result = await session.execute(
-            text("SELECT name, tags FROM support_gems WHERE tags IS NOT NULL AND tags != '[]' AND tags != 'null' LIMIT 20")
+            text(
+                "SELECT name, tags FROM support_gems WHERE tags IS NOT NULL AND tags != '[]' AND tags != 'null' LIMIT 20"
+            )
         )
         rows = result.fetchall()
 
@@ -158,7 +162,9 @@ async def test_per_level_stat_progression(db):
     async with db.async_session() as session:
         # Get a few skills with level data
         result = await session.execute(
-            text("SELECT name, per_level_stats FROM skill_gems WHERE per_level_stats IS NOT NULL LIMIT 10")
+            text(
+                "SELECT name, per_level_stats FROM skill_gems WHERE per_level_stats IS NOT NULL LIMIT 10"
+            )
         )
         rows = result.fetchall()
 
@@ -168,7 +174,7 @@ async def test_per_level_stat_progression(db):
             per_level_stats = json.loads(row[1])
 
             # Should have at least level 1
-            assert '1' in per_level_stats, f"Skill '{row[0]}' should have level 1 stats"
+            assert "1" in per_level_stats, f"Skill '{row[0]}' should have level 1 stats"
 
             # Check that levels are sequential
             levels = sorted([int(k) for k in per_level_stats.keys()])
@@ -201,7 +207,9 @@ async def test_no_duplicate_skill_names(db):
         # Some duplicates may be legitimate (e.g., different weapon variants)
         # Document them but don't fail the test if count is reasonable
         if duplicates:
-            print(f"\nFound {len(duplicates)} skill names with multiple entries (may be legitimate variants):")
+            print(
+                f"\nFound {len(duplicates)} skill names with multiple entries (may be legitimate variants):"
+            )
             for row in duplicates[:10]:  # Show first 10
                 print(f"  {row[0]}: {row[1]} occurrences")
 
@@ -213,7 +221,9 @@ async def test_no_duplicate_skill_names(db):
             text("SELECT name, COUNT(*) as cnt FROM support_gems GROUP BY name HAVING cnt > 1")
         )
         support_duplicates = result.fetchall()
-        assert len(support_duplicates) == 0, f"Found duplicate support gem names: {[row[0] for row in support_duplicates]}"
+        assert (
+            len(support_duplicates) == 0
+        ), f"Found duplicate support gem names: {[row[0] for row in support_duplicates]}"
 
 
 @pytest.mark.asyncio
@@ -221,7 +231,9 @@ async def test_support_gem_modifiers_exist(db):
     """Verify support gems have modifier data"""
     async with db.async_session() as session:
         result = await session.execute(
-            text("SELECT COUNT(*) FROM support_gems WHERE modifiers IS NOT NULL AND modifiers != 'null'")
+            text(
+                "SELECT COUNT(*) FROM support_gems WHERE modifiers IS NOT NULL AND modifiers != 'null'"
+            )
         )
         with_modifiers = result.scalar()
 
@@ -238,10 +250,11 @@ async def test_support_gem_modifiers_exist(db):
 @pytest.mark.asyncio
 async def test_skill_metadata_consistency(db, source_skills):
     """Verify metadata counts match between source and database"""
-    metadata = source_skills.get('metadata', {})
+    metadata = source_skills.get("metadata", {})
 
-    assert metadata.get('total_skills') == 1066, \
-        f"Source should have 1066 total skills, found {metadata.get('total_skills')}"
+    assert (
+        metadata.get("total_skills") == 1066
+    ), f"Source should have 1066 total skills, found {metadata.get('total_skills')}"
 
     # Database has active skills + support gems
     async with db.async_session() as session:
@@ -261,7 +274,7 @@ async def test_skill_metadata_consistency(db, source_skills):
 async def test_sample_skills_cross_reference(db, source_skills):
     """Cross-reference sample skills between source and database"""
     # Test a few known skills
-    test_skills = ['Arc', 'Fireball', 'Ice Nova']
+    test_skills = ["Arc", "Fireball", "Ice Nova"]
 
     async with db.async_session() as session:
         for skill_name in test_skills:
@@ -273,8 +286,8 @@ async def test_sample_skills_cross_reference(db, source_skills):
             if row:
                 # Also verify it exists in source
                 source_skill = None
-                for skill_id, skill_data in source_skills['skills'].items():
-                    if skill_data.get('name') == skill_name:
+                for skill_id, skill_data in source_skills["skills"].items():
+                    if skill_data.get("name") == skill_name:
                         source_skill = skill_data
                         break
 

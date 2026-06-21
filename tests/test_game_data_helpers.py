@@ -39,6 +39,7 @@ from src.data.game_data import (
 # find_ascendancies_by_base_class
 # ---------------------------------------------------------------------------
 
+
 def test_find_ascendancies_by_base_class_witch_returns_four():
     """Witch is documented as having 4 ascendancies (Infernalist, Blood Mage,
     Lich, Abyssal Lich) — the canonical example in the helper's docstring."""
@@ -66,9 +67,9 @@ def test_find_ascendancies_by_base_class_excludes_unused_by_default():
     into normal lookups."""
     result = find_ascendancies_by_base_class("Witch")
     for entry in result:
-        assert not entry.get("is_unused"), (
-            f"Unused entry leaked into default lookup: {entry.get('id')}"
-        )
+        assert not entry.get(
+            "is_unused"
+        ), f"Unused entry leaked into default lookup: {entry.get('id')}"
 
 
 def test_find_ascendancies_by_base_class_each_entry_has_required_fields():
@@ -83,6 +84,7 @@ def test_find_ascendancies_by_base_class_each_entry_has_required_fields():
 # ---------------------------------------------------------------------------
 # find_mods_by_stat_id
 # ---------------------------------------------------------------------------
+
 
 def test_find_mods_by_stat_id_returns_real_strength_mods():
     """additional_strength is a stat that appears on many mods — non-empty result."""
@@ -111,9 +113,7 @@ def test_find_mods_by_stat_id_sorted_by_level_ascending():
     """Helper sorts by level_requirement asc — lowest tier first."""
     result = find_mods_by_stat_id("additional_strength", limit=20)
     levels = [m.get("level_requirement", 0) for m in result]
-    assert levels == sorted(levels), (
-        f"results not sorted by level_requirement: {levels}"
-    )
+    assert levels == sorted(levels), f"results not sorted by level_requirement: {levels}"
 
 
 def test_find_mods_by_stat_id_generation_type_filter():
@@ -134,6 +134,7 @@ def test_find_mods_by_stat_id_unknown_stat_returns_empty():
 # ---------------------------------------------------------------------------
 # find_mods_by_display_name
 # ---------------------------------------------------------------------------
+
 
 def test_find_mods_by_display_name_returns_known_suffix():
     """'of the Newt' is a canonical low-level life suffix — expect hits."""
@@ -172,6 +173,7 @@ def test_find_mods_by_display_name_sorted_by_level_ascending():
 # get_keystones / get_notables
 # ---------------------------------------------------------------------------
 
+
 def test_get_keystones_returns_nonempty_list():
     """Per version.json the tree has 82 keystones in 0.5 — must not return zero."""
     kstones = get_keystones()
@@ -195,9 +197,9 @@ def test_get_notables_excludes_keystones():
     """Notables and keystones are disjoint per the helper's filter."""
     for n in get_notables():
         assert n.get("is_notable") is True
-        assert not n.get("is_keystone"), (
-            f"Keystone leaked into notables: {n.get('name')} ({n.get('id')})"
-        )
+        assert not n.get(
+            "is_keystone"
+        ), f"Keystone leaked into notables: {n.get('name')} ({n.get('id')})"
 
 
 def test_get_keystones_and_notables_are_disjoint():
@@ -210,6 +212,7 @@ def test_get_keystones_and_notables_are_disjoint():
 # ---------------------------------------------------------------------------
 # find_keystone_by_name
 # ---------------------------------------------------------------------------
+
 
 def test_find_keystone_by_name_exact_match():
     """Docstring example: Resolute Technique."""

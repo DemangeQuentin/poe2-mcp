@@ -11,6 +11,7 @@ Base = declarative_base()
 
 class Item(Base):
     """Item base types and data"""
+
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True)
@@ -32,6 +33,7 @@ class Item(Base):
 
 class UniqueItem(Base):
     """Unique item data"""
+
     __tablename__ = "unique_items"
 
     id = Column(Integer, primary_key=True)
@@ -53,6 +55,7 @@ class UniqueItem(Base):
 
 class Modifier(Base):
     """Item and passive modifiers"""
+
     __tablename__ = "modifiers"
 
     id = Column(Integer, primary_key=True)
@@ -69,10 +72,13 @@ class Modifier(Base):
 
 class PassiveNode(Base):
     """Passive tree nodes"""
+
     __tablename__ = "passive_nodes"
 
     id = Column(Integer, primary_key=True)
-    node_id = Column(String, nullable=False, unique=True, index=True)  # Changed from Integer - uses Id field from .datc64
+    node_id = Column(
+        String, nullable=False, unique=True, index=True
+    )  # Changed from Integer - uses Id field from .datc64
     name = Column(String)
     is_keystone = Column(Boolean, default=False)
     is_notable = Column(Boolean, default=False)
@@ -87,6 +93,7 @@ class PassiveNode(Base):
 
 class PassiveConnection(Base):
     """Connections between passive nodes"""
+
     __tablename__ = "passive_connections"
 
     id = Column(Integer, primary_key=True)
@@ -96,6 +103,7 @@ class PassiveConnection(Base):
 
 class SkillGem(Base):
     """Skill gem data"""
+
     __tablename__ = "skill_gems"
 
     id = Column(Integer, primary_key=True)
@@ -118,6 +126,7 @@ class SkillGem(Base):
 
 class SupportGem(Base):
     """Support gem data"""
+
     __tablename__ = "support_gems"
 
     id = Column(Integer, primary_key=True)
@@ -135,6 +144,7 @@ class SupportGem(Base):
 
 class Ascendancy(Base):
     """Ascendancy class data"""
+
     __tablename__ = "ascendancies"
 
     id = Column(Integer, primary_key=True)
@@ -147,6 +157,7 @@ class Ascendancy(Base):
 
 class SavedBuild(Base):
     """User-saved builds"""
+
     __tablename__ = "saved_builds"
 
     id = Column(Integer, primary_key=True)
@@ -163,11 +174,16 @@ class SavedBuild(Base):
 
 class ItemMod(Base):
     """Item modifiers (affixes) from mods.datc64"""
+
     __tablename__ = "item_mods"
 
     id = Column(Integer, primary_key=True)
-    mod_id = Column(String, nullable=False, unique=True, index=True)  # e.g., "Strength1", "IncreasedLife1"
-    generation_type = Column(Integer, nullable=False, index=True)  # 1=prefix, 2=suffix, 3=implicit, 5=corrupted
+    mod_id = Column(
+        String, nullable=False, unique=True, index=True
+    )  # e.g., "Strength1", "IncreasedLife1"
+    generation_type = Column(
+        Integer, nullable=False, index=True
+    )  # 1=prefix, 2=suffix, 3=implicit, 5=corrupted
     generation_type_name = Column(String)  # "PREFIX", "SUFFIX", "IMPLICIT", "CORRUPTED"
     domain_flag = Column(Integer)  # Domain flag from .datc64
     level_requirement = Column(Integer, index=True)  # Minimum item level required
@@ -183,6 +199,7 @@ class ItemMod(Base):
 
 class GameDataVersion(Base):
     """Track game data version"""
+
     __tablename__ = "game_data_version"
 
     id = Column(Integer, primary_key=True)

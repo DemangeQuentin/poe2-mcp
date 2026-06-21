@@ -32,6 +32,7 @@ from src.data import game_data
 # Path constants
 # ---------------------------------------------------------------------------
 
+
 def test_game_data_dir_is_under_repo():
     """GAME_DATA_DIR resolves to <repo>/data/game/ — not somewhere unexpected."""
     assert game_data.GAME_DATA_DIR == PROJECT_ROOT / "data" / "game"
@@ -47,9 +48,9 @@ def test_game_data_dir_exists():
 
 def test_version_json_path_exists():
     """version.json is the global manifest and ships in the repo."""
-    assert game_data.VERSION_JSON.exists(), (
-        "data/game/version.json missing — every data revision must update it."
-    )
+    assert (
+        game_data.VERSION_JSON.exists()
+    ), "data/game/version.json missing — every data revision must update it."
 
 
 def test_dataset_dir_constants_match_folder_names():
@@ -63,12 +64,10 @@ def test_dataset_dir_constants_match_folder_names():
         (game_data.SKILL_GEMS_DIR, "skill_gems"),
     ]
     for path, expected_name in expected_pairs:
-        assert path.name == expected_name, (
-            f"{path} ends in '{path.name}', expected '{expected_name}'"
-        )
-        assert path.parent == game_data.GAME_DATA_DIR, (
-            f"{path} not parented under GAME_DATA_DIR"
-        )
+        assert (
+            path.name == expected_name
+        ), f"{path} ends in '{path.name}', expected '{expected_name}'"
+        assert path.parent == game_data.GAME_DATA_DIR, f"{path} not parented under GAME_DATA_DIR"
 
 
 def test_dataset_data_files_under_their_dirs():
@@ -101,6 +100,7 @@ def test_metadata_path_constants_consistent():
 # get_version()
 # ---------------------------------------------------------------------------
 
+
 def test_get_version_returns_dict():
     v = game_data.get_version()
     assert isinstance(v, dict)
@@ -121,14 +121,15 @@ def test_get_version_datasets_match_dir_constants():
     # The shipped datasets we have constants for. skill_gems is intentionally
     # excluded — it lives under datasets_pending_0_5_reextract, not datasets.
     expected_subset = {"mods", "passive_tree", "support_gems", "ascendancies", "stats"}
-    assert expected_subset.issubset(dataset_names), (
-        f"version.json datasets {dataset_names} missing one of {expected_subset}"
-    )
+    assert expected_subset.issubset(
+        dataset_names
+    ), f"version.json datasets {dataset_names} missing one of {expected_subset}"
 
 
 # ---------------------------------------------------------------------------
 # load_*() — shape checks only; we trust the JSON contents
 # ---------------------------------------------------------------------------
+
 
 def test_load_mods_returns_dict_with_records():
     mods = game_data.load_mods()
@@ -136,8 +137,7 @@ def test_load_mods_returns_dict_with_records():
     # Per data/game/mods/metadata.json, this is a wrapped payload with a
     # records-like array under one of the conventional keys.
     assert any(
-        isinstance(mods.get(k), list) and mods[k]
-        for k in ("mods", "records", "rows", "entries")
+        isinstance(mods.get(k), list) and mods[k] for k in ("mods", "records", "rows", "entries")
     ), "load_mods() returned no list payload under any conventional key"
 
 
@@ -169,9 +169,9 @@ def test_load_stats_returns_int_keyed_dict():
     sample_keys = list(stats.keys())[:5]
     for k in sample_keys:
         assert isinstance(k, int), f"stats key {k!r} not an int (got {type(k).__name__})"
-        assert isinstance(stats[k], str) and stats[k], (
-            f"stats[{k}] not a non-empty string (got {stats[k]!r})"
-        )
+        assert (
+            isinstance(stats[k], str) and stats[k]
+        ), f"stats[{k}] not a non-empty string (got {stats[k]!r})"
 
 
 def test_load_stats_record_count_matches_version_manifest():
@@ -179,14 +179,15 @@ def test_load_stats_record_count_matches_version_manifest():
     v = game_data.get_version()
     expected = v["datasets"]["stats"]["record_count"]
     actual = len(game_data.load_stats())
-    assert actual == expected, (
-        f"load_stats() returned {actual} entries; version.json says {expected}"
-    )
+    assert (
+        actual == expected
+    ), f"load_stats() returned {actual} entries; version.json says {expected}"
 
 
 # ---------------------------------------------------------------------------
 # load_metadata()
 # ---------------------------------------------------------------------------
+
 
 def test_load_metadata_for_each_dataset():
     """Every shipped dataset should have a readable metadata.json."""
@@ -198,14 +199,12 @@ def test_load_metadata_for_each_dataset():
         game_data.STATS_DIR,
     ):
         meta = game_data.load_metadata(dataset_dir)
-        assert isinstance(meta, dict) and meta, (
-            f"load_metadata({dataset_dir}) returned no data"
-        )
+        assert isinstance(meta, dict) and meta, f"load_metadata({dataset_dir}) returned no data"
         # Per-dataset metadata always names the dataset and the filename so
         # consumers can cross-reference back to data/game/.
-        assert "dataset" in meta or "filename" in meta, (
-            f"{dataset_dir}/metadata.json missing both 'dataset' and 'filename' keys"
-        )
+        assert (
+            "dataset" in meta or "filename" in meta
+        ), f"{dataset_dir}/metadata.json missing both 'dataset' and 'filename' keys"
 
 
 def test_load_metadata_returns_none_for_missing_dir():
@@ -218,6 +217,7 @@ def test_load_metadata_returns_none_for_missing_dir():
 # describe()
 # ---------------------------------------------------------------------------
 
+
 def test_describe_returns_non_empty_string():
     out = game_data.describe()
     assert isinstance(out, str)
@@ -228,6 +228,6 @@ def test_describe_mentions_patch_version_from_manifest():
     """describe() output should at minimum contain the patch_version from version.json."""
     v = game_data.get_version()
     out = game_data.describe()
-    assert v["patch_version"] in out, (
-        f"describe() output doesn't include patch_version {v['patch_version']!r}"
-    )
+    assert (
+        v["patch_version"] in out
+    ), f"describe() output doesn't include patch_version {v['patch_version']!r}"

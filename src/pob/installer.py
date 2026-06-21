@@ -30,14 +30,13 @@ logger = logging.getLogger(__name__)
 # match PoB's source style. Detection keys off the "Addons/init.lua" substring,
 # so the surrounding text can change without breaking idempotency.
 ADDON_LOADER_LINE = (
-    "\tpcall(dofile, GetScriptPath()..'/Addons/init.lua') "
-    "-- MCP Bridge Addon Loader"
+    "\tpcall(dofile, GetScriptPath()..'/Addons/init.lua') " "-- MCP Bridge Addon Loader"
 )
 ADDON_LOADER_MARKER = "Addons/init.lua"
 
 # Anchor we insert the loader after: the end of PoB's main-module Init block.
 # This mirrors install.bat and is stable across PoB versions.
-PATCH_ANCHOR = 'self:ShowErrMsg("In \'Init\': %s", errMsg)'
+PATCH_ANCHOR = "self:ShowErrMsg(\"In 'Init': %s\", errMsg)"
 
 
 def _candidate_install_paths() -> List[Path]:
@@ -109,9 +108,9 @@ def _bundled_addon_source() -> Optional[Path]:
     here = Path(__file__).resolve()
     # src/pob/installer.py -> repo root is parents[2]
     candidates = [
-        here.parents[2] / "pob_addon" / "src" / "Addons",   # source checkout
-        here.parents[2] / "pob_addon" / "Addons",            # flattened bundle
-        here.parents[1] / "pob_addon" / "Addons",            # server-root bundle
+        here.parents[2] / "pob_addon" / "src" / "Addons",  # source checkout
+        here.parents[2] / "pob_addon" / "Addons",  # flattened bundle
+        here.parents[1] / "pob_addon" / "Addons",  # server-root bundle
     ]
     for c in candidates:
         if (c / "init.lua").is_file() and (c / "MCPBridge" / "bridge.lua").is_file():
@@ -169,9 +168,7 @@ def _patch_launch_lua(launch: Path) -> str:
         return "already_patched"
 
     lines = text.splitlines(keepends=True)
-    anchor_idx = next(
-        (i for i, ln in enumerate(lines) if PATCH_ANCHOR in ln), None
-    )
+    anchor_idx = next((i for i, ln in enumerate(lines) if PATCH_ANCHOR in ln), None)
     if anchor_idx is None:
         return "anchor_not_found"
 
@@ -309,8 +306,7 @@ def uninstall_addon(pob_path: Optional[Path] = None) -> Dict[str, object]:
         shutil.copy2(backup, launch)
     elif launch.is_file():
         text = launch.read_text(encoding="utf-8", errors="replace")
-        kept = [ln for ln in text.splitlines(keepends=True)
-                if ADDON_LOADER_MARKER not in ln]
+        kept = [ln for ln in text.splitlines(keepends=True) if ADDON_LOADER_MARKER not in ln]
         launch.write_text("".join(kept), encoding="utf-8")
 
     return {
@@ -344,8 +340,11 @@ def ensure_installed(pob_path: Optional[Path] = None) -> Dict[str, object]:
 
     state = is_addon_installed(pob_path)
     if state["installed"]:
-        return {"action": "ok", "pob_path": str(pob_path),
-                "message": "Addon present and Launch.lua hooked."}
+        return {
+            "action": "ok",
+            "pob_path": str(pob_path),
+            "message": "Addon present and Launch.lua hooked.",
+        }
 
     # Files survived an update but the Launch.lua hook was wiped: re-patch only.
     if state["files_present"] and not state["launch_patched"]:

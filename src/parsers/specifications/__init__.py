@@ -14,7 +14,6 @@ from .mods_spec import (
     # Enums
     GenerationType,
     DomainFlag,
-
     # Constants
     MOD_ROW_SIZE,
     MOD_ROW_COUNT,
@@ -22,11 +21,9 @@ from .mods_spec import (
     STAT_VALUE_OFFSETS,
     FIELD_OFFSETS,
     NULL_KEY_MARKER,
-
     # Data classes
     StatEntry,
     ModRecord,
-
     # Functions
     parse_mod_row,
     read_key,
@@ -39,27 +36,24 @@ from .mods_spec import (
 
 __all__ = [
     # Enums
-    'GenerationType',
-    'DomainFlag',
-
+    "GenerationType",
+    "DomainFlag",
     # Constants
-    'MOD_ROW_SIZE',
-    'MOD_ROW_COUNT',
-    'STAT_KEY_OFFSETS',
-    'STAT_VALUE_OFFSETS',
-    'FIELD_OFFSETS',
-    'NULL_KEY_MARKER',
-
+    "MOD_ROW_SIZE",
+    "MOD_ROW_COUNT",
+    "STAT_KEY_OFFSETS",
+    "STAT_VALUE_OFFSETS",
+    "FIELD_OFFSETS",
+    "NULL_KEY_MARKER",
     # Data classes
-    'StatEntry',
-    'ModRecord',
-
+    "StatEntry",
+    "ModRecord",
     # Functions
-    'parse_mod_row',
-    'read_key',
-    'read_interval',
-    'extract_mod_family',
-    'validate_stat_key',
-    'validate_generation_type',
-    'validate_mod_record',
+    "parse_mod_row",
+    "read_key",
+    "read_interval",
+    "extract_mod_family",
+    "validate_stat_key",
+    "validate_generation_type",
+    "validate_mod_record",
 ]

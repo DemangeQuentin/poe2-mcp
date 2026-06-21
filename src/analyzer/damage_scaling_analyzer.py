@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ScalingRecommendation:
     """Recommendation for scaling damage"""
+
     stat_name: str
     current_value: float
     impact_rating: float  # 0-100, how much this stat affects DPS
@@ -30,6 +31,7 @@ class ScalingRecommendation:
 @dataclass
 class DPSBreakdown:
     """Breakdown of DPS calculation"""
+
     base_damage: float
     after_added: float
     after_increased: float
@@ -65,7 +67,7 @@ class DamageScalingAnalyzer:
         self,
         character_data: Dict[str, Any],
         skill_type: str = "spell",
-        current_dps: Optional[float] = None
+        current_dps: Optional[float] = None,
     ) -> List[ScalingRecommendation]:
         """
         Analyze damage scaling and provide recommendations
@@ -98,8 +100,7 @@ class DamageScalingAnalyzer:
         # Sort by priority and impact
         priority_order = {"critical": 4, "high": 3, "medium": 2, "low": 1}
         recommendations.sort(
-            key=lambda r: (priority_order.get(r.priority, 0), r.impact_rating),
-            reverse=True
+            key=lambda r: (priority_order.get(r.priority, 0), r.impact_rating), reverse=True
         )
 
         return recommendations
@@ -108,29 +109,37 @@ class DamageScalingAnalyzer:
         """Extract relevant stats from character data"""
         stats = {
             # Base damage
-            'base_damage': character_data.get('base_damage', 100.0),
-
+            "base_damage": character_data.get("base_damage", 100.0),
             # Increased modifiers
-            'increased_damage': character_data.get('increased_spell_damage', 0.0) if skill_type == 'spell' else character_data.get('increased_attack_damage', 0.0),
-
+            "increased_damage": (
+                character_data.get("increased_spell_damage", 0.0)
+                if skill_type == "spell"
+                else character_data.get("increased_attack_damage", 0.0)
+            ),
             # More multipliers (from supports)
-            'more_multipliers': character_data.get('more_multipliers', []),
-
+            "more_multipliers": character_data.get("more_multipliers", []),
             # Added damage
-            'added_flat_damage': character_data.get('added_flat_damage', 0.0),
-
+            "added_flat_damage": character_data.get("added_flat_damage", 0.0),
             # Crit
-            'base_crit_chance': character_data.get('base_crit_chance', 5.0),
-            'increased_crit_chance': character_data.get('increased_crit_chance', 0.0),
-            'crit_multiplier': character_data.get('crit_multiplier', 150.0),  # Base +100%, often have +50%
-            'increased_crit_multi': character_data.get('increased_crit_multi', 0.0),
-
+            "base_crit_chance": character_data.get("base_crit_chance", 5.0),
+            "increased_crit_chance": character_data.get("increased_crit_chance", 0.0),
+            "crit_multiplier": character_data.get(
+                "crit_multiplier", 150.0
+            ),  # Base +100%, often have +50%
+            "increased_crit_multi": character_data.get("increased_crit_multi", 0.0),
             # Speed
-            'base_cast_time': character_data.get('base_cast_time', 1.0) if skill_type == 'spell' else character_data.get('base_attack_time', 1.0),
-            'increased_cast_speed': character_data.get('increased_cast_speed', 0.0) if skill_type == 'spell' else character_data.get('increased_attack_speed', 0.0),
-
+            "base_cast_time": (
+                character_data.get("base_cast_time", 1.0)
+                if skill_type == "spell"
+                else character_data.get("base_attack_time", 1.0)
+            ),
+            "increased_cast_speed": (
+                character_data.get("increased_cast_speed", 0.0)
+                if skill_type == "spell"
+                else character_data.get("increased_attack_speed", 0.0)
+            ),
             # Damage effectiveness
-            'damage_effectiveness': character_data.get('damage_effectiveness', 100.0),
+            "damage_effectiveness": character_data.get("damage_effectiveness", 100.0),
         }
 
         return stats
@@ -138,35 +147,41 @@ class DamageScalingAnalyzer:
     def _calculate_dps_breakdown(self, stats: Dict[str, float], skill_type: str) -> DPSBreakdown:
         """Calculate DPS with full breakdown"""
         # Step 1: Base damage
-        base = stats['base_damage']
+        base = stats["base_damage"]
 
         # Step 2: Add flat damage
-        added_flat = stats['added_flat_damage'] * (stats['damage_effectiveness'] / 100.0)
+        added_flat = stats["added_flat_damage"] * (stats["damage_effectiveness"] / 100.0)
         after_added = base + added_flat
         added_multiplier = after_added / base if base > 0 else 1.0
 
         # Step 3: Apply increased
-        increased_total = stats['increased_damage']
+        increased_total = stats["increased_damage"]
         increased_multi = 1.0 + (increased_total / 100.0)
         after_increased = after_added * increased_multi
 
         # Step 4: Apply more multipliers
         more_multi = 1.0
-        for more_percent in stats['more_multipliers']:
-            more_multi *= (1.0 + more_percent / 100.0)
+        for more_percent in stats["more_multipliers"]:
+            more_multi *= 1.0 + more_percent / 100.0
         after_more = after_increased * more_multi
 
         # Step 5: Apply crit
-        final_crit_chance = min(100.0, stats['base_crit_chance'] + stats['increased_crit_chance']) / 100.0
-        crit_multi_total = 1.0 + (stats['crit_multiplier'] / 100.0) * (1.0 + stats['increased_crit_multi'] / 100.0)
+        final_crit_chance = (
+            min(100.0, stats["base_crit_chance"] + stats["increased_crit_chance"]) / 100.0
+        )
+        crit_multi_total = 1.0 + (stats["crit_multiplier"] / 100.0) * (
+            1.0 + stats["increased_crit_multi"] / 100.0
+        )
 
         # Expected damage with crits
-        expected_hit = after_more * (1 - final_crit_chance) + after_more * crit_multi_total * final_crit_chance
+        expected_hit = (
+            after_more * (1 - final_crit_chance) + after_more * crit_multi_total * final_crit_chance
+        )
         effective_crit_multi = expected_hit / after_more if after_more > 0 else 1.0
 
         # Step 6: Cast/attack speed
-        speed_multi = 1.0 + (stats['increased_cast_speed'] / 100.0)
-        casts_per_second = 1.0 / (stats['base_cast_time'] / speed_multi)
+        speed_multi = 1.0 + (stats["increased_cast_speed"] / 100.0)
+        casts_per_second = 1.0 / (stats["base_cast_time"] / speed_multi)
 
         final_dps = expected_hit * casts_per_second
 
@@ -182,29 +197,28 @@ class DamageScalingAnalyzer:
             more_multiplier=more_multi,
             crit_multiplier=effective_crit_multi,
             breakdown={
-                'base': base,
-                'added_flat': added_flat,
-                'increased_total': increased_total,
-                'more_total': more_multi,
-                'crit_impact': effective_crit_multi,
-                'speed_multi': speed_multi
-            }
+                "base": base,
+                "added_flat": added_flat,
+                "increased_total": increased_total,
+                "more_total": more_multi,
+                "crit_impact": effective_crit_multi,
+                "speed_multi": speed_multi,
+            },
         )
 
     def _analyze_increased_damage(
-        self,
-        stats: Dict[str, float],
-        dps_breakdown: DPSBreakdown,
-        skill_type: str
+        self, stats: Dict[str, float], dps_breakdown: DPSBreakdown, skill_type: str
     ) -> List[ScalingRecommendation]:
         """Analyze increased damage scaling"""
         recommendations = []
 
-        current_increased = stats['increased_damage']
+        current_increased = stats["increased_damage"]
 
         # Calculate impact of adding more increased damage
         # Law of diminishing returns
-        impact = self._calculate_impact_of_increased(current_increased, 100.0)  # Adding 100% increased
+        impact = self._calculate_impact_of_increased(
+            current_increased, 100.0
+        )  # Adding 100% increased
 
         # Determine priority based on current amount
         if current_increased < 200:
@@ -227,29 +241,28 @@ class DamageScalingAnalyzer:
 
         example = f"+100% increased damage = +{percent_gain:.1f}% DPS"
 
-        recommendations.append(ScalingRecommendation(
-            stat_name="Increased Damage",
-            current_value=current_increased,
-            impact_rating=impact,
-            priority=priority,
-            explanation=explanation,
-            example_improvement=example,
-            bottleneck=bottleneck
-        ))
+        recommendations.append(
+            ScalingRecommendation(
+                stat_name="Increased Damage",
+                current_value=current_increased,
+                impact_rating=impact,
+                priority=priority,
+                explanation=explanation,
+                example_improvement=example,
+                bottleneck=bottleneck,
+            )
+        )
 
         return recommendations
 
     def _analyze_more_multipliers(
-        self,
-        stats: Dict[str, float],
-        dps_breakdown: DPSBreakdown,
-        skill_type: str
+        self, stats: Dict[str, float], dps_breakdown: DPSBreakdown, skill_type: str
     ) -> List[ScalingRecommendation]:
         """Analyze more multipliers"""
         recommendations = []
 
         current_more = dps_breakdown.more_multiplier
-        num_supports = len(stats['more_multipliers'])
+        num_supports = len(stats["more_multipliers"])
 
         # More multipliers are almost always high value
         impact = 85.0  # Very high impact
@@ -273,29 +286,28 @@ class DamageScalingAnalyzer:
 
         example = f"+30% more damage support = +{percent_gain:.1f}% DPS"
 
-        recommendations.append(ScalingRecommendation(
-            stat_name="More Multipliers (Support Gems)",
-            current_value=current_more,
-            impact_rating=impact,
-            priority=priority,
-            explanation=explanation,
-            example_improvement=example,
-            bottleneck=bottleneck
-        ))
+        recommendations.append(
+            ScalingRecommendation(
+                stat_name="More Multipliers (Support Gems)",
+                current_value=current_more,
+                impact_rating=impact,
+                priority=priority,
+                explanation=explanation,
+                example_improvement=example,
+                bottleneck=bottleneck,
+            )
+        )
 
         return recommendations
 
     def _analyze_crit_scaling(
-        self,
-        stats: Dict[str, float],
-        dps_breakdown: DPSBreakdown,
-        skill_type: str
+        self, stats: Dict[str, float], dps_breakdown: DPSBreakdown, skill_type: str
     ) -> List[ScalingRecommendation]:
         """Analyze critical strike scaling"""
         recommendations = []
 
-        crit_chance = min(100.0, stats['base_crit_chance'] + stats['increased_crit_chance'])
-        crit_multi = stats['crit_multiplier']
+        crit_chance = min(100.0, stats["base_crit_chance"] + stats["increased_crit_chance"])
+        crit_multi = stats["crit_multiplier"]
 
         # Calculate crit impact
         current_crit_multi = dps_breakdown.crit_multiplier
@@ -331,29 +343,28 @@ class DamageScalingAnalyzer:
             explanation = f"Your crit is well optimized ({crit_chance:.1f}% chance, {crit_multi:.0f}% multi). Diminishing returns now."
             example = "Focus on other scaling vectors"
 
-        recommendations.append(ScalingRecommendation(
-            stat_name="Critical Strike",
-            current_value=crit_chance,
-            impact_rating=impact,
-            priority=priority,
-            explanation=explanation,
-            example_improvement=example,
-            bottleneck=False
-        ))
+        recommendations.append(
+            ScalingRecommendation(
+                stat_name="Critical Strike",
+                current_value=crit_chance,
+                impact_rating=impact,
+                priority=priority,
+                explanation=explanation,
+                example_improvement=example,
+                bottleneck=False,
+            )
+        )
 
         return recommendations
 
     def _analyze_added_damage(
-        self,
-        stats: Dict[str, float],
-        dps_breakdown: DPSBreakdown,
-        skill_type: str
+        self, stats: Dict[str, float], dps_breakdown: DPSBreakdown, skill_type: str
     ) -> List[ScalingRecommendation]:
         """Analyze added flat damage"""
         recommendations = []
 
-        added_flat = stats['added_flat_damage']
-        base_damage = stats['base_damage']
+        added_flat = stats["added_flat_damage"]
+        base_damage = stats["base_damage"]
 
         # Calculate how much added flat contributes
         contribution_percent = (added_flat / base_damage) * 100.0 if base_damage > 0 else 0
@@ -362,35 +373,36 @@ class DamageScalingAnalyzer:
             impact = 60.0
             priority = "medium"
             explanation = f"Added flat damage is {contribution_percent:.1f}% of your base. Adding more flat damage is effective."
-            example = f"+50 flat damage = ~{(50/base_damage)*100:.1f}% more damage (before multipliers)"
+            example = (
+                f"+50 flat damage = ~{(50/base_damage)*100:.1f}% more damage (before multipliers)"
+            )
         else:
             impact = 40.0
             priority = "low"
             explanation = f"Added flat damage is {contribution_percent:.1f}% of your base. Scaling through multipliers is better."
             example = "Focus on increased/more multipliers instead"
 
-        recommendations.append(ScalingRecommendation(
-            stat_name="Added Flat Damage",
-            current_value=added_flat,
-            impact_rating=impact,
-            priority=priority,
-            explanation=explanation,
-            example_improvement=example,
-            bottleneck=False
-        ))
+        recommendations.append(
+            ScalingRecommendation(
+                stat_name="Added Flat Damage",
+                current_value=added_flat,
+                impact_rating=impact,
+                priority=priority,
+                explanation=explanation,
+                example_improvement=example,
+                bottleneck=False,
+            )
+        )
 
         return recommendations
 
     def _analyze_cast_attack_speed(
-        self,
-        stats: Dict[str, float],
-        dps_breakdown: DPSBreakdown,
-        skill_type: str
+        self, stats: Dict[str, float], dps_breakdown: DPSBreakdown, skill_type: str
     ) -> List[ScalingRecommendation]:
         """Analyze cast/attack speed"""
         recommendations = []
 
-        increased_speed = stats['increased_cast_speed']
+        increased_speed = stats["increased_cast_speed"]
         speed_name = "Cast Speed" if skill_type == "spell" else "Attack Speed"
 
         # Speed is linear scaling (doesn't have diminishing returns like increased damage)
@@ -415,15 +427,17 @@ class DamageScalingAnalyzer:
             explanation = f"You have {increased_speed:.0f}% increased {speed_name.lower()}. Heavily invested already."
             example = "Focus on other scaling vectors"
 
-        recommendations.append(ScalingRecommendation(
-            stat_name=speed_name,
-            current_value=increased_speed,
-            impact_rating=impact,
-            priority=priority,
-            explanation=explanation,
-            example_improvement=example,
-            bottleneck=False
-        ))
+        recommendations.append(
+            ScalingRecommendation(
+                stat_name=speed_name,
+                current_value=increased_speed,
+                impact_rating=impact,
+                priority=priority,
+                explanation=explanation,
+                example_improvement=example,
+                bottleneck=False,
+            )
+        )
 
         return recommendations
 
@@ -459,17 +473,12 @@ class DamageScalingAnalyzer:
         lines.append("")
 
         # Group by priority
-        by_priority = {
-            'critical': [],
-            'high': [],
-            'medium': [],
-            'low': []
-        }
+        by_priority = {"critical": [], "high": [], "medium": [], "low": []}
 
         for rec in recommendations:
             by_priority[rec.priority].append(rec)
 
-        for priority in ['critical', 'high', 'medium', 'low']:
+        for priority in ["critical", "high", "medium", "low"]:
             recs = by_priority[priority]
             if not recs:
                 continue
@@ -498,16 +507,16 @@ if __name__ == "__main__":
 
     # Example character with moderate investment
     character = {
-        'base_damage': 100,
-        'increased_spell_damage': 250,
-        'more_multipliers': [30, 25],  # Two supports
-        'added_flat_damage': 50,
-        'base_crit_chance': 7,
-        'increased_crit_chance': 40,
-        'crit_multiplier': 180,
-        'base_cast_time': 0.8,
-        'increased_cast_speed': 30,
-        'damage_effectiveness': 100
+        "base_damage": 100,
+        "increased_spell_damage": 250,
+        "more_multipliers": [30, 25],  # Two supports
+        "added_flat_damage": 50,
+        "base_crit_chance": 7,
+        "increased_crit_chance": 40,
+        "crit_multiplier": 180,
+        "base_cast_time": 0.8,
+        "increased_cast_speed": 30,
+        "damage_effectiveness": 100,
     }
 
     recommendations = analyzer.analyze_scaling(character, skill_type="spell")

@@ -68,9 +68,7 @@ def test_spell_tag_lookup_unknown_returns_none():
 
 def test_check_semantic_conflicts_added_fire_on_ice_nova_warns():
     """Headline #117 case: Added Fire Damage Support on Ice Nova (cold)."""
-    result = check_semantic_conflicts(
-        ["Added Fire Damage Support"], spell_name="Ice Nova"
-    )
+    result = check_semantic_conflicts(["Added Fire Damage Support"], spell_name="Ice Nova")
     assert result["warnings"], "expected a semantic warning"
     w = result["warnings"][0]
     assert "Added Fire Damage Support" in w["support"]
@@ -81,18 +79,14 @@ def test_check_semantic_conflicts_added_fire_on_ice_nova_warns():
 
 def test_check_semantic_conflicts_fire_on_fire_no_warning():
     """Counter-case: Added Fire Damage Support on Fireball is fine."""
-    result = check_semantic_conflicts(
-        ["Added Fire Damage Support"], spell_name="Fireball"
-    )
-    assert result["warnings"] == [], (
-        f"unexpected warning on fire support + fire spell: {result['warnings']}"
-    )
+    result = check_semantic_conflicts(["Added Fire Damage Support"], spell_name="Fireball")
+    assert (
+        result["warnings"] == []
+    ), f"unexpected warning on fire support + fire spell: {result['warnings']}"
 
 
 def test_check_semantic_conflicts_minion_support_on_non_minion_warns():
-    result = check_semantic_conflicts(
-        ["Minion Damage Support"], spell_name="Ice Nova"
-    )
+    result = check_semantic_conflicts(["Minion Damage Support"], spell_name="Ice Nova")
     assert result["warnings"]
     assert "minion" in result["warnings"][0]["required_any_of"]
 
@@ -117,9 +111,7 @@ def test_check_semantic_conflicts_no_spell_name_returns_empty():
 
 def test_check_semantic_conflicts_unknown_spell_returns_empty():
     """Unknown spell -> can't resolve tags -> no warnings (graceful)."""
-    result = check_semantic_conflicts(
-        ["Added Fire Damage Support"], spell_name="UnknownSpellXYZ"
-    )
+    result = check_semantic_conflicts(["Added Fire Damage Support"], spell_name="UnknownSpellXYZ")
     assert result["warnings"] == []
     assert result["spell_tags"] is None
 
@@ -137,9 +129,11 @@ def test_requirements_dict_has_expected_coverage():
 # Handler mode — methodology-rule lazy fixture
 # ---------------------------------------------------------------------------
 
+
 @pytest_asyncio.fixture(scope="module")
 async def mcp():
     from src.mcp_server import PoE2BuildOptimizerMCP
+
     instance = PoE2BuildOptimizerMCP()
     await instance.initialize()
     return instance
@@ -148,10 +142,12 @@ async def mcp():
 @pytest.mark.asyncio
 async def test_handler_forwards_spell_name(mcp):
     """The MCP handler accepts spell_name and surfaces semantic warnings."""
-    r = await mcp._handle_validate_support_combination({
-        "support_gems": ["Added Fire Damage Support"],
-        "spell_name": "Ice Nova",
-    })
+    r = await mcp._handle_validate_support_combination(
+        {
+            "support_gems": ["Added Fire Damage Support"],
+            "spell_name": "Ice Nova",
+        }
+    )
     text = r[0].text
     assert "Warnings" in text or "warning" in text.lower()
     assert "Ice Nova" in text
@@ -160,9 +156,11 @@ async def test_handler_forwards_spell_name(mcp):
 @pytest.mark.asyncio
 async def test_handler_no_spell_name_works_unchanged(mcp):
     """Backward compat: no spell_name still produces a valid/invalid line."""
-    r = await mcp._handle_validate_support_combination({
-        "support_gems": ["Rage Support"],
-    })
+    r = await mcp._handle_validate_support_combination(
+        {
+            "support_gems": ["Rage Support"],
+        }
+    )
     text = r[0].text
     assert "Valid combination" in text or "Invalid combination" in text
 
@@ -170,9 +168,11 @@ async def test_handler_no_spell_name_works_unchanged(mcp):
 @pytest.mark.asyncio
 async def test_handler_includes_provenance_banner(mcp):
     """Per #116 pattern, the response carries the COMPUTED tier banner."""
-    r = await mcp._handle_validate_support_combination({
-        "support_gems": ["Rage Support"],
-        "spell_name": "Fireball",
-    })
+    r = await mcp._handle_validate_support_combination(
+        {
+            "support_gems": ["Rage Support"],
+            "spell_name": "Fireball",
+        }
+    )
     text = r[0].text
     assert "**Data**:" in text and "**Tier**: computed" in text

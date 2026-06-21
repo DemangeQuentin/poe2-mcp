@@ -43,7 +43,10 @@ def _skill_gems_v2_path() -> Path:
     # src/calculator/v2_spell_db.py -> repo root
     return (
         Path(__file__).resolve().parent.parent.parent
-        / "data" / "game" / "skill_gems" / "skill_gems_v2.json"
+        / "data"
+        / "game"
+        / "skill_gems"
+        / "skill_gems_v2.json"
     )
 
 
@@ -70,7 +73,9 @@ def _load_v2_skills() -> Dict[str, Dict[str, Any]]:
     return _CACHE
 
 
-def _find_skill(needle: str, skills: Dict[str, Dict[str, Any]]) -> Optional[Tuple[str, Dict[str, Any]]]:
+def _find_skill(
+    needle: str, skills: Dict[str, Dict[str, Any]]
+) -> Optional[Tuple[str, Dict[str, Any]]]:
     """Look up a skill by display name or skill_id (case-insensitive)."""
     if not needle:
         return None
@@ -109,7 +114,9 @@ def _derive_damage_types(skill_record: Dict[str, Any]) -> List[str]:
     return out
 
 
-def _derive_damage_range(statset: Dict[str, Any], level_index: int) -> Optional[Tuple[float, float]]:
+def _derive_damage_range(
+    statset: Dict[str, Any], level_index: int
+) -> Optional[Tuple[float, float]]:
     """Try to pull (min, max) base damage from a statSet's per-level entry.
 
     The common spell pattern is:
@@ -128,10 +135,7 @@ def _derive_damage_range(statset: Dict[str, Any], level_index: int) -> Optional[
     # Confirm first two stats look like the spell-damage pair
     s0 = (stats_list[0] or "").lower()
     s1 = (stats_list[1] or "").lower()
-    if not (
-        ("minimum" in s0 and "damage" in s0)
-        and ("maximum" in s1 and "damage" in s1)
-    ):
+    if not (("minimum" in s0 and "damage" in s0) and ("maximum" in s1 and "damage" in s1)):
         return None
 
     levels = statset.get("levels")

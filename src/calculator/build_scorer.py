@@ -32,7 +32,7 @@ class BuildScorer:
             "weaknesses": [],
             "dps": 0,
             "ehp": 0,
-            "defense_rating": 0.0
+            "defense_rating": 0.0,
         }
 
         try:
@@ -42,11 +42,7 @@ class BuildScorer:
             skill_score = await self._score_skills(character_data)
 
             # Weighted overall score
-            analysis["overall_score"] = (
-                gear_score * 0.4 +
-                passive_score * 0.4 +
-                skill_score * 0.2
-            )
+            analysis["overall_score"] = gear_score * 0.4 + passive_score * 0.4 + skill_score * 0.2
 
             # Determine tier
             if analysis["overall_score"] >= 0.9:
@@ -92,25 +88,19 @@ class BuildScorer:
         return 0.65  # Example score
 
     async def compare_builds(
-        self,
-        builds: List[Dict[str, Any]],
-        metrics: List[str]
+        self, builds: List[Dict[str, Any]], metrics: List[str]
     ) -> Dict[str, Any]:
         """Compare multiple builds"""
         comparison = {"metrics": []}
 
         for metric in metrics:
-            metric_results = {
-                "name": metric,
-                "results": []
-            }
+            metric_results = {"name": metric, "results": []}
 
             for build in builds:
                 analysis = await self.analyze_build(build)
-                metric_results["results"].append({
-                    "build_name": build.get("name", "Unknown"),
-                    "value": analysis.get(metric, 0)
-                })
+                metric_results["results"].append(
+                    {"build_name": build.get("name", "Unknown"), "value": analysis.get(metric, 0)}
+                )
 
             comparison["metrics"].append(metric_results)
 

@@ -59,15 +59,10 @@ class TradeAuthHelper:
         async with async_playwright() as p:
             # Launch browser in headed mode (user can see it)
             print("Opening browser...")
-            browser = await p.chromium.launch(
-                headless=False,
-                args=['--start-maximized']
-            )
+            browser = await p.chromium.launch(headless=False, args=["--start-maximized"])
 
             # Create context with viewport
-            context = await browser.new_context(
-                viewport={'width': 1920, 'height': 1080}
-            )
+            context = await browser.new_context(viewport={"width": 1920, "height": 1080})
 
             page = await context.new_page()
 
@@ -106,8 +101,8 @@ class TradeAuthHelper:
                     # Look for POESESSID
                     poesessid = None
                     for cookie in cookies:
-                        if cookie['name'] == 'POESESSID':
-                            poesessid = cookie['value']
+                        if cookie["name"] == "POESESSID":
+                            poesessid = cookie["value"]
                             break
 
                     if poesessid:
@@ -164,6 +159,7 @@ class TradeAuthHelper:
                 print()
                 print(f"ERROR: {e}")
                 import traceback
+
                 traceback.print_exc()
                 await browser.close()
                 return False
@@ -182,27 +178,27 @@ class TradeAuthHelper:
         poesessid_found = False
 
         if self.env_file.exists():
-            with open(self.env_file, 'r', encoding='utf-8') as f:
+            with open(self.env_file, "r", encoding="utf-8") as f:
                 env_lines = f.readlines()
 
             # Update existing POESESSID line
             for i, line in enumerate(env_lines):
-                if line.strip().startswith('POESESSID='):
-                    env_lines[i] = f'POESESSID={self.session_cookie}\n'
+                if line.strip().startswith("POESESSID="):
+                    env_lines[i] = f"POESESSID={self.session_cookie}\n"
                     poesessid_found = True
                     break
 
         # Add new POESESSID line if not found
         if not poesessid_found:
-            if env_lines and not env_lines[-1].endswith('\n'):
-                env_lines.append('\n')
-            env_lines.append(f'\n# Path of Exile Trade Site Session Cookie\n')
-            env_lines.append(f'# Obtained: {self._get_timestamp()}\n')
-            env_lines.append(f'POESESSID={self.session_cookie}\n')
+            if env_lines and not env_lines[-1].endswith("\n"):
+                env_lines.append("\n")
+            env_lines.append(f"\n# Path of Exile Trade Site Session Cookie\n")
+            env_lines.append(f"# Obtained: {self._get_timestamp()}\n")
+            env_lines.append(f"POESESSID={self.session_cookie}\n")
 
         # Write back to .env
         try:
-            with open(self.env_file, 'w', encoding='utf-8') as f:
+            with open(self.env_file, "w", encoding="utf-8") as f:
                 f.writelines(env_lines)
 
             print(f"  Saved to: {self.env_file}")
@@ -230,6 +226,7 @@ class TradeAuthHelper:
     def _get_timestamp(self):
         """Get current timestamp for logging"""
         from datetime import datetime
+
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -249,12 +246,13 @@ async def main():
         print()
         print(f"Unexpected error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    if sys.platform == 'win32':
+    if sys.platform == "win32":
         # Windows-specific: Set up event loop policy
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 

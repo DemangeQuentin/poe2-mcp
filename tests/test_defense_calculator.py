@@ -48,6 +48,7 @@ def calc():
 # DefenseConstants — PoE2 values that differ from PoE1
 # ---------------------------------------------------------------------------
 
+
 def test_armor_constants():
     assert DefenseConstants.ARMOR_MAX_DR == 90.0
     assert DefenseConstants.ARMOR_MULTIPLIER == 10
@@ -85,6 +86,7 @@ def test_block_constants_poe2_specific():
 # ---------------------------------------------------------------------------
 # calculate_armor_dr — formula: DR% = A / (A + 10 × D_raw)
 # ---------------------------------------------------------------------------
+
 
 def test_armor_dr_docstring_example(calc):
     """Locks in the docstring example: 5000 armor vs 1000 damage = 33.33% DR.
@@ -126,6 +128,7 @@ def test_armor_dr_caps_at_90_percent(calc):
 # ---------------------------------------------------------------------------
 # calculate_evasion_chance — formula: Hit% = (Acc * 1.25 * 100) / (Acc + Eva * 0.3)
 # ---------------------------------------------------------------------------
+
 
 def test_evasion_returns_evasion_result(calc):
     result = calc.calculate_evasion_chance(1000, 500)
@@ -173,6 +176,7 @@ def test_evasion_negative_inputs_clamped_to_zero(calc):
 # calculate_es_recharge — PoE2 12.5%/s base, 4s delay, delay = 400/(100 + faster%)
 # ---------------------------------------------------------------------------
 
+
 def test_es_recharge_base_values_at_no_modifiers(calc):
     """No modifiers: 12.5% of max ES per second, 4s delay."""
     result = calc.calculate_es_recharge(max_es=1000)
@@ -215,6 +219,7 @@ def test_es_recharge_negative_es_clamped(calc):
 # ---------------------------------------------------------------------------
 # calculate_resistance_dr — Damage = (100 - Res%) / 100
 # ---------------------------------------------------------------------------
+
 
 def test_resistance_under_cap(calc):
     """50% resistance → takes 50% damage."""
@@ -266,6 +271,7 @@ def test_resistance_cap_exceeding_hard_cap_warned_and_clamped(calc):
 # calculate_block_chance — PoE2 50% cap
 # ---------------------------------------------------------------------------
 
+
 def test_block_under_cap(calc):
     result = calc.calculate_block_chance(40)
     assert isinstance(result, BlockResult)
@@ -295,6 +301,7 @@ def test_block_negative_clamped_to_zero(calc):
 # ---------------------------------------------------------------------------
 # Module-level convenience wrappers
 # ---------------------------------------------------------------------------
+
 
 def test_armor_dr_helper_wraps_method():
     """Wrapper returns the .damage_reduction_percent field of the method result."""

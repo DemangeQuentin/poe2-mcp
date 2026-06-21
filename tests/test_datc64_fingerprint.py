@@ -5,6 +5,7 @@ Diff-classification tests run everywhere (synthetic inputs); the
 baseline-generation tests skip when the gitignored raw extraction
 is absent.
 """
+
 from __future__ import annotations
 
 import json
@@ -51,16 +52,20 @@ def test_diff_layout_change_is_loudest():
 
 
 def test_diff_rows_and_content_and_membership():
-    old = _fp({
-        "a": {"row_count": 5, "row_size": 8, "sha256": "aa"},
-        "b": {"row_count": 5, "row_size": 8, "sha256": "bb"},
-        "gone": {"row_count": 1, "row_size": 4, "sha256": "cc"},
-    })
-    new = _fp({
-        "a": {"row_count": 9, "row_size": 8, "sha256": "xx"},   # rows changed
-        "b": {"row_count": 5, "row_size": 8, "sha256": "yy"},   # content only
-        "fresh": {"row_count": 1, "row_size": 4, "sha256": "zz"},
-    })
+    old = _fp(
+        {
+            "a": {"row_count": 5, "row_size": 8, "sha256": "aa"},
+            "b": {"row_count": 5, "row_size": 8, "sha256": "bb"},
+            "gone": {"row_count": 1, "row_size": 4, "sha256": "cc"},
+        }
+    )
+    new = _fp(
+        {
+            "a": {"row_count": 9, "row_size": 8, "sha256": "xx"},  # rows changed
+            "b": {"row_count": 5, "row_size": 8, "sha256": "yy"},  # content only
+            "fresh": {"row_count": 1, "row_size": 4, "sha256": "zz"},
+        }
+    )
     d = diff_fingerprints(old, new)
     assert d["added"] == ["fresh"]
     assert d["removed"] == ["gone"]
@@ -73,7 +78,7 @@ def test_baseline_generation_matches_disk():
     fp = fingerprint_balance_dir(BALANCE)
     assert fp["table_count"] >= 1000
     gepl = fp["tables"]["grantedeffectsperlevel"]
-    assert gepl["row_size"] == 116          # the C1 spec's layout anchor
+    assert gepl["row_size"] == 116  # the C1 spec's layout anchor
     assert gepl["row_count"] >= 34000
 
 
@@ -82,8 +87,7 @@ def test_shipped_baseline_is_current():
     """The tracked baseline must match the on-disk extraction — if this
     fails, someone re-extracted without regenerating the baseline."""
     shipped = json.loads(
-        (PROJECT_ROOT / "data" / "game" / "schema_fingerprints.json")
-        .read_text(encoding="utf-8")
+        (PROJECT_ROOT / "data" / "game" / "schema_fingerprints.json").read_text(encoding="utf-8")
     )
     live = fingerprint_balance_dir(BALANCE)
     d = diff_fingerprints(shipped, live)

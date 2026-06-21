@@ -69,10 +69,7 @@ class TestResponseFormatter:
 
     def test_abbreviate_keys_nested(self):
         """Test key abbreviation for nested structures."""
-        data = {
-            "name": "Test",
-            "effects": {"spirit_cost": 10}
-        }
+        data = {"name": "Test", "effects": {"spirit_cost": 10}}
         abbreviated = abbreviate_keys(data)
 
         assert abbreviated["n"] == "Test"
@@ -110,7 +107,7 @@ class TestResponseFormatter:
             "effects": {"damage": 100},
             "compatible_with": ["spell"],
             "requirements": {"int": 50},
-            "acquisition": "Drop"
+            "acquisition": "Drop",
         }
 
         summary = filter_fields(item, "summary", SUPPORT_GEM_FIELDS)
@@ -131,7 +128,7 @@ class TestResponseFormatter:
             "effects": {"damage": 100},
             "compatible_with": ["spell"],
             "requirements": {"int": 50},
-            "acquisition": "Drop"
+            "acquisition": "Drop",
         }
 
         standard = filter_fields(item, "standard", SUPPORT_GEM_FIELDS)
@@ -151,7 +148,7 @@ class TestResponseFormatter:
             "tier": 1,
             "tags": ["fire"],
             "spirit_cost": 25,
-            "custom_field": "preserved"
+            "custom_field": "preserved",
         }
 
         full = filter_fields(item, "full", SUPPORT_GEM_FIELDS)
@@ -221,29 +218,27 @@ class TestListAllSupportsDetailLevels:
     @pytest.mark.asyncio
     async def test_summary_detail(self, mcp_server):
         """Test summary detail level shows minimal info."""
-        result = await mcp_server._handle_list_all_supports({
-            "detail": "summary",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_supports({"detail": "summary", "limit": 5})
         text = result[0].text
 
         # Summary should be concise - just names and tiers
         # Should NOT have detailed effect descriptions
-        lines = [l for l in text.split('\n') if l.strip() and not l.startswith('#') and not l.startswith('*')]
+        lines = [
+            l
+            for l in text.split("\n")
+            if l.strip() and not l.startswith("#") and not l.startswith("*")
+        ]
 
         # Each item should be a single line
         for line in lines:
-            if line.startswith('-'):
+            if line.startswith("-"):
                 # Summary format: "- Name (TX)"
-                assert '(' in line and ')' in line
+                assert "(" in line and ")" in line
 
     @pytest.mark.asyncio
     async def test_standard_detail(self, mcp_server):
         """Test standard detail level shows key info."""
-        result = await mcp_server._handle_list_all_supports({
-            "detail": "standard",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_supports({"detail": "standard", "limit": 5})
         text = result[0].text
 
         # Standard should have spirit costs and tags
@@ -252,10 +247,7 @@ class TestListAllSupportsDetailLevels:
     @pytest.mark.asyncio
     async def test_full_detail(self, mcp_server):
         """Test full detail level shows everything."""
-        result = await mcp_server._handle_list_all_supports({
-            "detail": "full",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_supports({"detail": "full", "limit": 5})
         text = result[0].text
 
         # Full should have extensive info
@@ -276,10 +268,7 @@ class TestListAllSupportsCompactFormat:
     @pytest.mark.asyncio
     async def test_compact_format_is_json(self, mcp_server):
         """Test that compact format returns valid JSON."""
-        result = await mcp_server._handle_list_all_supports({
-            "format": "compact",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_supports({"format": "compact", "limit": 5})
         text = result[0].text
 
         # Should be valid JSON
@@ -290,10 +279,7 @@ class TestListAllSupportsCompactFormat:
     @pytest.mark.asyncio
     async def test_compact_format_has_abbreviated_keys(self, mcp_server):
         """Test that compact format uses abbreviated keys."""
-        result = await mcp_server._handle_list_all_supports({
-            "format": "compact",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_supports({"format": "compact", "limit": 5})
         text = result[0].text
 
         # Should have abbreviated keys like "n" for name
@@ -302,10 +288,7 @@ class TestListAllSupportsCompactFormat:
     @pytest.mark.asyncio
     async def test_compact_format_includes_meta(self, mcp_server):
         """Test that compact format includes pagination meta."""
-        result = await mcp_server._handle_list_all_supports({
-            "format": "compact",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_supports({"format": "compact", "limit": 5})
         text = result[0].text
         data = json.loads(text)
 
@@ -322,11 +305,9 @@ class TestListAllSupportsCompactFormat:
         structure overhead. Its primary benefit is structured data for programmatic
         consumption, not size reduction.
         """
-        compact_result = await mcp_server._handle_list_all_supports({
-            "format": "compact",
-            "detail": "standard",
-            "limit": 30
-        })
+        compact_result = await mcp_server._handle_list_all_supports(
+            {"format": "compact", "detail": "standard", "limit": 30}
+        )
 
         text = compact_result[0].text
 
@@ -357,10 +338,7 @@ class TestListAllSpellsTokenOptimization:
     @pytest.mark.asyncio
     async def test_pagination(self, mcp_server):
         """Test pagination works."""
-        result = await mcp_server._handle_list_all_spells({
-            "limit": 10,
-            "offset": 0
-        })
+        result = await mcp_server._handle_list_all_spells({"limit": 10, "offset": 0})
         text = result[0].text
 
         assert "of" in text  # Shows "X of Y"
@@ -368,10 +346,7 @@ class TestListAllSpellsTokenOptimization:
     @pytest.mark.asyncio
     async def test_compact_format(self, mcp_server):
         """Test compact format works."""
-        result = await mcp_server._handle_list_all_spells({
-            "format": "compact",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_spells({"format": "compact", "limit": 5})
         text = result[0].text
 
         data = json.loads(text)
@@ -381,14 +356,8 @@ class TestListAllSpellsTokenOptimization:
     @pytest.mark.asyncio
     async def test_detail_levels(self, mcp_server):
         """Test detail levels affect output."""
-        summary = await mcp_server._handle_list_all_spells({
-            "detail": "summary",
-            "limit": 5
-        })
-        standard = await mcp_server._handle_list_all_spells({
-            "detail": "standard",
-            "limit": 5
-        })
+        summary = await mcp_server._handle_list_all_spells({"detail": "summary", "limit": 5})
+        standard = await mcp_server._handle_list_all_spells({"detail": "standard", "limit": 5})
 
         # Summary should be shorter
         assert len(summary[0].text) < len(standard[0].text)
@@ -408,10 +377,7 @@ class TestListAllKeystonesTokenOptimization:
     @pytest.mark.asyncio
     async def test_pagination(self, mcp_server):
         """Test pagination works."""
-        result = await mcp_server._handle_list_all_keystones({
-            "limit": 5,
-            "offset": 0
-        })
+        result = await mcp_server._handle_list_all_keystones({"limit": 5, "offset": 0})
         text = result[0].text
 
         # Should show pagination info or be a valid response
@@ -420,10 +386,7 @@ class TestListAllKeystonesTokenOptimization:
     @pytest.mark.asyncio
     async def test_compact_format(self, mcp_server):
         """Test compact format works."""
-        result = await mcp_server._handle_list_all_keystones({
-            "format": "compact",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_keystones({"format": "compact", "limit": 5})
         text = result[0].text
 
         # Should be valid JSON
@@ -445,10 +408,7 @@ class TestListAllModsTokenOptimization:
     @pytest.mark.asyncio
     async def test_pagination(self, mcp_server):
         """Test pagination works."""
-        result = await mcp_server._handle_list_all_mods({
-            "limit": 10,
-            "offset": 0
-        })
+        result = await mcp_server._handle_list_all_mods({"limit": 10, "offset": 0})
         text = result[0].text
 
         assert "Mods" in text
@@ -456,10 +416,7 @@ class TestListAllModsTokenOptimization:
     @pytest.mark.asyncio
     async def test_compact_format(self, mcp_server):
         """Test compact format works."""
-        result = await mcp_server._handle_list_all_mods({
-            "format": "compact",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_mods({"format": "compact", "limit": 5})
         text = result[0].text
 
         data = json.loads(text)
@@ -469,10 +426,7 @@ class TestListAllModsTokenOptimization:
     @pytest.mark.asyncio
     async def test_summary_detail(self, mcp_server):
         """Test summary detail level."""
-        result = await mcp_server._handle_list_all_mods({
-            "detail": "summary",
-            "limit": 10
-        })
+        result = await mcp_server._handle_list_all_mods({"detail": "summary", "limit": 10})
         text = result[0].text
 
         # Summary should be concise
@@ -498,11 +452,9 @@ class TestAnalyzeCharacterCompactFormat:
         # The handler should accept the format parameter without error
 
         # Test with a non-existent character - should fail gracefully
-        result = await mcp_server._handle_analyze_character({
-            "account": "test_account",
-            "character": "test_char",
-            "format": "compact"
-        })
+        result = await mcp_server._handle_analyze_character(
+            {"account": "test_account", "character": "test_char", "format": "compact"}
+        )
 
         # Should return a result (even if error)
         assert len(result) == 1
@@ -524,18 +476,14 @@ class TestTokenSavingsValidation:
     async def test_compact_summary_vs_markdown_full(self, mcp_server):
         """Test that compact+summary is smaller than markdown+full."""
         # Get full markdown
-        full = await mcp_server._handle_list_all_supports({
-            "format": "markdown",
-            "detail": "full",
-            "limit": 20
-        })
+        full = await mcp_server._handle_list_all_supports(
+            {"format": "markdown", "detail": "full", "limit": 20}
+        )
 
         # Get compact summary
-        compact = await mcp_server._handle_list_all_supports({
-            "format": "compact",
-            "detail": "summary",
-            "limit": 20
-        })
+        compact = await mcp_server._handle_list_all_supports(
+            {"format": "compact", "detail": "summary", "limit": 20}
+        )
 
         full_size = len(full[0].text)
         compact_size = len(compact[0].text)
@@ -548,13 +496,9 @@ class TestTokenSavingsValidation:
     @pytest.mark.asyncio
     async def test_pagination_reduces_response_size(self, mcp_server):
         """Test that smaller limits reduce response size."""
-        large = await mcp_server._handle_list_all_supports({
-            "limit": 50
-        })
+        large = await mcp_server._handle_list_all_supports({"limit": 50})
 
-        small = await mcp_server._handle_list_all_supports({
-            "limit": 10
-        })
+        small = await mcp_server._handle_list_all_supports({"limit": 10})
 
         # Small limit should produce smaller response
         assert len(small[0].text) < len(large[0].text)

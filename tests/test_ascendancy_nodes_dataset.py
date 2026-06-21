@@ -6,6 +6,7 @@ The 0.5 .datc64 extraction carries no ascendancy node data (verified on
 community 0.5 tree under the established psg+pob precedent and merged
 into the resolver's notable_nodes contract.
 """
+
 from __future__ import annotations
 
 import json
@@ -28,8 +29,7 @@ def resolver():
 
 def test_dataset_ships_with_provenance():
     data = json.loads(
-        (PROJECT_ROOT / "data" / "game" / "ascendancies" / "nodes.json")
-        .read_text(encoding="utf-8")
+        (PROJECT_ROOT / "data" / "game" / "ascendancies" / "nodes.json").read_text(encoding="utf-8")
     )
     meta = data["metadata"]
     assert "PathOfBuilding" in meta["source"]
@@ -56,9 +56,7 @@ def test_eternal_life_text_anchor(resolver):
     nodes = lich.get("notable_nodes") or {}
     eternal = [v for v in nodes.values() if v.get("name") == "Eternal Life"]
     assert eternal, "Eternal Life missing from Lich"
-    assert eternal[0]["stats"] == [
-        "Your Life cannot change while you have Energy Shield"
-    ]
+    assert eternal[0]["stats"] == ["Your Life cannot change while you have Energy Shield"]
 
 
 def test_existing_ascendancies_enriched_not_broken(resolver):

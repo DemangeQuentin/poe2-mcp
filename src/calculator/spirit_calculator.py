@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 class SpiritSourceType(Enum):
     """Types of Spirit sources in PoE2."""
+
     QUEST = "quest"  # From skull quests (30, 30, 40)
     GEAR = "gear"  # From equipment
     PASSIVE_TREE = "passive_tree"  # From passive tree nodes
@@ -44,6 +45,7 @@ class SpiritSourceType(Enum):
 
 class SpiritReservationType(Enum):
     """Types of Spirit reservations in PoE2."""
+
     PERMANENT_MINION = "permanent_minion"  # Zombies, Spectres, Golems
     AURA = "aura"  # Auras and buffs
     META_GEM = "meta_gem"  # Meta-gems that persist
@@ -61,6 +63,7 @@ class SpiritSource:
         source_type: Type of source
         enabled: Whether this source is active
     """
+
     name: str
     amount: int
     source_type: SpiritSourceType
@@ -81,6 +84,7 @@ class SupportGem:
         name: Support gem name
         multiplier: Cost multiplier (e.g., 1.5 for 150%, 1.3 for 130%)
     """
+
     name: str
     multiplier: float
 
@@ -103,6 +107,7 @@ class SpiritReservation:
         enabled: Whether this reservation is active
         priority: Priority for auto-disable (lower = higher priority to keep)
     """
+
     name: str
     base_cost: int
     reservation_type: SpiritReservationType
@@ -150,15 +155,14 @@ class SpiritReservation:
             Dictionary with cost calculation details
         """
         breakdown = {
-            'base_cost': self.base_cost,
-            'support_gems': [
-                {'name': sg.name, 'multiplier': sg.multiplier}
-                for sg in self.support_gems
+            "base_cost": self.base_cost,
+            "support_gems": [
+                {"name": sg.name, "multiplier": sg.multiplier} for sg in self.support_gems
             ],
-            'total_multiplier': self._calculate_total_multiplier(),
-            'raw_cost': self.base_cost * self._calculate_total_multiplier(),
-            'final_cost': self.calculate_cost(),
-            'enabled': self.enabled
+            "total_multiplier": self._calculate_total_multiplier(),
+            "raw_cost": self.base_cost * self._calculate_total_multiplier(),
+            "final_cost": self.calculate_cost(),
+            "enabled": self.enabled,
         }
         return breakdown
 
@@ -227,9 +231,7 @@ class SpiritReservation:
             )
 
         # Suggest replacing high multiplier supports
-        high_multiplier_supports = [
-            sg for sg in self.support_gems if sg.multiplier >= 1.5
-        ]
+        high_multiplier_supports = [sg for sg in self.support_gems if sg.multiplier >= 1.5]
         if high_multiplier_supports:
             suggestions.append(
                 f"Consider replacing high-multiplier supports: "
@@ -250,6 +252,7 @@ class SpiritOptimization:
         action_type: Type of action (disable, remove_support, etc.)
         target: Target reservation/support name
     """
+
     description: str
     spirit_saved: int
     action_type: str
@@ -298,11 +301,7 @@ class SpiritCalculator:
             quest_name: Name of the quest
             amount: Spirit amount (typically 30, 30, or 40)
         """
-        source = SpiritSource(
-            name=quest_name,
-            amount=amount,
-            source_type=SpiritSourceType.QUEST
-        )
+        source = SpiritSource(name=quest_name, amount=amount, source_type=SpiritSourceType.QUEST)
         self.sources.append(source)
         logger.info(f"Added quest Spirit: {quest_name} (+{amount})")
 
@@ -314,11 +313,7 @@ class SpiritCalculator:
             item_name: Name of the item
             amount: Spirit bonus from item
         """
-        source = SpiritSource(
-            name=item_name,
-            amount=amount,
-            source_type=SpiritSourceType.GEAR
-        )
+        source = SpiritSource(name=item_name, amount=amount, source_type=SpiritSourceType.GEAR)
         self.sources.append(source)
         logger.info(f"Added gear Spirit: {item_name} (+{amount})")
 
@@ -331,19 +326,12 @@ class SpiritCalculator:
             amount: Spirit bonus from node
         """
         source = SpiritSource(
-            name=node_name,
-            amount=amount,
-            source_type=SpiritSourceType.PASSIVE_TREE
+            name=node_name, amount=amount, source_type=SpiritSourceType.PASSIVE_TREE
         )
         self.sources.append(source)
         logger.info(f"Added passive Spirit: {node_name} (+{amount})")
 
-    def add_spirit_source(
-        self,
-        name: str,
-        amount: int,
-        source_type: SpiritSourceType
-    ) -> None:
+    def add_spirit_source(self, name: str, amount: int, source_type: SpiritSourceType) -> None:
         """
         Add a generic Spirit source.
 
@@ -352,11 +340,7 @@ class SpiritCalculator:
             amount: Spirit amount
             source_type: Type of source
         """
-        source = SpiritSource(
-            name=name,
-            amount=amount,
-            source_type=source_type
-        )
+        source = SpiritSource(name=name, amount=amount, source_type=source_type)
         self.sources.append(source)
         logger.info(f"Added Spirit source: {name} (+{amount}) [{source_type.value}]")
 
@@ -409,11 +393,7 @@ class SpiritCalculator:
         Returns:
             Total maximum Spirit
         """
-        total = sum(
-            source.amount
-            for source in self.sources
-            if source.enabled
-        )
+        total = sum(source.amount for source in self.sources if source.enabled)
         return total
 
     def get_spirit_by_source_type(self, source_type: SpiritSourceType) -> int:
@@ -465,7 +445,7 @@ class SpiritCalculator:
         base_cost: int,
         reservation_type: SpiritReservationType,
         support_gems: Optional[List[Tuple[str, float]]] = None,
-        priority: int = 5
+        priority: int = 5,
     ) -> SpiritReservation:
         """
         Add a Spirit reservation.
@@ -491,7 +471,7 @@ class SpiritCalculator:
             base_cost=base_cost,
             reservation_type=reservation_type,
             support_gems=support_gem_objs,
-            priority=priority
+            priority=priority,
         )
 
         self.reservations.append(reservation)
@@ -566,10 +546,7 @@ class SpiritCalculator:
         Returns:
             Total Spirit reserved
         """
-        total = sum(
-            reservation.calculate_cost()
-            for reservation in self.reservations
-        )
+        total = sum(reservation.calculate_cost() for reservation in self.reservations)
         return total
 
     def get_spirit_available(self) -> int:
@@ -613,19 +590,21 @@ class SpiritCalculator:
         """
         details = []
         for reservation in self.reservations:
-            details.append({
-                'name': reservation.name,
-                'type': reservation.reservation_type.value,
-                'base_cost': reservation.base_cost,
-                'final_cost': reservation.calculate_cost(),
-                'support_gems': [
-                    {'name': sg.name, 'multiplier': sg.multiplier}
-                    for sg in reservation.support_gems
-                ],
-                'enabled': reservation.enabled,
-                'priority': reservation.priority,
-                'cost_breakdown': reservation.get_cost_breakdown()
-            })
+            details.append(
+                {
+                    "name": reservation.name,
+                    "type": reservation.reservation_type.value,
+                    "base_cost": reservation.base_cost,
+                    "final_cost": reservation.calculate_cost(),
+                    "support_gems": [
+                        {"name": sg.name, "multiplier": sg.multiplier}
+                        for sg in reservation.support_gems
+                    ],
+                    "enabled": reservation.enabled,
+                    "priority": reservation.priority,
+                    "cost_breakdown": reservation.get_cost_breakdown(),
+                }
+            )
         return details
 
     def get_source_details(self) -> List[Dict[str, Any]]:
@@ -637,12 +616,14 @@ class SpiritCalculator:
         """
         details = []
         for source in self.sources:
-            details.append({
-                'name': source.name,
-                'amount': source.amount,
-                'type': source.source_type.value,
-                'enabled': source.enabled
-            })
+            details.append(
+                {
+                    "name": source.name,
+                    "amount": source.amount,
+                    "type": source.source_type.value,
+                    "enabled": source.enabled,
+                }
+            )
         return details
 
     def get_spirit_summary(self) -> Dict[str, Any]:
@@ -662,8 +643,7 @@ class SpiritCalculator:
         reservation_counts = {}
         for res_type in SpiritReservationType:
             count = sum(
-                1 for r in self.reservations
-                if r.enabled and r.reservation_type == res_type
+                1 for r in self.reservations if r.enabled and r.reservation_type == res_type
             )
             reservation_counts[res_type.value] = count
 
@@ -674,16 +654,16 @@ class SpiritCalculator:
             source_breakdown[src_type.value] = amount
 
         summary = {
-            'maximum_spirit': maximum,
-            'reserved_spirit': reserved,
-            'available_spirit': available,
-            'is_overflowing': overflowing,
-            'overflow_amount': overflow_amount,
-            'utilization_percent': (reserved / maximum * 100) if maximum > 0 else 0,
-            'source_breakdown': source_breakdown,
-            'reservation_counts': reservation_counts,
-            'active_reservations': len([r for r in self.reservations if r.enabled]),
-            'total_reservations': len(self.reservations)
+            "maximum_spirit": maximum,
+            "reserved_spirit": reserved,
+            "available_spirit": available,
+            "is_overflowing": overflowing,
+            "overflow_amount": overflow_amount,
+            "utilization_percent": (reserved / maximum * 100) if maximum > 0 else 0,
+            "source_breakdown": source_breakdown,
+            "reservation_counts": reservation_counts,
+            "active_reservations": len([r for r in self.reservations if r.enabled]),
+            "total_reservations": len(self.reservations),
         }
 
         return summary
@@ -695,17 +675,12 @@ class SpiritCalculator:
         Returns:
             List of active reservation names with costs
         """
-        return [
-            f"{r.name} ({r.calculate_cost()})"
-            for r in self.reservations
-            if r.enabled
-        ]
+        return [f"{r.name} ({r.calculate_cost()})" for r in self.reservations if r.enabled]
 
     # === Optimization ===
 
     def get_optimization_suggestions(
-        self,
-        target_spirit_to_free: Optional[int] = None
+        self, target_spirit_to_free: Optional[int] = None
     ) -> List[SpiritOptimization]:
         """
         Get suggestions for optimizing Spirit usage.
@@ -727,18 +702,19 @@ class SpiritCalculator:
 
         # Option 1: Disable entire reservations (sorted by priority, then cost)
         for reservation in sorted(
-            self.reservations,
-            key=lambda r: (-r.priority, -r.calculate_cost())
+            self.reservations, key=lambda r: (-r.priority, -r.calculate_cost())
         ):
             if not reservation.enabled:
                 continue
 
-            suggestions.append(SpiritOptimization(
-                description=f"Disable '{reservation.name}' (priority {reservation.priority})",
-                spirit_saved=reservation.calculate_cost(),
-                action_type="disable_reservation",
-                target=reservation.name
-            ))
+            suggestions.append(
+                SpiritOptimization(
+                    description=f"Disable '{reservation.name}' (priority {reservation.priority})",
+                    spirit_saved=reservation.calculate_cost(),
+                    action_type="disable_reservation",
+                    target=reservation.name,
+                )
+            )
 
         # Option 2: Remove support gems from reservations
         for reservation in self.reservations:
@@ -746,10 +722,7 @@ class SpiritCalculator:
                 continue
 
             # For each support gem, calculate savings
-            for support_gem in sorted(
-                reservation.support_gems,
-                key=lambda sg: -sg.multiplier
-            ):
+            for support_gem in sorted(reservation.support_gems, key=lambda sg: -sg.multiplier):
                 cost_with = reservation.calculate_cost()
 
                 # Calculate cost without this support
@@ -761,12 +734,14 @@ class SpiritCalculator:
 
                 savings = cost_with - cost_without
                 if savings > 0:
-                    suggestions.append(SpiritOptimization(
-                        description=f"Remove '{support_gem.name}' from '{reservation.name}'",
-                        spirit_saved=savings,
-                        action_type="remove_support",
-                        target=f"{reservation.name}::{support_gem.name}"
-                    ))
+                    suggestions.append(
+                        SpiritOptimization(
+                            description=f"Remove '{support_gem.name}' from '{reservation.name}'",
+                            spirit_saved=savings,
+                            action_type="remove_support",
+                            target=f"{reservation.name}::{support_gem.name}",
+                        )
+                    )
 
         # Sort by spirit saved (descending)
         suggestions.sort(key=lambda s: -s.spirit_saved)
@@ -792,7 +767,7 @@ class SpiritCalculator:
         # Sort reservations by priority (highest priority value = least important)
         sorted_reservations = sorted(
             [r for r in self.reservations if r.enabled],
-            key=lambda r: (-r.priority, -r.calculate_cost())
+            key=lambda r: (-r.priority, -r.calculate_cost()),
         )
 
         spirit_freed = 0
@@ -810,9 +785,7 @@ class SpiritCalculator:
 
         final_overflow = self.get_overflow_amount()
         if final_overflow > 0:
-            logger.warning(
-                f"Could not fully resolve overflow. Remaining: {final_overflow} Spirit"
-            )
+            logger.warning(f"Could not fully resolve overflow. Remaining: {final_overflow} Spirit")
         else:
             logger.info("Successfully resolved Spirit overflow")
 
@@ -829,8 +802,7 @@ class SpiritCalculator:
 
         # Sort reservations by priority (lower = more important)
         sorted_reservations = sorted(
-            self.reservations,
-            key=lambda r: (r.priority, -r.calculate_cost())
+            self.reservations, key=lambda r: (r.priority, -r.calculate_cost())
         )
 
         # Build optimal configuration
@@ -847,12 +819,12 @@ class SpiritCalculator:
                 disabled_reservations.append(reservation.name)
 
         suggestion = {
-            'maximum_spirit': max_spirit,
-            'optimal_spirit_used': spirit_used,
-            'optimal_spirit_remaining': max_spirit - spirit_used,
-            'enabled_reservations': enabled_reservations,
-            'disabled_reservations': disabled_reservations,
-            'efficiency_percent': (spirit_used / max_spirit * 100) if max_spirit > 0 else 0
+            "maximum_spirit": max_spirit,
+            "optimal_spirit_used": spirit_used,
+            "optimal_spirit_remaining": max_spirit - spirit_used,
+            "enabled_reservations": enabled_reservations,
+            "disabled_reservations": disabled_reservations,
+            "efficiency_percent": (spirit_used / max_spirit * 100) if max_spirit > 0 else 0,
         }
 
         return suggestion
@@ -909,9 +881,9 @@ class SpiritCalculator:
             Dictionary with all configuration data
         """
         return {
-            'sources': self.get_source_details(),
-            'reservations': self.get_reservation_details(),
-            'summary': self.get_spirit_summary()
+            "sources": self.get_source_details(),
+            "reservations": self.get_reservation_details(),
+            "summary": self.get_spirit_summary(),
         }
 
     def import_configuration(self, config: Dict[str, Any]) -> None:
@@ -926,29 +898,29 @@ class SpiritCalculator:
         self.reservations.clear()
 
         # Import sources
-        for source_data in config.get('sources', []):
+        for source_data in config.get("sources", []):
             source = SpiritSource(
-                name=source_data['name'],
-                amount=source_data['amount'],
-                source_type=SpiritSourceType(source_data['type']),
-                enabled=source_data.get('enabled', True)
+                name=source_data["name"],
+                amount=source_data["amount"],
+                source_type=SpiritSourceType(source_data["type"]),
+                enabled=source_data.get("enabled", True),
             )
             self.sources.append(source)
 
         # Import reservations
-        for res_data in config.get('reservations', []):
+        for res_data in config.get("reservations", []):
             support_gems = [
-                SupportGem(name=sg['name'], multiplier=sg['multiplier'])
-                for sg in res_data.get('support_gems', [])
+                SupportGem(name=sg["name"], multiplier=sg["multiplier"])
+                for sg in res_data.get("support_gems", [])
             ]
 
             reservation = SpiritReservation(
-                name=res_data['name'],
-                base_cost=res_data['base_cost'],
-                reservation_type=SpiritReservationType(res_data['type']),
+                name=res_data["name"],
+                base_cost=res_data["base_cost"],
+                reservation_type=SpiritReservationType(res_data["type"]),
                 support_gems=support_gems,
-                enabled=res_data.get('enabled', True),
-                priority=res_data.get('priority', 5)
+                enabled=res_data.get("enabled", True),
+                priority=res_data.get("priority", 5),
             )
             self.reservations.append(reservation)
 
@@ -957,10 +929,8 @@ class SpiritCalculator:
 
 # === Helper Functions ===
 
-def calculate_support_gem_cost(
-    base_cost: int,
-    support_multipliers: List[float]
-) -> int:
+
+def calculate_support_gem_cost(base_cost: int, support_multipliers: List[float]) -> int:
     """
     Calculate final Spirit cost with support gem multipliers.
 
@@ -984,9 +954,7 @@ def calculate_support_gem_cost(
 
 
 def find_optimal_support_combinations(
-    base_cost: int,
-    available_supports: List[Tuple[str, float]],
-    max_spirit: int
+    base_cost: int, available_supports: List[Tuple[str, float]], max_spirit: int
 ) -> List[Tuple[List[str], int]]:
     """
     Find all valid support gem combinations that fit within Spirit budget.
@@ -1028,8 +996,7 @@ def find_optimal_support_combinations(
 if __name__ == "__main__":
     # Configure logging for testing
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     print("=" * 80)
@@ -1084,7 +1051,7 @@ if __name__ == "__main__":
         25,
         SpiritReservationType.PERMANENT_MINION,
         support_gems=[("Minion Damage", 1.5), ("Minion Life", 1.3)],
-        priority=2  # High priority (important)
+        priority=2,  # High priority (important)
     )
 
     # Add Summon Skeleton with support gems
@@ -1093,16 +1060,11 @@ if __name__ == "__main__":
         20,
         SpiritReservationType.PERMANENT_MINION,
         support_gems=[("Minion Damage", 1.5), ("Melee Splash", 1.4)],
-        priority=3
+        priority=3,
     )
 
     # Add Purity of Fire aura (no supports)
-    calc.add_reservation(
-        "Purity of Fire",
-        30,
-        SpiritReservationType.AURA,
-        priority=5
-    )
+    calc.add_reservation("Purity of Fire", 30, SpiritReservationType.AURA, priority=5)
 
     # Add Summon Golem
     calc.add_reservation(
@@ -1110,7 +1072,7 @@ if __name__ == "__main__":
         35,
         SpiritReservationType.PERMANENT_MINION,
         support_gems=[("Minion Speed", 1.3)],
-        priority=7  # Lower priority
+        priority=7,  # Lower priority
     )
 
     print(f"Total Reservations: {len(calc.reservations)}")
@@ -1131,7 +1093,9 @@ if __name__ == "__main__":
         print(f"  Base Cost: {detail['base_cost']}")
         print(f"  Final Cost: {detail['final_cost']}")
         print(f"  Priority: {detail['priority']}")
-        print(f"  Support Gems: {', '.join([sg['name'] for sg in detail['support_gems']]) or 'None'}")
+        print(
+            f"  Support Gems: {', '.join([sg['name'] for sg in detail['support_gems']]) or 'None'}"
+        )
         print(f"  Enabled: {detail['enabled']}")
     print()
 
@@ -1141,6 +1105,7 @@ if __name__ == "__main__":
     print("-" * 80)
     summary = calc.get_spirit_summary()
     import json
+
     print(json.dumps(summary, indent=2))
     print()
 
@@ -1209,7 +1174,7 @@ if __name__ == "__main__":
         ("Minion Damage", 1.5),
         ("Minion Life", 1.3),
         ("Minion Speed", 1.3),
-        ("Melee Splash", 1.4)
+        ("Melee Splash", 1.4),
     ]
     combos = find_optimal_support_combinations(20, available_supports, 50)
     print(f"Valid combinations for base cost 20 with max 50 Spirit:")

@@ -8,6 +8,7 @@ time the full corpus matched 12,061/12,061 per-level costs (100.00%).
 All tests skip when the raw extraction isn't on disk (data/extracted/
 is gitignored pipeline state - fresh clones don't carry 4MB tables).
 """
+
 from __future__ import annotations
 
 import json
@@ -23,10 +24,9 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.parsers.specifications.granted_effects_spec import load_granted_effects
 
 EXTRACTED = PROJECT_ROOT / "data" / "extracted"
-HAVE_TABLES = (
-    (EXTRACTED / "data" / "balance" / "grantedeffectsperlevel.datc64").exists()
-    or (EXTRACTED / "Data" / "balance" / "grantedeffectsperlevel.datc64").exists()
-)
+HAVE_TABLES = (EXTRACTED / "data" / "balance" / "grantedeffectsperlevel.datc64").exists() or (
+    EXTRACTED / "Data" / "balance" / "grantedeffectsperlevel.datc64"
+).exists()
 needs_tables = pytest.mark.skipif(
     not HAVE_TABLES, reason="raw .datc64 extraction not present (gitignored)"
 )

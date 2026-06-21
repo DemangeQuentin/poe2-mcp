@@ -90,6 +90,7 @@ def test_helper_dedupes_case_insensitively():
 # Handler mode — methodology-rule-compliant per docs/TESTING.md (lazy import)
 # ---------------------------------------------------------------------------
 
+
 @pytest_asyncio.fixture(scope="module")
 async def mcp():
     """Canonical fixture per docs/TESTING.md — initialize before handler use.
@@ -98,6 +99,7 @@ async def mcp():
     slow mcp_server module-level import on some platforms (see PR #120).
     """
     from src.mcp_server import PoE2BuildOptimizerMCP
+
     instance = PoE2BuildOptimizerMCP()
     await instance.initialize()
     return instance

@@ -32,11 +32,13 @@ class TradeAPI:
         self,
         cache_manager: Optional[CacheManager] = None,
         rate_limiter: Optional[RateLimiter] = None,
-        poesessid: Optional[str] = None
+        poesessid: Optional[str] = None,
     ):
         self.base_url = "https://www.pathofexile.com"
         self.cache_manager = cache_manager
-        self.rate_limiter = rate_limiter or RateLimiter(rate_limit=2)  # Very conservative for trade API
+        self.rate_limiter = rate_limiter or RateLimiter(
+            rate_limit=2
+        )  # Very conservative for trade API
 
         # Use provided poesessid, or fall back to config
         self.poesessid = poesessid or settings.POESESSID
@@ -61,7 +63,7 @@ class TradeAPI:
                 "Sec-Fetch-Dest": "empty",
                 "Sec-Fetch-Mode": "cors",
                 "Sec-Fetch-Site": "same-origin",
-            }
+            },
         )
 
         # Add session cookie if provided
@@ -69,10 +71,7 @@ class TradeAPI:
             self.client.cookies.set("POESESSID", self.poesessid, domain="www.pathofexile.com")
 
     async def search_items(
-        self,
-        league: str,
-        filters: Dict[str, Any],
-        limit: int = 10
+        self, league: str, filters: Dict[str, Any], limit: int = 10
     ) -> List[Dict[str, Any]]:
         """
         Search for items on the trade market
@@ -126,7 +125,9 @@ class TradeAPI:
             logger.error(f"Trade API error: {e}")
             return []
 
-    async def _fetch_item_details(self, item_ids: List[str], query_id: str = None) -> List[Dict[str, Any]]:
+    async def _fetch_item_details(
+        self, item_ids: List[str], query_id: str = None
+    ) -> List[Dict[str, Any]]:
         """Fetch full details for items by their IDs"""
         try:
             await self.rate_limiter.acquire()
@@ -215,9 +216,7 @@ class TradeAPI:
                 "status": {"option": "securable"},  # PoE2 uses "securable" not "online"
                 "stats": [{"type": "and", "filters": []}],
             },
-            "sort": {
-                "price": "asc"  # Cheapest first
-            }
+            "sort": {"price": "asc"},  # Cheapest first
         }
 
         # Text search (item name/type)
@@ -247,19 +246,12 @@ class TradeAPI:
         stat_filters = []
 
         for stat in stats:
-            stat_filter = {
-                "type": "and",
-                "filters": []
-            }
+            stat_filter = {"type": "and", "filters": []}
 
             if "id" in stat:
-                stat_filter["filters"].append({
-                    "id": stat["id"],
-                    "value": {
-                        "min": stat.get("min"),
-                        "max": stat.get("max")
-                    }
-                })
+                stat_filter["filters"].append(
+                    {"id": stat["id"], "value": {"min": stat.get("min"), "max": stat.get("max")}}
+                )
 
             if stat_filter["filters"]:
                 stat_filters.append(stat_filter)
@@ -271,10 +263,7 @@ class TradeAPI:
         await self.client.aclose()
 
     async def search_for_upgrades(
-        self,
-        league: str,
-        character_needs: Dict[str, Any],
-        max_price_chaos: Optional[int] = None
+        self, league: str, character_needs: Dict[str, Any], max_price_chaos: Optional[int] = None
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Search for items that address character deficiencies
@@ -329,10 +318,7 @@ class TradeAPI:
         return results
 
     async def _search_resistance_charms(
-        self,
-        league: str,
-        missing_res: Dict[str, int],
-        max_price_chaos: Optional[int] = None
+        self, league: str, missing_res: Dict[str, int], max_price_chaos: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """Search for charms with resistances"""
         filters = {"term": "charm resistance"}
@@ -361,7 +347,7 @@ class TradeAPI:
         league: str,
         missing_res: Dict[str, int],
         needs_life: bool,
-        max_price_chaos: Optional[int] = None
+        max_price_chaos: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """Search for amulets with spell levels and resistances"""
         filters = {"term": "amulet spell"}
@@ -378,7 +364,9 @@ class TradeAPI:
             mods = item.get("explicit_mods", [])
 
             # Check for spell levels
-            has_spell_levels = any("+#" in mod and "Spell" in mod and "Level" in mod for mod in mods)
+            has_spell_levels = any(
+                "+#" in mod and "Spell" in mod and "Level" in mod for mod in mods
+            )
 
             # Check for resistances
             has_res = sum(1 for mod in mods if "Resistance" in mod) >= 2
@@ -397,7 +385,7 @@ class TradeAPI:
         missing_res: Dict[str, int],
         needs_life: bool,
         needs_es: bool,
-        max_price_chaos: Optional[int] = None
+        max_price_chaos: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """Search for helmets with life/ES and resistances"""
         filters = {"term": "helmet life"}
@@ -441,7 +429,7 @@ class TradeAPI:
         character_needs: Dict[str, Any],
         current_gear: Dict[str, Any],
         base_character_stats: Dict[str, Any],
-        max_price_chaos: Optional[int] = None
+        max_price_chaos: Optional[int] = None,
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Enhanced search with upgrade value analysis.
@@ -461,9 +449,7 @@ class TradeAPI:
         """
         # Get raw search results
         raw_results = await self.search_for_upgrades(
-            league=league,
-            character_needs=character_needs,
-            max_price_chaos=max_price_chaos
+            league=league, character_needs=character_needs, max_price_chaos=max_price_chaos
         )
 
         # For now, return raw results
@@ -474,12 +460,13 @@ class TradeAPI:
 
 # Helper functions for common searches
 
+
 async def search_amulet_with_spell_levels_and_resistances(
     league: str,
     min_spell_levels: int = 2,
     min_life: int = 50,
     min_total_res: int = 80,
-    max_price_chaos: int = 100
+    max_price_chaos: int = 100,
 ) -> List[Dict[str, Any]]:
     """Search for amulets with spell levels and resistances"""
 
@@ -494,13 +481,7 @@ async def search_amulet_with_spell_levels_and_resistances(
                     "min": min_spell_levels,
                 },
             ],
-            "item_filters": {
-                "misc_filters": {
-                    "filters": {
-                        "ilvl": {"min": 75}
-                    }
-                }
-            }
+            "item_filters": {"misc_filters": {"filters": {"ilvl": {"min": 75}}}},
         }
 
         results = await trade_api.search_items(league, filters, limit=20)
@@ -532,7 +513,7 @@ async def search_helmet_with_life_es_resistances(
     min_life: int = 100,
     min_es: int = 100,
     min_total_res: int = 60,
-    max_price_chaos: int = 100
+    max_price_chaos: int = 100,
 ) -> List[Dict[str, Any]]:
     """Search for helmets with life, ES, and resistances"""
 
@@ -541,13 +522,7 @@ async def search_helmet_with_life_es_resistances(
     try:
         filters = {
             "type": "Helmet",
-            "item_filters": {
-                "misc_filters": {
-                    "filters": {
-                        "ilvl": {"min": 75}
-                    }
-                }
-            }
+            "item_filters": {"misc_filters": {"filters": {"ilvl": {"min": 75}}}},
         }
 
         results = await trade_api.search_items(league, filters, limit=20)
@@ -575,9 +550,7 @@ async def search_helmet_with_life_es_resistances(
 
 
 async def search_resistance_charms(
-    league: str,
-    min_total_res: int = 30,
-    max_price_chaos: int = 20
+    league: str, min_total_res: int = 30, max_price_chaos: int = 20
 ) -> List[Dict[str, Any]]:
     """Search for charms with resistances"""
 

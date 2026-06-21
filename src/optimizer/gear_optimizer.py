@@ -22,7 +22,7 @@ class GearOptimizer:
         "low": (0, 10),
         "medium": (10, 100),
         "high": (100, 1000),
-        "unlimited": (1000, float('inf'))
+        "unlimited": (1000, float("inf")),
     }
 
     # Slot mapping for different naming conventions
@@ -31,21 +31,26 @@ class GearOptimizer:
         "body_armour": ["Body Armour", "Body Armor", "Chest"],
         "gloves": ["Gloves"],
         "boots": ["Boots"],
-        "weapon": ["Weapon", "One Hand Axe", "One Hand Sword", "One Hand Mace", "Bow", "Staff", "Wand"],
+        "weapon": [
+            "Weapon",
+            "One Hand Axe",
+            "One Hand Sword",
+            "One Hand Mace",
+            "Bow",
+            "Staff",
+            "Wand",
+        ],
         "offhand": ["Shield", "Quiver", "One Hand"],
         "amulet": ["Amulet"],
         "ring": ["Ring"],
-        "belt": ["Belt"]
+        "belt": ["Belt"],
     }
 
     def __init__(self, db_manager) -> None:
         self.db_manager = db_manager
 
     async def optimize(
-        self,
-        character_data: Dict[str, Any],
-        budget: str = "medium",
-        goal: str = "balanced"
+        self, character_data: Dict[str, Any], budget: str = "medium", goal: str = "balanced"
     ) -> Dict[str, Any]:
         """
         Generate gear optimization recommendations
@@ -64,7 +69,7 @@ class GearOptimizer:
             "priority_upgrades": [],
             "budget_tier": budget,
             "optimization_goal": goal,
-            "total_estimated_cost": 0
+            "total_estimated_cost": 0,
         }
 
         # Extract current items from character data
@@ -72,17 +77,20 @@ class GearOptimizer:
 
         # Analyze each gear slot
         slots = [
-            "helmet", "body_armour", "gloves", "boots",
-            "weapon", "offhand", "amulet", "ring", "belt"
+            "helmet",
+            "body_armour",
+            "gloves",
+            "boots",
+            "weapon",
+            "offhand",
+            "amulet",
+            "ring",
+            "belt",
         ]
 
         for slot in slots:
             upgrade = await self._analyze_slot(
-                character_data,
-                current_items.get(slot),
-                slot,
-                budget,
-                goal
+                character_data, current_items.get(slot), slot, budget, goal
             )
             if upgrade:
                 recommendations["priority_upgrades"].append(upgrade)
@@ -90,8 +98,7 @@ class GearOptimizer:
 
         # Sort by priority
         recommendations["priority_upgrades"].sort(
-            key=lambda x: self._priority_value(x["priority"]),
-            reverse=True
+            key=lambda x: self._priority_value(x["priority"]), reverse=True
         )
 
         # Add summary
@@ -120,7 +127,7 @@ class GearOptimizer:
         current_item: Optional[Dict[str, Any]],
         slot: str,
         budget: str,
-        goal: str
+        goal: str,
     ) -> Optional[Dict[str, Any]]:
         """
         Analyze a specific gear slot and provide upgrade recommendations
@@ -144,11 +151,7 @@ class GearOptimizer:
 
             # Find suitable upgrade items from database
             suggested_items = await self._find_upgrade_items(
-                current_item,
-                slot,
-                budget,
-                goal,
-                character_data
+                current_item, slot, budget, goal, character_data
             )
 
             if not suggested_items:
@@ -164,13 +167,15 @@ class GearOptimizer:
                 "slot": slot,
                 "priority": priority,
                 "current_item": current_item.get("name", "Empty") if current_item else "Empty",
-                "current_item_rarity": current_item.get("rarity", "unknown") if current_item else "empty",
+                "current_item_rarity": (
+                    current_item.get("rarity", "unknown") if current_item else "empty"
+                ),
                 "suggested_item": best_suggestion["name"],
                 "suggested_item_type": best_suggestion.get("item_class", "Unknown"),
                 "improvement_estimate": improvement,
                 "estimated_cost_chaos": best_suggestion.get("chaos_value", 0),
                 "reasoning": self._generate_reasoning(current_item, best_suggestion, goal),
-                "alternative_suggestions": [item["name"] for item in suggested_items[1:4]]
+                "alternative_suggestions": [item["name"] for item in suggested_items[1:4]],
             }
 
         except Exception as e:
@@ -178,10 +183,7 @@ class GearOptimizer:
             return None
 
     def _determine_priority(
-        self,
-        current_item: Optional[Dict[str, Any]],
-        slot: str,
-        goal: str
+        self, current_item: Optional[Dict[str, Any]], slot: str, goal: str
     ) -> str:
         """Determine upgrade priority for a slot"""
 
@@ -224,11 +226,11 @@ class GearOptimizer:
         slot: str,
         budget: str,
         goal: str,
-        character_data: Dict[str, Any]
+        character_data: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
         """Find suitable upgrade items from database"""
 
-        min_chaos, max_chaos = self.BUDGET_RANGES.get(budget, (0, float('inf')))
+        min_chaos, max_chaos = self.BUDGET_RANGES.get(budget, (0, float("inf")))
         char_level = character_data.get("level", 100)
 
         suitable_items = []
@@ -239,9 +241,7 @@ class GearOptimizer:
                 slot_classes = self.SLOT_MAPPING.get(slot, [slot.title()])
 
                 # Query unique items
-                query = select(UniqueItem).where(
-                    UniqueItem.item_class.in_(slot_classes)
-                )
+                query = select(UniqueItem).where(UniqueItem.item_class.in_(slot_classes))
 
                 result = await session.execute(query)
                 unique_items = result.scalars().all()
@@ -259,14 +259,16 @@ class GearOptimizer:
                     # Score item based on goal
                     score = self._score_item(item, goal, character_data)
 
-                    suitable_items.append({
-                        "name": item.name,
-                        "item_class": item.item_class,
-                        "level_requirement": item.level_requirement,
-                        "chaos_value": chaos_value,
-                        "score": score,
-                        "stats": item.stats or {}
-                    })
+                    suitable_items.append(
+                        {
+                            "name": item.name,
+                            "item_class": item.item_class,
+                            "level_requirement": item.level_requirement,
+                            "chaos_value": chaos_value,
+                            "score": score,
+                            "stats": item.stats or {},
+                        }
+                    )
 
                 # Sort by score
                 suitable_items.sort(key=lambda x: x["score"], reverse=True)
@@ -277,12 +279,7 @@ class GearOptimizer:
             logger.error(f"Error querying upgrade items: {e}")
             return []
 
-    def _score_item(
-        self,
-        item: Any,
-        goal: str,
-        character_data: Dict[str, Any]
-    ) -> float:
+    def _score_item(self, item: Any, goal: str, character_data: Dict[str, Any]) -> float:
         """Score an item based on optimization goal"""
 
         score = 0.0
@@ -315,10 +312,7 @@ class GearOptimizer:
         return score
 
     def _estimate_improvement(
-        self,
-        current_item: Optional[Dict[str, Any]],
-        suggested_item: Dict[str, Any],
-        goal: str
+        self, current_item: Optional[Dict[str, Any]], suggested_item: Dict[str, Any], goal: str
     ) -> float:
         """Estimate percentage improvement from upgrade"""
 
@@ -346,10 +340,7 @@ class GearOptimizer:
         return 0.15
 
     def _generate_reasoning(
-        self,
-        current_item: Optional[Dict[str, Any]],
-        suggested_item: Dict[str, Any],
-        goal: str
+        self, current_item: Optional[Dict[str, Any]], suggested_item: Dict[str, Any], goal: str
     ) -> str:
         """Generate human-readable reasoning for the upgrade suggestion"""
 
@@ -385,7 +376,9 @@ class GearOptimizer:
         if num_upgrades == 0:
             return "Your gear is well-optimized for your build!"
 
-        critical_count = sum(1 for u in recommendations["priority_upgrades"] if u["priority"] == "critical")
+        critical_count = sum(
+            1 for u in recommendations["priority_upgrades"] if u["priority"] == "critical"
+        )
         high_count = sum(1 for u in recommendations["priority_upgrades"] if u["priority"] == "high")
 
         summary = f"Found {num_upgrades} potential upgrades for {goal} optimization. "
@@ -401,11 +394,5 @@ class GearOptimizer:
 
     def _priority_value(self, priority: str) -> int:
         """Convert priority string to numeric value"""
-        priority_map = {
-            "critical": 4,
-            "high": 3,
-            "medium": 2,
-            "low": 1,
-            "none": 0
-        }
+        priority_map = {"critical": 4, "high": 3, "medium": 2, "low": 1, "none": 0}
         return priority_map.get(priority, 0)

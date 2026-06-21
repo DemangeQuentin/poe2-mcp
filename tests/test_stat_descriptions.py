@@ -38,6 +38,7 @@ try:
         load_stat_descriptions_index,
         search_stat_descriptions,
     )
+
     HELPERS_PRESENT = True
 except ImportError:
     HELPERS_PRESENT = False
@@ -61,6 +62,7 @@ needs_dataset = pytest.mark.skipif(
 # Path constants
 # ---------------------------------------------------------------------------
 
+
 def test_stat_descriptions_dir_constant_correct():
     assert STAT_DESCRIPTIONS_DIR == GAME_DATA_DIR / "stat_descriptions"
 
@@ -77,6 +79,7 @@ def test_stat_descriptions_meta_path_constant_correct():
 # Graceful degradation when dataset absent
 # ---------------------------------------------------------------------------
 
+
 @needs_helpers
 def test_load_index_returns_none_when_missing(monkeypatch, tmp_path):
     """If the index file isn't present, loader returns None — not raises."""
@@ -86,6 +89,7 @@ def test_load_index_returns_none_when_missing(monkeypatch, tmp_path):
     )
     # Clear the module cache so the monkeypatched path takes effect
     from src.data import game_data
+
     game_data._STAT_DESCRIPTIONS_CACHE.clear()
     try:
         assert load_stat_descriptions_index() is None
@@ -109,6 +113,7 @@ def test_search_stat_descriptions_returns_empty_for_empty_input():
 # Dataset shape (when present)
 # ---------------------------------------------------------------------------
 
+
 @needs_dataset
 def test_dataset_index_shape():
     idx = load_stat_descriptions_index()
@@ -126,10 +131,18 @@ def test_dataset_index_shape():
 def test_metadata_required_fields():
     meta = json.loads(STAT_DESCRIPTIONS_META.read_text(encoding="utf-8"))
     for field in (
-        "dataset", "filename", "patch_version", "extracted_at",
-        "source_dir", "source_format", "extractor",
-        "file_count", "description_count", "no_description_count",
-        "schema_notes", "data_policy",
+        "dataset",
+        "filename",
+        "patch_version",
+        "extracted_at",
+        "source_dir",
+        "source_format",
+        "extractor",
+        "file_count",
+        "description_count",
+        "no_description_count",
+        "schema_notes",
+        "data_policy",
     ):
         assert field in meta, f"metadata.json missing required field '{field}'"
     assert meta["dataset"] == "stat_descriptions"
@@ -202,6 +215,7 @@ def test_descriptions_have_required_keys():
 # find_stat_description (when dataset present)
 # ---------------------------------------------------------------------------
 
+
 @needs_dataset
 def test_find_stat_description_returns_proliferation_canonical_text():
     """The proliferation example HivemindOverlord's Claude Desktop session
@@ -236,6 +250,7 @@ def test_find_stat_description_other_known_stat():
 # search_stat_descriptions
 # ---------------------------------------------------------------------------
 
+
 @needs_dataset
 def test_search_proliferation_returns_multiple_hits():
     """Generic 'proliferation' query should surface multiple stat_ids."""
@@ -265,13 +280,9 @@ def test_search_template_only_mode():
     # Proliferation is in stat_id ("support_ignite_proliferation_radius") but
     # the word "proliferation" doesn't appear in the template text itself
     # (which says "Spread"). Verify template-only mode reflects this.
-    template_only = search_stat_descriptions(
-        "proliferation", limit=10, fields=("template",)
-    )
+    template_only = search_stat_descriptions("proliferation", limit=10, fields=("template",))
     # Stat_id-only would include the proliferation_radius entry
-    stat_id_only = search_stat_descriptions(
-        "proliferation", limit=10, fields=("stat_id",)
-    )
+    stat_id_only = search_stat_descriptions("proliferation", limit=10, fields=("stat_id",))
     # Stat-id search must find more than template search for this query
     assert len(stat_id_only) > len(template_only)
 

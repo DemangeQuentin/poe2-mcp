@@ -17,7 +17,7 @@ class ReportGenerator:
         self,
         character_data: Dict[str, Any],
         analysis: Dict[str, Any],
-        gear_recommendations: list = None
+        gear_recommendations: list = None,
     ) -> str:
         """
         Generate a comprehensive markdown report
@@ -47,7 +47,7 @@ class ReportGenerator:
         report_lines.append("")
 
         # Defensive Stats
-        defense = analysis.get('defensive_analysis', {})
+        defense = analysis.get("defensive_analysis", {})
         report_lines.append("## Defensive Stats")
         report_lines.append("")
         report_lines.append(f"**Overall Quality:** {defense.get('quality', 'Unknown')}")
@@ -58,53 +58,61 @@ class ReportGenerator:
         report_lines.append("")
 
         # Resistances
-        res = defense.get('resistances', {})
+        res = defense.get("resistances", {})
         report_lines.append("### Resistances")
         report_lines.append("")
-        report_lines.append(f"- **Fire:** {res.get('fire', 0)}% {self._get_resistance_status(res.get('fire', 0))}")
-        report_lines.append(f"- **Cold:** {res.get('cold', 0)}% {self._get_resistance_status(res.get('cold', 0))}")
-        report_lines.append(f"- **Lightning:** {res.get('lightning', 0)}% {self._get_resistance_status(res.get('lightning', 0))}")
+        report_lines.append(
+            f"- **Fire:** {res.get('fire', 0)}% {self._get_resistance_status(res.get('fire', 0))}"
+        )
+        report_lines.append(
+            f"- **Cold:** {res.get('cold', 0)}% {self._get_resistance_status(res.get('cold', 0))}"
+        )
+        report_lines.append(
+            f"- **Lightning:** {res.get('lightning', 0)}% {self._get_resistance_status(res.get('lightning', 0))}"
+        )
         report_lines.append(f"- **Chaos:** {res.get('chaos', 0)}%")
         report_lines.append("")
 
         # Issues
-        if defense.get('issues'):
+        if defense.get("issues"):
             report_lines.append("### Defense Issues")
             report_lines.append("")
-            for issue in defense['issues']:
+            for issue in defense["issues"]:
                 report_lines.append(f"- [!] {issue}")
             report_lines.append("")
 
         # Skills
-        skill_analysis = analysis.get('skill_analysis', {})
+        skill_analysis = analysis.get("skill_analysis", {})
         report_lines.append("## Skills")
         report_lines.append("")
         report_lines.append(f"**Total Skill Groups:** {skill_analysis.get('total_skills', 0)}")
         report_lines.append("")
 
         # Display skills if available
-        skills = character_data.get('skills', [])
+        skills = character_data.get("skills", [])
         if skills:
             for i, skill_group in enumerate(skills[:5], 1):  # Limit to first 5
-                gems = skill_group.get('allGems', skill_group.get('gems', []))
+                gems = skill_group.get("allGems", skill_group.get("gems", []))
                 if gems:
                     main_gem = gems[0]
-                    gem_name = main_gem.get('name', main_gem.get('itemData', {}).get('typeLine', 'Unknown'))
+                    gem_name = main_gem.get(
+                        "name", main_gem.get("itemData", {}).get("typeLine", "Unknown")
+                    )
                     report_lines.append(f"{i}. **{gem_name}**")
                     if len(gems) > 1:
-                        supports = [g.get('name', 'Unknown') for g in gems[1:]]
+                        supports = [g.get("name", "Unknown") for g in gems[1:]]
                         report_lines.append(f"   - Supports: {', '.join(supports[:3])}")
             report_lines.append("")
 
         # Recommendations
-        recommendations = analysis.get('recommendations', [])
+        recommendations = analysis.get("recommendations", [])
         if recommendations:
             report_lines.append("## Recommendations")
             report_lines.append("")
 
             # Group by priority
-            high_priority = [r for r in recommendations if r.get('priority') == 'HIGH']
-            medium_priority = [r for r in recommendations if r.get('priority') == 'MEDIUM']
+            high_priority = [r for r in recommendations if r.get("priority") == "HIGH"]
+            medium_priority = [r for r in recommendations if r.get("priority") == "MEDIUM"]
 
             if high_priority:
                 report_lines.append("### High Priority")
@@ -130,7 +138,9 @@ class ReportGenerator:
                 report_lines.append(f"### {gear_rec.get('stat', 'Unknown Stat')}")
                 report_lines.append(f"**Priority:** {gear_rec.get('priority', 'MEDIUM')}")
                 report_lines.append(f"**Reason:** {gear_rec.get('reason', '')}")
-                report_lines.append(f"**Suggested Slots:** {', '.join(gear_rec.get('suggested_slots', []))}")
+                report_lines.append(
+                    f"**Suggested Slots:** {', '.join(gear_rec.get('suggested_slots', []))}"
+                )
                 report_lines.append("")
 
         # Summary
@@ -143,10 +153,14 @@ class ReportGenerator:
         report_lines.append(f"**Overall Build Status:** {overall_status}")
         report_lines.append("")
 
-        if defense.get('quality') in ['Critical', 'Weak']:
-            report_lines.append("[!] **Action Required:** Your character has critical defensive weaknesses that should be addressed immediately.")
+        if defense.get("quality") in ["Critical", "Weak"]:
+            report_lines.append(
+                "[!] **Action Required:** Your character has critical defensive weaknesses that should be addressed immediately."
+            )
         elif recommendations:
-            report_lines.append("[OK] **Moderate Issues:** Your character is functional but has room for improvement.")
+            report_lines.append(
+                "[OK] **Moderate Issues:** Your character is functional but has room for improvement."
+            )
         else:
             report_lines.append("[OK] **Build Looks Good:** No critical issues detected!")
 
@@ -155,7 +169,7 @@ class ReportGenerator:
         report_lines.append("")
         report_lines.append("*Report generated by Path of Exile 2 Enhancement Service*")
 
-        return '\n'.join(report_lines)
+        return "\n".join(report_lines)
 
     def _get_resistance_status(self, value: int) -> str:
         """Get resistance status indicator"""
@@ -168,15 +182,11 @@ class ReportGenerator:
         else:
             return "(CRITICAL [!])"
 
-    def _get_overall_status(
-        self,
-        defense: Dict[str, Any],
-        recommendations: list
-    ) -> str:
+    def _get_overall_status(self, defense: Dict[str, Any], recommendations: list) -> str:
         """Determine overall build status"""
-        if defense.get('quality') == 'Critical':
+        if defense.get("quality") == "Critical":
             return "[!] Critical - Immediate Action Required"
-        elif defense.get('quality') == 'Weak':
+        elif defense.get("quality") == "Weak":
             return "[!] Weak - Needs Improvement"
         elif len(recommendations) > 3:
             return "[!] Moderate - Multiple Issues"

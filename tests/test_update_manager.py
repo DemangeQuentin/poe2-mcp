@@ -64,11 +64,15 @@ def _patch_data_env(monkeypatch):
 def test_upgrade_blocked_without_consent(monkeypatch):
     """Stale local data + no consent => report only, no download."""
     _patch_data_env(monkeypatch)
-    monkeypatch.setattr(dd, "needs_update", lambda: (True, "local 'data-v0.5.0-1' != latest 'data-v0.5.0-2'"))
+    monkeypatch.setattr(
+        dd, "needs_update", lambda: (True, "local 'data-v0.5.0-1' != latest 'data-v0.5.0-2'")
+    )
     monkeypatch.setattr(dd, "get_local_data_version", lambda: {"release_tag": "data-v0.5.0-1"})
     called = {"download": False}
     monkeypatch.setattr(dd, "get_latest_release_info", lambda: {"tag_name": "data-v0.5.0-2"})
-    monkeypatch.setattr(dd, "download_and_install", lambda rel: called.__setitem__("download", True) or True)
+    monkeypatch.setattr(
+        dd, "download_and_install", lambda rel: called.__setitem__("download", True) or True
+    )
 
     ok, msg = dd.ensure_data_current(consent=False)
     assert ok is True  # runnable on local data
@@ -83,7 +87,9 @@ def test_upgrade_applied_with_consent(monkeypatch):
     monkeypatch.setattr(dd, "get_local_data_version", lambda: {"release_tag": "data-v0.5.0-1"})
     monkeypatch.setattr(dd, "get_latest_release_info", lambda: {"tag_name": "data-v0.5.0-2"})
     called = {"download": False}
-    monkeypatch.setattr(dd, "download_and_install", lambda rel: called.__setitem__("download", True) or True)
+    monkeypatch.setattr(
+        dd, "download_and_install", lambda rel: called.__setitem__("download", True) or True
+    )
 
     ok, msg = dd.ensure_data_current(consent=True)
     assert ok is True
@@ -94,11 +100,15 @@ def test_upgrade_applied_with_consent(monkeypatch):
 def test_bootstrap_always_downloads(monkeypatch):
     """No local data => download proceeds even with consent=False."""
     _patch_data_env(monkeypatch)
-    monkeypatch.setattr(dd, "needs_update", lambda: (True, "no local data/version.json (fresh install)"))
+    monkeypatch.setattr(
+        dd, "needs_update", lambda: (True, "no local data/version.json (fresh install)")
+    )
     monkeypatch.setattr(dd, "get_local_data_version", lambda: None)
     monkeypatch.setattr(dd, "get_latest_release_info", lambda: {"tag_name": "data-v0.5.0-1"})
     called = {"download": False}
-    monkeypatch.setattr(dd, "download_and_install", lambda rel: called.__setitem__("download", True) or True)
+    monkeypatch.setattr(
+        dd, "download_and_install", lambda rel: called.__setitem__("download", True) or True
+    )
 
     ok, msg = dd.ensure_data_current(consent=False)
     assert ok is True
@@ -108,7 +118,9 @@ def test_bootstrap_always_downloads(monkeypatch):
 def test_no_data_fetch_env_short_circuits(monkeypatch):
     monkeypatch.setenv("POE2_MCP_NO_DATA_FETCH", "1")
     # needs_update should never be consulted; make it explode if it is.
-    monkeypatch.setattr(dd, "needs_update", lambda: (_ for _ in ()).throw(AssertionError("should not run")))
+    monkeypatch.setattr(
+        dd, "needs_update", lambda: (_ for _ in ()).throw(AssertionError("should not run"))
+    )
     ok, msg = dd.ensure_data_current()
     assert ok is True
     assert "POE2_MCP_NO_DATA_FETCH" in msg
@@ -122,7 +134,9 @@ def test_consent_derived_from_env_when_none(monkeypatch):
     monkeypatch.setattr(dd, "get_local_data_version", lambda: {"release_tag": "old"})
     monkeypatch.setattr(dd, "get_latest_release_info", lambda: {"tag_name": "new"})
     called = {"download": False}
-    monkeypatch.setattr(dd, "download_and_install", lambda rel: called.__setitem__("download", True) or True)
+    monkeypatch.setattr(
+        dd, "download_and_install", lambda rel: called.__setitem__("download", True) or True
+    )
 
     ok, _ = dd.ensure_data_current()  # consent=None -> env
     assert called["download"] is True
@@ -143,17 +157,35 @@ def test_get_update_status_offline_shape(monkeypatch):
 
 
 def test_recommend_clean_when_current():
-    data = {"update_available": False, "is_bootstrap": False, "latest_tag": None,
-            "consent_mode": "notify"}
-    code = {"update_available": False, "install_kind": "git", "can_self_apply": True,
-            "consent_mode": "notify", "latest": None}
+    data = {
+        "update_available": False,
+        "is_bootstrap": False,
+        "latest_tag": None,
+        "consent_mode": "notify",
+    }
+    code = {
+        "update_available": False,
+        "install_kind": "git",
+        "can_self_apply": True,
+        "consent_mode": "notify",
+        "latest": None,
+    }
     assert um._recommend(data, code) == "Everything is current."
 
 
 def test_recommend_packaged_points_to_reinstall():
-    data = {"update_available": False, "is_bootstrap": False, "latest_tag": None,
-            "consent_mode": "notify"}
-    code = {"update_available": True, "install_kind": "packaged", "can_self_apply": False,
-            "consent_mode": "notify", "latest": "mcpb-latest"}
+    data = {
+        "update_available": False,
+        "is_bootstrap": False,
+        "latest_tag": None,
+        "consent_mode": "notify",
+    }
+    code = {
+        "update_available": True,
+        "install_kind": "packaged",
+        "can_self_apply": False,
+        "consent_mode": "notify",
+        "latest": "mcpb-latest",
+    }
     msg = um._recommend(data, code)
     assert "reinstall" in msg.lower()

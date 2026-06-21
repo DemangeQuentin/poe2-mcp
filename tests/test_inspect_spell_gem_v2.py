@@ -38,6 +38,7 @@ needs_v2 = pytest.mark.skipif(
 # get_v2_skill_record() — helper layer
 # ---------------------------------------------------------------------------
 
+
 @needs_v2
 def test_get_v2_skill_record_ice_nova_by_name():
     r = get_v2_skill_record("Ice Nova")
@@ -89,6 +90,7 @@ def test_get_v2_skill_record_unknown_returns_none():
 def test_get_v2_skill_record_handles_missing_file(tmp_path, monkeypatch):
     """When v2 file isn't present, returns None gracefully."""
     import src.calculator.v2_spell_db as mod
+
     fake = tmp_path / "nope.json"
     monkeypatch.setattr(mod, "_skill_gems_v2_path", lambda: fake)
     monkeypatch.setattr(mod, "_CACHE", None)
@@ -99,10 +101,12 @@ def test_get_v2_skill_record_handles_missing_file(tmp_path, monkeypatch):
 # inspect_spell_gem handler — v2 enrichment surfaces in response
 # ---------------------------------------------------------------------------
 
+
 @pytest_asyncio.fixture(scope="module")
 async def mcp():
     """Canonical lazy-import fixture per docs/TESTING.md."""
     from src.mcp_server import PoE2BuildOptimizerMCP
+
     instance = PoE2BuildOptimizerMCP()
     await instance.initialize()
     return instance
@@ -117,12 +121,12 @@ async def test_inspect_spell_gem_response_includes_v2_enrichment(mcp):
     text = r[0].text
     assert "Ice Nova" in text
     # v2 enrichment markers
-    assert "Built-in Modifiers" in text, (
-        "Ice Nova response should include built-in modifiers from v2 constantStats"
-    )
-    assert "Per-Level Scaling Stats" in text, (
-        "Ice Nova response should include per-level scaling stats from v2 levels[]"
-    )
+    assert (
+        "Built-in Modifiers" in text
+    ), "Ice Nova response should include built-in modifiers from v2 constantStats"
+    assert (
+        "Per-Level Scaling Stats" in text
+    ), "Ice Nova response should include per-level scaling stats from v2 levels[]"
 
 
 @needs_v2
@@ -141,9 +145,9 @@ async def test_inspect_spell_gem_per_level_damage_sampled(mcp):
     r = await mcp._handle_inspect_spell_gem({"spell_name": "Ice Nova"})
     text = r[0].text
     # Look for level-sample tags. At least one of L1/L10/L20 should appear.
-    assert ("L1=" in text or "L10=" in text or "L20=" in text), (
-        "v2 per-level damage sampling should produce L1=/L10=/L20= markers"
-    )
+    assert (
+        "L1=" in text or "L10=" in text or "L20=" in text
+    ), "v2 per-level damage sampling should produce L1=/L10=/L20= markers"
 
 
 @needs_v2

@@ -66,7 +66,7 @@ class BM25Index:
     def __init__(self, k1: float = 1.5, b: float = 0.75):
         self.k1 = k1
         self.b = b
-        self._docs: List[Dict[str, Any]] = []        # {id, text, meta}
+        self._docs: List[Dict[str, Any]] = []  # {id, text, meta}
         self._doc_tokens: List[List[str]] = []
         self._doc_len: List[int] = []
         self._avg_len: float = 0.0
@@ -112,7 +112,9 @@ class BM25Index:
             for doc_idx, tf in postings.items():
                 dl = self._doc_len[doc_idx]
                 denom = tf + self.k1 * (1 - self.b + self.b * dl / (self._avg_len or 1))
-                scores[doc_idx] = scores.get(doc_idx, 0.0) + idf * (tf * (self.k1 + 1)) / (denom or 1)
+                scores[doc_idx] = scores.get(doc_idx, 0.0) + idf * (tf * (self.k1 + 1)) / (
+                    denom or 1
+                )
         ranked = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)[:k]
         return [(score, self._docs[i]) for i, score in ranked]
 
@@ -121,8 +123,13 @@ _INDEX: Optional[BM25Index] = None
 
 
 def _default_corpus_path() -> Path:
-    return (Path(__file__).parent.parent.parent
-            / "data" / "game" / "stat_descriptions" / "stat_descriptions.json")
+    return (
+        Path(__file__).parent.parent.parent
+        / "data"
+        / "game"
+        / "stat_descriptions"
+        / "stat_descriptions.json"
+    )
 
 
 def build_stat_description_index(path: Optional[Path] = None) -> BM25Index:
@@ -135,7 +142,7 @@ def build_stat_description_index(path: Optional[Path] = None) -> BM25Index:
         idx.finalize()
         return idx
     data = json.loads(path.read_text(encoding="utf-8"))
-    for e in (data.get("descriptions") or []):
+    for e in data.get("descriptions") or []:
         sid = e.get("primary_stat_id")
         if not sid:
             continue
@@ -144,11 +151,15 @@ def build_stat_description_index(path: Optional[Path] = None) -> BM25Index:
         # stat_ids are underscore_joined; turn them into word tokens too
         id_words = stat_ids.replace("_", " ").replace("+", " ").replace("%", " ")
         text = f"{template} {id_words}"
-        idx.add(sid, text, meta={
-            "stat_id": sid,
-            "template": template,
-            "source_csd": e.get("source_csd"),
-        })
+        idx.add(
+            sid,
+            text,
+            meta={
+                "stat_id": sid,
+                "template": template,
+                "source_csd": e.get("source_csd"),
+            },
+        )
     idx.finalize()
     return idx
 
@@ -165,7 +176,4 @@ def search_stat_descriptions_ranked(query: str, k: int = 8) -> List[Dict[str, An
     """Public helper: BM25-ranked stat descriptions for a query.
     Returns [{stat_id, template, source_csd, score}] best-first."""
     hits = get_stat_description_index().search(query, k=k)
-    return [
-        {**h["meta"], "score": round(score, 3)}
-        for score, h in hits
-    ]
+    return [{**h["meta"], "score": round(score, 3)} for score, h in hits]

@@ -5,6 +5,7 @@ The canonical dataset gained per-level spirit_reservation_flat in
 data-v0.5.0-r11 (PR #169); this locks the handler-side display so the
 "what does this meta gem reserve" question is answerable in-tool.
 """
+
 from __future__ import annotations
 
 import sys

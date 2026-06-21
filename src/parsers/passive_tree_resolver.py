@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ResolvedNode:
     """A fully resolved passive tree node."""
+
     node_id: int
     name: str
     stats: List[str] = field(default_factory=list)
@@ -53,6 +54,7 @@ class ResolvedNode:
 @dataclass
 class PathResult:
     """Result of a pathfinding operation."""
+
     start: int
     end: int
     path: List[int]
@@ -63,6 +65,7 @@ class PathResult:
 @dataclass
 class BuildAnalysis:
     """Analysis of allocated passive nodes."""
+
     total_nodes: int
     keystones: List[ResolvedNode]
     notables: List[ResolvedNode]
@@ -71,7 +74,9 @@ class BuildAnalysis:
     is_connected: bool
     nearest_notables: List[Tuple[ResolvedNode, int]]  # (node, distance)
     class_start: Optional[str] = None
-    unresolved_nodes: List[int] = field(default_factory=list)  # Node IDs not in database (e.g., ascendancy)
+    unresolved_nodes: List[int] = field(
+        default_factory=list
+    )  # Node IDs not in database (e.g., ascendancy)
     tree_region: Optional[str] = None  # Estimated tree region based on coordinate analysis
     connectivity_note: Optional[str] = None  # Explanation of connectivity status
 
@@ -112,12 +117,12 @@ class PassiveTreeResolver:
     #               \                        /
     #                MERCENARY (50986) - STR/DEX bottom
     CLASS_STARTS = {
-        47175: "WARRIOR",      # MARAUDER position - Pure STR (bottom-left)
-        50459: "RANGER",       # RANGER position - Pure DEX (bottom-right) - shared by Ranger & Huntress
-        54447: "SORCERESS",    # WITCH position - Pure INT (top) - shared by Sorceress & Witch
-        50986: "MERCENARY",    # DUELIST position - STR/DEX hybrid (bottom-center)
-        61525: "DRUID",        # TEMPLAR position - STR/INT hybrid (top-left)
-        44683: "MONK",         # SHADOW position - DEX/INT hybrid (top-right)
+        47175: "WARRIOR",  # MARAUDER position - Pure STR (bottom-left)
+        50459: "RANGER",  # RANGER position - Pure DEX (bottom-right) - shared by Ranger & Huntress
+        54447: "SORCERESS",  # WITCH position - Pure INT (top) - shared by Sorceress & Witch
+        50986: "MERCENARY",  # DUELIST position - STR/DEX hybrid (bottom-center)
+        61525: "DRUID",  # TEMPLAR position - STR/INT hybrid (top-left)
+        44683: "MONK",  # SHADOW position - DEX/INT hybrid (top-right)
     }
 
     # Reverse mapping: class name to starting node ID
@@ -125,9 +130,9 @@ class PassiveTreeResolver:
     CLASS_TO_START_NODE = {
         "WARRIOR": 47175,
         "RANGER": 50459,
-        "HUNTRESS": 50459,     # Huntress (DEX) shares Ranger's starting position
+        "HUNTRESS": 50459,  # Huntress (DEX) shares Ranger's starting position
         "SORCERESS": 54447,
-        "WITCH": 54447,        # Witch (INT) shares Sorceress's starting position
+        "WITCH": 54447,  # Witch (INT) shares Sorceress's starting position
         "MERCENARY": 50986,
         "DRUID": 61525,
         "MONK": 44683,
@@ -181,63 +186,63 @@ class PassiveTreeResolver:
             "y_range": (-10429.8, -82.2),
             "centroid": (7948.5, -4321.4),
             "node_count": 739,
-            "description": "Top-right, DEX/INT hybrid, elemental martial arts"
+            "description": "Top-right, DEX/INT hybrid, elemental martial arts",
         },
         "MERCENARY": {
             "x_range": (-8095.0, 4874.5),
             "y_range": (1469.8, 20053.8),
             "centroid": (-327.4, 9336.1),
             "node_count": 816,
-            "description": "Bottom-center, STR/DEX hybrid, crossbow and grenades"
+            "description": "Bottom-center, STR/DEX hybrid, crossbow and grenades",
         },
         "RANGER": {
             "x_range": (1274.7, 21814.3),
             "y_range": (-2.4, 9944.3),
             "centroid": (8069.1, 4128.0),
             "node_count": 840,
-            "description": "Bottom-right, pure DEX, bows and evasion (also Huntress)"
+            "description": "Bottom-right, pure DEX, bows and evasion (also Huntress)",
         },
         "SORCERESS": {
             "x_range": (-6298.3, 6071.3),
             "y_range": (-18720.7, -1404.7),
             "centroid": (-185.8, -9093.6),
             "node_count": 862,
-            "description": "Top-center, pure INT, elemental spells (also Witch)"
+            "description": "Top-center, pure INT, elemental spells (also Witch)",
         },
         "WARRIOR": {
             "x_range": (-22167.2, -1271.2),
             "y_range": (0.5, 9579.9),
             "centroid": (-8128.1, 4300.7),
             "node_count": 726,
-            "description": "Bottom-left, pure STR, melee and armor"
+            "description": "Bottom-left, pure STR, melee and armor",
         },
         "DRUID": {
             "x_range": (-22597.4, -1245.2),
             "y_range": (-10437.4, -155.3),
             "centroid": (-8159.0, -4008.8),
             "node_count": 975,
-            "description": "Top-left, STR/INT hybrid, shapeshifting and nature magic"
+            "description": "Top-left, STR/INT hybrid, shapeshifting and nature magic",
         },
     }
 
     # Alias regions for classes that share positions
     # These map the alternate class name to the canonical region
     REGION_ALIASES = {
-        "HUNTRESS": "RANGER",   # Huntress (DEX) shares Ranger's region
-        "WITCH": "SORCERESS",   # Witch (INT) shares Sorceress's region
+        "HUNTRESS": "RANGER",  # Huntress (DEX) shares Ranger's region
+        "WITCH": "SORCERESS",  # Witch (INT) shares Sorceress's region
     }
 
     # Class starting positions (authoritative coordinates from PSG data)
     # Note: Multiple classes share the same starting coordinates
     CLASS_START_COORDS = {
-        "RANGER": {"x": 1274.675, "y": 735.845},       # Also Huntress
-        "HUNTRESS": {"x": 1274.675, "y": 735.845},    # Same as Ranger
+        "RANGER": {"x": 1274.675, "y": 735.845},  # Also Huntress
+        "HUNTRESS": {"x": 1274.675, "y": 735.845},  # Same as Ranger
         "WARRIOR": {"x": -1271.185, "y": 733.095},
-        "MERCENARY": {"x": 1.945, "y": 1469.815},     # Bottom center (was DUELIST)
-        "DRUID": {"x": -1245.175, "y": -728.895},     # Top-left (was TEMPLAR)
-        "SORCERESS": {"x": 0.005, "y": -1490.585},    # Also Witch
-        "WITCH": {"x": 0.005, "y": -1490.585},        # Same as Sorceress
-        "MONK": {"x": 1270.425, "y": -728.835},       # Top-right (was SHADOW)
+        "MERCENARY": {"x": 1.945, "y": 1469.815},  # Bottom center (was DUELIST)
+        "DRUID": {"x": -1245.175, "y": -728.895},  # Top-left (was TEMPLAR)
+        "SORCERESS": {"x": 0.005, "y": -1490.585},  # Also Witch
+        "WITCH": {"x": 0.005, "y": -1490.585},  # Same as Sorceress
+        "MONK": {"x": 1270.425, "y": -728.835},  # Top-right (was SHADOW)
     }
 
     def __init__(self, data_dir: Optional[Path] = None):
@@ -270,7 +275,7 @@ class PassiveTreeResolver:
             return
 
         try:
-            with open(db_path, 'r', encoding='utf-8') as f:
+            with open(db_path, "r", encoding="utf-8") as f:
                 raw_nodes = json.load(f)
 
             # Convert string keys to int and build adjacency
@@ -279,7 +284,7 @@ class PassiveTreeResolver:
                 self._nodes[node_id] = node_data
 
                 # Build adjacency graph
-                connections = node_data.get('connections', [])
+                connections = node_data.get("connections", [])
                 if node_id not in self._adjacency:
                     self._adjacency[node_id] = set()
                 for conn in connections:
@@ -307,11 +312,11 @@ class PassiveTreeResolver:
             return
 
         try:
-            with open(regions_path, 'r', encoding='utf-8') as f:
+            with open(regions_path, "r", encoding="utf-8") as f:
                 regions_data = json.load(f)
 
             # Load precomputed node -> region mapping
-            node_regions = regions_data.get('node_regions', {})
+            node_regions = regions_data.get("node_regions", {})
             for str_id, region in node_regions.items():
                 self._node_regions[int(str_id)] = region
 
@@ -339,7 +344,7 @@ class PassiveTreeResolver:
         import math
 
         best_region = "UNKNOWN"
-        best_distance = float('inf')
+        best_distance = float("inf")
 
         for region_name, coords in self.CLASS_START_COORDS.items():
             distance = math.sqrt((x - coords["x"]) ** 2 + (y - coords["y"]) ** 2)
@@ -374,11 +379,11 @@ class PassiveTreeResolver:
         if not node_data:
             return None
 
-        x = node_data.get('x', 0.0)
-        y = node_data.get('y', 0.0)
+        x = node_data.get("x", 0.0)
+        y = node_data.get("y", 0.0)
 
         # Check if this is an ascendancy node (they have different coordinate systems)
-        if node_data.get('is_ascendancy', False):
+        if node_data.get("is_ascendancy", False):
             # Ascendancy nodes don't belong to main tree regions
             return None
 
@@ -406,7 +411,7 @@ class PassiveTreeResolver:
             node_region = self.get_node_region(node_id)
             if node_region == region:
                 if notable_only:
-                    if self._nodes[node_id].get('is_notable', False):
+                    if self._nodes[node_id].get("is_notable", False):
                         result.append(node_id)
                 else:
                     result.append(node_id)
@@ -431,15 +436,15 @@ class PassiveTreeResolver:
 
         return ResolvedNode(
             node_id=node_id,
-            name=node_data.get('name', f'Unknown-{node_id}'),
-            stats=node_data.get('stats', []),
-            is_notable=node_data.get('is_notable', False),
-            is_keystone=node_data.get('is_keystone', False),
-            is_jewel_socket='Jewel Socket' in node_data.get('name', ''),
-            x=node_data.get('x', 0.0),
-            y=node_data.get('y', 0.0),
-            connections=node_data.get('connections', []),
-            icon=node_data.get('icon', '')
+            name=node_data.get("name", f"Unknown-{node_id}"),
+            stats=node_data.get("stats", []),
+            is_notable=node_data.get("is_notable", False),
+            is_keystone=node_data.get("is_keystone", False),
+            is_jewel_socket="Jewel Socket" in node_data.get("name", ""),
+            x=node_data.get("x", 0.0),
+            y=node_data.get("y", 0.0),
+            connections=node_data.get("connections", []),
+            icon=node_data.get("icon", ""),
         )
 
     def resolve_many(self, node_ids: List[int]) -> List[ResolvedNode]:
@@ -478,11 +483,7 @@ class PassiveTreeResolver:
         if start == end:
             node = self.resolve(start)
             return PathResult(
-                start=start,
-                end=end,
-                path=[start],
-                distance=0,
-                nodes=[node] if node else []
+                start=start, end=end, path=[start], distance=0, nodes=[node] if node else []
             )
 
         visited = {start}
@@ -498,7 +499,7 @@ class PassiveTreeResolver:
                         end=end,
                         path=full_path,
                         distance=len(full_path) - 1,
-                        nodes=self.resolve_many(full_path)
+                        nodes=self.resolve_many(full_path),
                     )
                 if neighbor not in visited:
                     visited.add(neighbor)
@@ -506,8 +507,9 @@ class PassiveTreeResolver:
 
         return None
 
-    def find_nearest_notables(self, from_nodes: List[int], limit: int = 5,
-                              exclude: Optional[Set[int]] = None) -> List[Tuple[ResolvedNode, int]]:
+    def find_nearest_notables(
+        self, from_nodes: List[int], limit: int = 5, exclude: Optional[Set[int]] = None
+    ) -> List[Tuple[ResolvedNode, int]]:
         """
         Find nearest notable nodes from a set of nodes.
 
@@ -548,7 +550,9 @@ class PassiveTreeResolver:
 
         return sorted(found, key=lambda x: x[1])
 
-    def analyze_build(self, node_ids: List[int], find_recommendations: bool = True) -> BuildAnalysis:
+    def analyze_build(
+        self, node_ids: List[int], find_recommendations: bool = True
+    ) -> BuildAnalysis:
         """
         Analyze a character's allocated passive nodes.
 
@@ -590,11 +594,7 @@ class PassiveTreeResolver:
         # Find nearest unallocated notables
         nearest_notables = []
         if find_recommendations:
-            nearest_notables = self.find_nearest_notables(
-                node_ids,
-                limit=5,
-                exclude=node_set
-            )
+            nearest_notables = self.find_nearest_notables(node_ids, limit=5, exclude=node_set)
 
         # Determine likely class start
         class_start = None
@@ -629,7 +629,7 @@ class PassiveTreeResolver:
             class_start=class_start,
             unresolved_nodes=unresolved,
             tree_region=tree_region,
-            connectivity_note=connectivity_note
+            connectivity_note=connectivity_note,
         )
 
     def _check_connectivity(self, node_ids: List[int]) -> bool:
@@ -673,16 +673,14 @@ class PassiveTreeResolver:
         """Return all notable nodes."""
         self._ensure_loaded()
         return [
-            self.resolve(nid) for nid in self._nodes
-            if self._nodes[nid].get('is_notable', False)
+            self.resolve(nid) for nid in self._nodes if self._nodes[nid].get("is_notable", False)
         ]
 
     def get_all_keystones(self) -> List[ResolvedNode]:
         """Return all keystone nodes."""
         self._ensure_loaded()
         return [
-            self.resolve(nid) for nid in self._nodes
-            if self._nodes[nid].get('is_keystone', False)
+            self.resolve(nid) for nid in self._nodes if self._nodes[nid].get("is_keystone", False)
         ]
 
     def estimate_tree_region(self, nodes: List[ResolvedNode]) -> Optional[str]:
@@ -711,7 +709,7 @@ class PassiveTreeResolver:
 
         # Find which region the centroid is closest to
         best_region = None
-        best_score = float('inf')
+        best_score = float("inf")
 
         for region_name, bounds in self.TREE_REGIONS.items():
             x_min, x_max = bounds["x_range"]
@@ -754,11 +752,11 @@ class PassiveTreeResolver:
 
         region_notables = []
         for nid, node_data in self._nodes.items():
-            if not node_data.get('is_notable', False):
+            if not node_data.get("is_notable", False):
                 continue
 
-            x = node_data.get('x', 0)
-            y = node_data.get('y', 0)
+            x = node_data.get("x", 0)
+            y = node_data.get("y", 0)
 
             if x_min <= x <= x_max and y_min <= y <= y_max:
                 node = self.resolve(nid)
@@ -786,6 +784,7 @@ class PassiveTreeResolver:
 # Singleton instance for convenience
 _resolver: Optional[PassiveTreeResolver] = None
 
+
 def get_resolver() -> PassiveTreeResolver:
     """Get the singleton PassiveTreeResolver instance."""
     global _resolver
@@ -794,15 +793,43 @@ def get_resolver() -> PassiveTreeResolver:
     return _resolver
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Demo usage
     resolver = PassiveTreeResolver()
 
     # Test character nodes
-    char_nodes = [2455, 2847, 3717, 6178, 7062, 8092, 13081, 19998, 21755, 28556,
-                  30082, 31763, 33415, 41210, 43155, 43578, 44430, 44605, 48588,
-                  48635, 49657, 52125, 53683, 54127, 54282, 55802, 59028, 59881,
-                  59915, 63526]
+    char_nodes = [
+        2455,
+        2847,
+        3717,
+        6178,
+        7062,
+        8092,
+        13081,
+        19998,
+        21755,
+        28556,
+        30082,
+        31763,
+        33415,
+        41210,
+        43155,
+        43578,
+        44430,
+        44605,
+        48588,
+        48635,
+        49657,
+        52125,
+        53683,
+        54127,
+        54282,
+        55802,
+        59028,
+        59881,
+        59915,
+        63526,
+    ]
 
     print("=== PASSIVE TREE RESOLVER DEMO ===\n")
 

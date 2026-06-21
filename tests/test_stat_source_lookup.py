@@ -2,6 +2,7 @@
 Tests for the reverse stat-source lookup + explain_mechanic cluster mode
 (field-feedback wishes, 2026-06-11) and the issue #155 fuzzy-matcher fixes.
 """
+
 from __future__ import annotations
 
 import sys
@@ -20,6 +21,7 @@ from src.data.stat_source_index import StatSourceIndex, get_stat_source_index
 # ---------------------------------------------------------------------------
 # StatSourceIndex unit tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="module")
 def index():
@@ -47,11 +49,7 @@ def test_passive_text_match(index):
     """Passive nodes match on stat TEXT, not just ids."""
     sources = index.find_sources("chance to Shock")
     assert sources["passive_nodes"]
-    assert any(
-        "shock" in s.lower()
-        for n in sources["passive_nodes"]
-        for s in n["stats"]
-    )
+    assert any("shock" in s.lower() for n in sources["passive_nodes"] for s in n["stats"])
 
 
 def test_mod_stat_id_match(index):
@@ -108,9 +106,11 @@ def test_singleton_accessor():
 # Issue #155 — knowledge-base entries + matcher ranking
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="module")
 def kb():
     from src.knowledge.poe2_mechanics import PoE2MechanicsKnowledgeBase
+
     return PoE2MechanicsKnowledgeBase()
 
 
@@ -145,9 +145,11 @@ def test_search_body_matches_still_found(kb):
 # Handler integration
 # ---------------------------------------------------------------------------
 
+
 @pytest_asyncio.fixture(scope="module")
 async def mcp():
     from src.mcp_server import PoE2BuildOptimizerMCP
+
     instance = PoE2BuildOptimizerMCP()
     await instance.initialize()
     return instance
@@ -179,12 +181,11 @@ async def test_list_all_mods_filter_by_stat_id(mcp):
     """Field bug 2026-06-16: list_all_mods filter_stat only matched mod_id, so a
     stat-id query returned 0 results. It must now agree with find_stat_sources
     and match resolved stat_ids too."""
-    r = await mcp._handle_list_all_mods(
-        {"filter_stat": "convert_to_fire", "limit": 5}
-    )
+    r = await mcp._handle_list_all_mods({"filter_stat": "convert_to_fire", "limit": 5})
     text = r[0].text
     # Header is "# Mods (N of TOTAL)" — TOTAL must be non-zero now.
     import re
+
     m = re.search(r"# Mods \(\d+ of (\d+)\)", text)
     assert m, f"unexpected header: {text.splitlines()[0]!r}"
     assert int(m.group(1)) > 0, "filter_stat by stat_id must find conversion mods"
@@ -195,6 +196,7 @@ async def test_find_stat_sources_completes_under_timeout(mcp):
     """Field bug #4 2026-06-16: a single query must never hang the session.
     The exact reported query should return promptly via the timeout guard."""
     import asyncio
+
     r = await asyncio.wait_for(
         mcp._handle_find_stat_sources(
             {"query": "corpse_explosion_monster_life_permillage_physical"}
@@ -220,9 +222,12 @@ async def test_find_stat_sources_no_match(mcp):
 @pytest.mark.asyncio
 async def test_cluster_dump_mode(mcp):
     """The one-call cluster dump the feedback asked for."""
-    r = await mcp._handle_explain_mechanic({
-        "mechanic_name": "infusion", "cluster": True,
-    })
+    r = await mcp._handle_explain_mechanic(
+        {
+            "mechanic_name": "infusion",
+            "cluster": True,
+        }
+    )
     text = r[0].text
     assert "Cluster dump" in text
     assert "Canonical stat_ids" in text

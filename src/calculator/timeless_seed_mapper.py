@@ -68,6 +68,7 @@ class TransformedNode:
         y: Y coordinate
         tribute_value: Tribute gained (5 for small, 3 for attribute, 0 for notable/keystone)
     """
+
     original_node_id: int
     original_name: str
     original_type: str
@@ -98,6 +99,7 @@ class SeedAnalysis:
         notable_count: Number of notables transformed
         small_count: Number of small passives transformed
     """
+
     socket: JewelSocket
     seed: int
     tribute_name: str
@@ -112,9 +114,9 @@ class SeedAnalysis:
     def __post_init__(self):
         """Calculate summary statistics."""
         self.total_tribute = sum(n.tribute_value for n in self.transformed_nodes)
-        self.notable_count = sum(1 for n in self.transformed_nodes if n.original_type == 'notable')
-        self.small_count = sum(1 for n in self.transformed_nodes if n.original_type == 'small')
-        self.keystone_replaced = any(n.original_type == 'keystone' for n in self.transformed_nodes)
+        self.notable_count = sum(1 for n in self.transformed_nodes if n.original_type == "notable")
+        self.small_count = sum(1 for n in self.transformed_nodes if n.original_type == "small")
+        self.keystone_replaced = any(n.original_type == "keystone" for n in self.transformed_nodes)
 
 
 class TimelessSeedMapper:
@@ -142,38 +144,37 @@ class TimelessSeedMapper:
                               Defaults to data/abyss_spawn_weights.json
         """
         if spawn_weights_path is None:
-            spawn_weights_path = Path(__file__).parent.parent.parent / "data" / "abyss_spawn_weights.json"
+            spawn_weights_path = (
+                Path(__file__).parent.parent.parent / "data" / "abyss_spawn_weights.json"
+            )
 
         self._load_spawn_weights(spawn_weights_path)
         self._tree_data: Optional[Dict[str, Any]] = None
 
     def _load_spawn_weights(self, path: Path) -> None:
         """Load spawn weight data from JSON file."""
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         # Build notable pool (only notables with spawn_weight > 0)
-        self.notables = [
-            n for n in data.get('notables', [])
-            if n.get('spawn_weight', 0) > 0
-        ]
+        self.notables = [n for n in data.get("notables", []) if n.get("spawn_weight", 0) > 0]
 
         # Build spawn weight lookup and cumulative weights for weighted selection
-        self.notable_weights = {n['id']: n['spawn_weight'] for n in self.notables}
-        self.total_weight = sum(n['spawn_weight'] for n in self.notables)
+        self.notable_weights = {n["id"]: n["spawn_weight"] for n in self.notables}
+        self.total_weight = sum(n["spawn_weight"] for n in self.notables)
 
         # Build cumulative weight array for binary search selection
         cumulative = 0
         self.cumulative_weights = []
         for n in self.notables:
-            cumulative += n['spawn_weight']
+            cumulative += n["spawn_weight"]
             self.cumulative_weights.append((cumulative, n))
 
         # Load keystones
-        self.keystones = {k['leader']: k for k in data.get('keystones', [])}
+        self.keystones = {k["leader"]: k for k in data.get("keystones", [])}
 
         # Small passive data
-        self.small_passive = data.get('small_passive', {'name': 'Tribute', 'spawn_weight': 100})
+        self.small_passive = data.get("small_passive", {"name": "Tribute", "spawn_weight": 100})
 
         logger.info(f"Loaded {len(self.notables)} notables (total weight: {self.total_weight})")
 
@@ -188,8 +189,7 @@ class TimelessSeedMapper:
         normalized = LEADER_ALIASES.get(tribute.lower(), tribute)
         if normalized not in ABYSS_LEADERS:
             raise ValueError(
-                f"Unknown tribute name: {tribute}. "
-                f"Valid options: {list(ABYSS_LEADERS.keys())}"
+                f"Unknown tribute name: {tribute}. " f"Valid options: {list(ABYSS_LEADERS.keys())}"
             )
         return normalized
 
@@ -218,20 +218,20 @@ class TimelessSeedMapper:
         # Find the notable this roll selects (weighted selection)
         for cumulative_weight, notable in self.cumulative_weights:
             if roll < cumulative_weight:
-                return (notable['id'], notable['name'])
+                return (notable["id"], notable["name"])
 
         # Fallback to last notable (shouldn't happen)
         last = self.notables[-1]
-        return (last['id'], last['name'])
+        return (last["id"], last["name"])
 
     def _classify_node_type(self, node: AffectedNode) -> str:
         """Classify a node as keystone, notable, or small."""
         if node.is_keystone:
-            return 'keystone'
+            return "keystone"
         elif node.is_notable:
-            return 'notable'
+            return "notable"
         else:
-            return 'small'
+            return "small"
 
     def _calculate_tribute_value(self, node: AffectedNode, original_type: str) -> int:
         """
@@ -241,12 +241,14 @@ class TimelessSeedMapper:
         - Attribute passives (Str/Dex/Int): +3 Tribute (in addition to original)
         - Notables/Keystones: 0 Tribute (they scale with Tribute instead)
         """
-        if original_type == 'small':
+        if original_type == "small":
             # Check if it's an attribute node
             if node.stats:
                 for stat in node.stats:
                     stat_lower = stat.lower()
-                    if any(attr in stat_lower for attr in ['strength', 'dexterity', 'intelligence']):
+                    if any(
+                        attr in stat_lower for attr in ["strength", "dexterity", "intelligence"]
+                    ):
                         # Attribute node gets +3 on top of regular +5
                         return 8  # 5 base + 3 attribute bonus
             return 5
@@ -257,7 +259,7 @@ class TimelessSeedMapper:
         socket_id: int,
         seed: int,
         tribute: str,
-        radius: float = JewelRadiusSize.VERY_LARGE.value
+        radius: float = JewelRadiusSize.VERY_LARGE.value,
     ) -> SeedAnalysis:
         """
         Analyze how a specific seed transforms nodes around a jewel socket.
@@ -289,10 +291,10 @@ class TimelessSeedMapper:
         socket_node = tree_data[socket_key]
         socket = JewelSocket(
             node_id=socket_id,
-            x=socket_node.get('x', 0.0),
-            y=socket_node.get('y', 0.0),
-            name=socket_node.get('name', 'Jewel Socket'),
-            group_id=socket_node.get('group_id')
+            x=socket_node.get("x", 0.0),
+            y=socket_node.get("y", 0.0),
+            name=socket_node.get("name", "Jewel Socket"),
+            group_id=socket_node.get("group_id"),
         )
 
         # Transform each node
@@ -301,7 +303,7 @@ class TimelessSeedMapper:
         for node in affected_nodes:
             original_type = self._classify_node_type(node)
 
-            if original_type == 'keystone':
+            if original_type == "keystone":
                 # Keystones become the faction keystone
                 transformed = TransformedNode(
                     original_node_id=node.node_id,
@@ -312,9 +314,9 @@ class TimelessSeedMapper:
                     distance=node.distance,
                     x=node.x,
                     y=node.y,
-                    tribute_value=0
+                    tribute_value=0,
                 )
-            elif original_type == 'notable':
+            elif original_type == "notable":
                 # Notables are replaced based on seed
                 new_id, new_name = self._select_notable_for_node(node.node_id, seed)
                 transformed = TransformedNode(
@@ -326,7 +328,7 @@ class TimelessSeedMapper:
                     distance=node.distance,
                     x=node.x,
                     y=node.y,
-                    tribute_value=0
+                    tribute_value=0,
                 )
             else:
                 # Small passives become Tribute
@@ -335,12 +337,12 @@ class TimelessSeedMapper:
                     original_node_id=node.node_id,
                     original_name=node.name,
                     original_type=original_type,
-                    new_name=self.small_passive['name'],
-                    new_id=self.small_passive.get('id', 'abyss_small_tribute'),
+                    new_name=self.small_passive["name"],
+                    new_id=self.small_passive.get("id", "abyss_small_tribute"),
                     distance=node.distance,
                     x=node.x,
                     y=node.y,
-                    tribute_value=tribute_value
+                    tribute_value=tribute_value,
                 )
 
             transformed_nodes.append(transformed)
@@ -351,7 +353,7 @@ class TimelessSeedMapper:
             tribute_name=tribute_name,
             keystone=keystone_name,
             radius=radius,
-            transformed_nodes=transformed_nodes
+            transformed_nodes=transformed_nodes,
         )
 
     def find_seeds_with_notable(
@@ -361,7 +363,7 @@ class TimelessSeedMapper:
         target_node_id: int,
         tribute: str = "Amanamu",
         seed_range: Tuple[int, int] = (79, 30977),
-        max_results: int = 10
+        max_results: int = 10,
     ) -> List[int]:
         """
         Find seeds that place a specific notable at a specific node position.
@@ -397,7 +399,7 @@ class TimelessSeedMapper:
         socket_id: int,
         seeds: List[int],
         tribute: str = "Amanamu",
-        radius: float = JewelRadiusSize.VERY_LARGE.value
+        radius: float = JewelRadiusSize.VERY_LARGE.value,
     ) -> List[SeedAnalysis]:
         """
         Compare multiple seeds at the same socket.
@@ -413,17 +415,14 @@ class TimelessSeedMapper:
         Returns:
             List of SeedAnalysis for each seed
         """
-        return [
-            self.analyze_seed(socket_id, seed, tribute, radius)
-            for seed in seeds
-        ]
+        return [self.analyze_seed(socket_id, seed, tribute, radius) for seed in seeds]
 
     def get_notable_distribution(
         self,
         socket_id: int,
         seed: int,
         tribute: str = "Amanamu",
-        radius: float = JewelRadiusSize.VERY_LARGE.value
+        radius: float = JewelRadiusSize.VERY_LARGE.value,
     ) -> Dict[str, int]:
         """
         Get a count of each notable that appears for a given seed.
@@ -441,17 +440,14 @@ class TimelessSeedMapper:
 
         distribution = {}
         for node in analysis.transformed_nodes:
-            if node.original_type == 'notable':
+            if node.original_type == "notable":
                 distribution[node.new_name] = distribution.get(node.new_name, 0) + 1
 
         return distribution
 
 
 def analyze_undying_hate(
-    socket_id: int,
-    seed: int,
-    tribute: str,
-    radius: float = 1500.0
+    socket_id: int, seed: int, tribute: str, radius: float = 1500.0
 ) -> SeedAnalysis:
     """
     Convenience function to analyze an Undying Hate jewel.
@@ -486,7 +482,9 @@ if __name__ == "__main__":
     print(f"\n{'='*60}")
     print(f"UNDYING HATE SEED ANALYSIS")
     print(f"{'='*60}")
-    print(f"Socket: {analysis.socket.node_id} at ({analysis.socket.x:.1f}, {analysis.socket.y:.1f})")
+    print(
+        f"Socket: {analysis.socket.node_id} at ({analysis.socket.x:.1f}, {analysis.socket.y:.1f})"
+    )
     print(f"Seed: {analysis.seed}")
     print(f"Tribute to: {analysis.tribute_name}")
     print(f"Keystone: {analysis.keystone}")
@@ -499,10 +497,10 @@ if __name__ == "__main__":
 
     print(f"\n--- Transformed Notables ---")
     for node in analysis.transformed_nodes:
-        if node.original_type == 'notable':
+        if node.original_type == "notable":
             print(f"  {node.original_name} -> {node.new_name}")
 
     print(f"\n--- Transformed Keystones ---")
     for node in analysis.transformed_nodes:
-        if node.original_type == 'keystone':
+        if node.original_type == "keystone":
             print(f"  {node.original_name} -> {node.new_name}")

@@ -55,6 +55,7 @@ async def _call_explain(mcp_instance, query):
 # Tier 1 — canonical stat_descriptions lookup
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_tier1_exact_stat_id_returns_canonical_game_text(mcp):
     """The proliferation case HivemindOverlord couldn't get in their Claude
@@ -92,6 +93,7 @@ async def test_tier1_unknown_stat_id_falls_through(mcp):
 # Tier 2 — hand-authored fallback with explicit disclaimer
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_tier2_mechanic_query_carries_provenance_disclaimer(mcp):
     """High-level concept queries hit the hand-authored fallback. The
@@ -112,6 +114,7 @@ async def test_tier2_mechanic_query_carries_provenance_disclaimer(mcp):
 # ---------------------------------------------------------------------------
 # Substring "did you mean" recovery
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_substring_query_returns_multiple_suggestions(mcp):
@@ -137,6 +140,7 @@ async def test_substring_each_suggestion_includes_source_csd(mcp):
 # ---------------------------------------------------------------------------
 # Empty query — overview (was previously a dead-end-by-design)
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_empty_query_returns_overview_not_error(mcp):

@@ -87,15 +87,21 @@ def pack(out_path: Path) -> Path:
             zf.write(f, f.relative_to(BUNDLE_DIR).as_posix())
 
     print(f"Packed {len(files)} files -> {out_path} ({out_path.stat().st_size:,} bytes)")
-    print(f"manifest_version={manifest['manifest_version']} "
-          f"entry_point={manifest['server']['entry_point']}")
+    print(
+        f"manifest_version={manifest['manifest_version']} "
+        f"entry_point={manifest['server']['entry_point']}"
+    )
     return out_path
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Pack mcpb_bundle/ into a .mcpb file")
-    parser.add_argument("--out", type=Path, default=None,
-                        help="output path (default: <name>-<version>.mcpb in repo root)")
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=None,
+        help="output path (default: <name>-<version>.mcpb in repo root)",
+    )
     args = parser.parse_args()
 
     manifest = json.loads((BUNDLE_DIR / "manifest.json").read_text(encoding="utf-8"))

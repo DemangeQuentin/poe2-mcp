@@ -56,66 +56,66 @@ PSG_STARTING_NODE_SIZE = 8  # uint64 little-endian
 # =============================================================================
 
 FIELD_OFFSETS = {
-    'metadata_path_ptr': 0,      # String pointer (8 bytes)
-    'class_name_ptr': 8,         # String pointer, points into middle of name
-    'animation_path_ptr': 16,    # String pointer (8 bytes)
-    'actor_path_ptr': 24,        # String pointer (8 bytes)
-    'unknown1': 32,              # Int32, always 16
-    'unknown2': 36,              # Int32, always 30
-    'unknown3': 40,              # Int32, always 714
-    'unknown4': 44,              # Int32, always 2
-    'attribute_count': 48,       # Int32, attribute count indicator
-    'unknown5': 52,              # Int32, always 8
-    'unknown6': 56,              # Int32, usually 240
-    'unknown7': 60,              # Int32, usually 0
-    'row_index': 64,             # Int32, row index 0-11
+    "metadata_path_ptr": 0,  # String pointer (8 bytes)
+    "class_name_ptr": 8,  # String pointer, points into middle of name
+    "animation_path_ptr": 16,  # String pointer (8 bytes)
+    "actor_path_ptr": 24,  # String pointer (8 bytes)
+    "unknown1": 32,  # Int32, always 16
+    "unknown2": 36,  # Int32, always 30
+    "unknown3": 40,  # Int32, always 714
+    "unknown4": 44,  # Int32, always 2
+    "attribute_count": 48,  # Int32, attribute count indicator
+    "unknown5": 52,  # Int32, always 8
+    "unknown6": 56,  # Int32, usually 240
+    "unknown7": 60,  # Int32, usually 0
+    "row_index": 64,  # Int32, row index 0-11
 }
 
 
 # Attribute path to PSG class index mapping
 # PSG indices correspond to starting node order in passiveskillgraph.psg
 ATTRIBUTE_TO_PSG_INDEX = {
-    'Dex': 0,      # Ranger/Huntress
-    'Str': 1,      # Marauder/Warrior
-    'DexInt': 2,   # Shadow/Monk
-    'Int': 3,      # Witch/Sorceress
-    'StrInt': 4,   # Templar/Druid
-    'StrDex': 5,   # Duelist/Mercenary
+    "Dex": 0,  # Ranger/Huntress
+    "Str": 1,  # Marauder/Warrior
+    "DexInt": 2,  # Shadow/Monk
+    "Int": 3,  # Witch/Sorceress
+    "StrInt": 4,  # Templar/Druid
+    "StrDex": 5,  # Duelist/Mercenary
 }
 
 
 # PSG class index to starting node ID
 # These are the node IDs from passiveskillgraph.psg header
 PSG_STARTING_NODES = {
-    0: 50459,   # Ranger/Huntress (Dex)
-    1: 47175,   # Warrior/Marauder (Str)
-    2: 50986,   # Monk/Shadow (DexInt)
-    3: 61525,   # Witch/Sorceress (Int) - NOTE: poe.ninja may call this "WITCH"
-    4: 54447,   # Druid/Templar (StrInt) - NOTE: poe.ninja may call this "SORCERESS"
-    5: 44683,   # Mercenary/Duelist (StrDex)
+    0: 50459,  # Ranger/Huntress (Dex)
+    1: 47175,  # Warrior/Marauder (Str)
+    2: 50986,  # Monk/Shadow (DexInt)
+    3: 61525,  # Witch/Sorceress (Int) - NOTE: poe.ninja may call this "WITCH"
+    4: 54447,  # Druid/Templar (StrInt) - NOTE: poe.ninja may call this "SORCERESS"
+    5: 44683,  # Mercenary/Duelist (StrDex)
 }
 
 
 # poe.ninja uses different naming conventions for some classes
 # This maps poe.ninja class names to PSG indices
 POE_NINJA_CLASS_TO_PSG_INDEX = {
-    'Ranger': 0,      # Dex - same as game
-    'Warrior': 1,     # Str - same as game
-    'Monk': 2,        # DexInt - same as game
-    'Witch': 3,       # Int - same as game
-    'Sorceress': 4,   # StrInt - poe.ninja calls Druid/Templar "Sorceress"
-    'Mercenary': 5,   # StrDex - same as game
+    "Ranger": 0,  # Dex - same as game
+    "Warrior": 1,  # Str - same as game
+    "Monk": 2,  # DexInt - same as game
+    "Witch": 3,  # Int - same as game
+    "Sorceress": 4,  # StrInt - poe.ninja calls Druid/Templar "Sorceress"
+    "Mercenary": 5,  # StrDex - same as game
 }
 
 
 # Map poe.ninja class names to starting node IDs
 POE_NINJA_CLASS_TO_STARTING_NODE = {
-    'Ranger': 50459,
-    'Warrior': 47175,
-    'Monk': 50986,
-    'Witch': 61525,
-    'Sorceress': 54447,  # This is StrInt (Druid/Templar in game files)
-    'Mercenary': 44683,
+    "Ranger": 50459,
+    "Warrior": 47175,
+    "Monk": 50986,
+    "Witch": 61525,
+    "Sorceress": 54447,  # This is StrInt (Druid/Templar in game files)
+    "Mercenary": 44683,
 }
 
 
@@ -123,24 +123,25 @@ POE_NINJA_CLASS_TO_STARTING_NODE = {
 # Row indices 0-5 are base classes (PoE1 naming)
 # Row indices 6-11 are ascendancy classes (PoE2 naming)
 CLASS_NAMES = {
-    0: 'Marauder',    # Base Str
-    1: 'Witch',       # Base Int
-    2: 'Ranger',      # Base Dex
-    3: 'Duelist',     # Base StrDex
-    4: 'Shadow',      # Base DexInt
-    5: 'Templar',     # Base StrInt
-    6: 'Warrior',     # Ascendancy Str
-    7: 'Sorceress',   # Ascendancy Int
-    8: 'Huntress',    # Ascendancy Dex
-    9: 'Mercenary',   # Ascendancy StrDex
-    10: 'Monk',       # Ascendancy DexInt
-    11: 'Druid',      # Ascendancy StrInt
+    0: "Marauder",  # Base Str
+    1: "Witch",  # Base Int
+    2: "Ranger",  # Base Dex
+    3: "Duelist",  # Base StrDex
+    4: "Shadow",  # Base DexInt
+    5: "Templar",  # Base StrInt
+    6: "Warrior",  # Ascendancy Str
+    7: "Sorceress",  # Ascendancy Int
+    8: "Huntress",  # Ascendancy Dex
+    9: "Mercenary",  # Ascendancy StrDex
+    10: "Monk",  # Ascendancy DexInt
+    11: "Druid",  # Ascendancy StrInt
 }
 
 
 @dataclass
 class CharacterRecord:
     """Parsed character record from characters.datc64."""
+
     row_index: int
 
     # Core fields
@@ -178,7 +179,7 @@ def extract_attribute_type(metadata_path: str) -> str:
         "Metadata/Characters/Str/StrFour" -> "Str"
         "Metadata/Characters/DexInt/DexIntFour" -> "DexInt"
     """
-    path_parts = metadata_path.split('/')
+    path_parts = metadata_path.split("/")
     if len(path_parts) >= 3:
         return path_parts[2]  # e.g., "Str", "Int", "Dex", "StrDex", etc.
     return ""
@@ -199,11 +200,11 @@ def parse_character_row(data: bytes, row_index: int = 0) -> CharacterRecord:
         raise ValueError(f"Expected {CHARACTER_ROW_SIZE} bytes, got {len(data)}")
 
     # Parse core fields
-    metadata_path_ptr = struct.unpack('<Q', data[0:8])[0]
-    class_name_ptr = struct.unpack('<Q', data[8:16])[0]
-    animation_path_ptr = struct.unpack('<Q', data[16:24])[0]
-    actor_path_ptr = struct.unpack('<Q', data[24:32])[0]
-    attribute_count = struct.unpack('<i', data[48:52])[0]
+    metadata_path_ptr = struct.unpack("<Q", data[0:8])[0]
+    class_name_ptr = struct.unpack("<Q", data[8:16])[0]
+    animation_path_ptr = struct.unpack("<Q", data[16:24])[0]
+    actor_path_ptr = struct.unpack("<Q", data[24:32])[0]
+    attribute_count = struct.unpack("<i", data[48:52])[0]
 
     return CharacterRecord(
         row_index=row_index,
@@ -225,13 +226,13 @@ def read_psg_starting_nodes(psg_path: str) -> List[int]:
     Returns:
         List of 6 starting node IDs (indexed by PSG class index)
     """
-    with open(psg_path, 'rb') as f:
+    with open(psg_path, "rb") as f:
         data = f.read(PSG_STARTING_NODES_OFFSET + PSG_STARTING_NODES_COUNT * PSG_STARTING_NODE_SIZE)
 
     nodes = []
     for i in range(PSG_STARTING_NODES_COUNT):
         offset = PSG_STARTING_NODES_OFFSET + (i * PSG_STARTING_NODE_SIZE)
-        node_id = struct.unpack('<Q', data[offset:offset+8])[0]
+        node_id = struct.unpack("<Q", data[offset : offset + 8])[0]
         nodes.append(node_id)
 
     return nodes
@@ -251,25 +252,25 @@ def get_class_to_starting_node_mapping() -> dict:
         if row_index < 6:
             # Base classes: 0=Str, 1=Int, 2=Dex, 3=StrDex, 4=DexInt, 5=StrInt
             attr_map = {
-                0: 'Str',
-                1: 'Int',
-                2: 'Dex',
-                3: 'StrDex',
-                4: 'DexInt',
-                5: 'StrInt',
+                0: "Str",
+                1: "Int",
+                2: "Dex",
+                3: "StrDex",
+                4: "DexInt",
+                5: "StrInt",
             }
         else:
             # Ascendancy classes share same attributes as base
             attr_map = {
-                6: 'Str',
-                7: 'Int',
-                8: 'Dex',
-                9: 'StrDex',
-                10: 'DexInt',
-                11: 'StrInt',
+                6: "Str",
+                7: "Int",
+                8: "Dex",
+                9: "StrDex",
+                10: "DexInt",
+                11: "StrInt",
             }
 
-        attr_type = attr_map.get(row_index, '')
+        attr_type = attr_map.get(row_index, "")
         psg_index = ATTRIBUTE_TO_PSG_INDEX.get(attr_type, -1)
 
         if psg_index >= 0:
@@ -292,29 +293,29 @@ def print_class_starting_nodes():
     print()
     print("Base Classes (PoE1 internal naming):")
     base_classes = [
-        ('Marauder', 'Str'),
-        ('Witch', 'Int'),
-        ('Ranger', 'Dex'),
-        ('Duelist', 'StrDex'),
-        ('Shadow', 'DexInt'),
-        ('Templar', 'StrInt'),
+        ("Marauder", "Str"),
+        ("Witch", "Int"),
+        ("Ranger", "Dex"),
+        ("Duelist", "StrDex"),
+        ("Shadow", "DexInt"),
+        ("Templar", "StrInt"),
     ]
     for name, attr in base_classes:
-        node_id = mapping.get(name, 'Unknown')
+        node_id = mapping.get(name, "Unknown")
         print(f"  {name:15s} ({attr:6s}) -> starting node {node_id}")
 
     print()
     print("Ascendancy Classes (PoE2 display naming):")
     asc_classes = [
-        ('Warrior', 'Str'),
-        ('Sorceress', 'Int'),
-        ('Huntress', 'Dex'),
-        ('Mercenary', 'StrDex'),
-        ('Monk', 'DexInt'),
-        ('Druid', 'StrInt'),
+        ("Warrior", "Str"),
+        ("Sorceress", "Int"),
+        ("Huntress", "Dex"),
+        ("Mercenary", "StrDex"),
+        ("Monk", "DexInt"),
+        ("Druid", "StrInt"),
     ]
     for name, attr in asc_classes:
-        node_id = mapping.get(name, 'Unknown')
+        node_id = mapping.get(name, "Unknown")
         print(f"  {name:15s} ({attr:6s}) -> starting node {node_id}")
 
     print()
@@ -339,5 +340,5 @@ def print_class_starting_nodes():
         print(f"    {i}: {node_id:5d} -> {attr}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print_class_starting_nodes()

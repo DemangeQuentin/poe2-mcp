@@ -31,8 +31,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 PER_SKILL_BUNDLE = (
-    PROJECT_ROOT / "data" / "game" / "stat_descriptions"
-    / "per_skill_stat_descriptions.json"
+    PROJECT_ROOT / "data" / "game" / "stat_descriptions" / "per_skill_stat_descriptions.json"
 )
 needs_per_skill = pytest.mark.skipif(
     not PER_SKILL_BUNDLE.exists(),
@@ -44,6 +43,7 @@ needs_per_skill = pytest.mark.skipif(
 # Light spot-checks of the per-skill helpers (already covered by #129's tests)
 # ---------------------------------------------------------------------------
 
+
 @needs_per_skill
 def test_per_skill_helpers_importable():
     """Re-confirm the helpers explain_mechanic depends on are present."""
@@ -51,6 +51,7 @@ def test_per_skill_helpers_importable():
         find_per_skill_stat_description,
         search_per_skill_stat_descriptions,
     )
+
     assert callable(find_per_skill_stat_description)
     assert callable(search_per_skill_stat_descriptions)
 
@@ -60,6 +61,7 @@ def test_per_skill_search_returns_tagged_hits():
     """Substring search should return hits tagged with source_csd + match_field
     (consumed by explain_mechanic's Tier 1b formatter)."""
     from src.data.game_data import search_per_skill_stat_descriptions
+
     hits = search_per_skill_stat_descriptions("damage", limit=3)
     assert hits, "expected at least one 'damage' hit in per-skill bundle"
     for h in hits:
@@ -72,10 +74,12 @@ def test_per_skill_search_returns_tagged_hits():
 # Handler tests — methodology-rule-compliant lazy fixture
 # ---------------------------------------------------------------------------
 
+
 @pytest_asyncio.fixture(scope="module")
 async def mcp():
     """Canonical lazy-import fixture per docs/TESTING.md."""
     from src.mcp_server import PoE2BuildOptimizerMCP
+
     instance = PoE2BuildOptimizerMCP()
     await instance.initialize()
     return instance
@@ -105,6 +109,7 @@ async def test_explain_mechanic_finds_per_skill_only_stat(mcp):
         load_per_skill_stat_descriptions,
         find_stat_description,
     )
+
     bundle = load_per_skill_stat_descriptions()
     assert bundle is not None
     # Walk the bundle for a stat_id that's NOT in the root dataset.
@@ -127,10 +132,7 @@ async def test_explain_mechanic_finds_per_skill_only_stat(mcp):
     # Should be a Tier 1 / canonical response, not a "not found" fall-through
     assert "Provenance" in text or "Canonical" in text or "stat_descriptions" in text
     # And should reference the per-skill bundle in some form
-    assert (
-        "per-skill" in text.lower()
-        or "specific_skill_stat_descriptions" in text
-    )
+    assert "per-skill" in text.lower() or "specific_skill_stat_descriptions" in text
 
 
 @needs_per_skill
@@ -160,9 +162,7 @@ async def test_root_tier_1_still_works(mcp):
     derailed by the per-skill consult."""
     # support_ignite_proliferation_radius is the canonical example from
     # PR #101's docstring — must continue resolving via Tier 1a.
-    r = await mcp._handle_explain_mechanic({
-        "mechanic_name": "support_ignite_proliferation_radius"
-    })
+    r = await mcp._handle_explain_mechanic({"mechanic_name": "support_ignite_proliferation_radius"})
     text = r[0].text
     assert "Provenance" in text
     # Should NOT have routed through per-skill bundle (root dataset hit wins)
@@ -176,13 +176,11 @@ async def test_total_miss_lists_all_tiers(mcp):
     the failure message enumerates all tiers. Uses a tokenless garbage
     query — anything with real English words now falls to the BM25 tier
     rather than total-miss (by design)."""
-    r = await mcp._handle_explain_mechanic({
-        "mechanic_name": "zzqqxxvv_jkqwzx"
-    })
+    r = await mcp._handle_explain_mechanic({"mechanic_name": "zzqqxxvv_jkqwzx"})
     text = r[0].text
     assert "No match" in text
     assert "Tier 1a" in text and ("1a-bis" in text or "per-skill" in text.lower())
-    assert "1c" in text or "BM25" in text   # the new lexical tier is listed
+    assert "1c" in text or "BM25" in text  # the new lexical tier is listed
 
 
 @pytest.mark.asyncio
