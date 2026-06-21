@@ -121,3 +121,11 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+# Mark tests that need external resources so CI can exclude them and the
+# hermetic suite can eventually run via `-m "not (network or pob_required or
+# requires_game_data)"` instead of the keyword selector in ci.yml.
+markers = [
+    "network: needs internet (poe.ninja / official PoE API)",
+    "pob_required: needs a live Path of Building running with the bridge addon",
+    "requires_game_data: needs extracted .datc64 game data / a populated DB",
+]
