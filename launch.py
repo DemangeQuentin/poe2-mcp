@@ -22,6 +22,12 @@ if sys.platform == 'win32':
         except (AttributeError, io.UnsupportedOperation):
             pass
 
+# Anchor every relative path (data/, cache/, logs/, .env, requirements.txt) to
+# THIS script's directory. MCP clients launch us from an arbitrary, often
+# unwritable CWD (Claude Desktop uses C:\WINDOWS\system32), so bare relative
+# paths fail with Access Denied / FileNotFound (#157 follow-up).
+ROOT_DIR = Path(__file__).resolve().parent
+
 
 def print(*args, **kwargs):  # noqa: A001 — intentional module-level shadow
     """Route ALL launcher output to stderr (#157).
@@ -117,7 +123,16 @@ def check_dependencies():
 
     if missing:
         print_warning(f"Missing packages: {', '.join(missing)}")
-        print_info("Installing missing dependencies...")
+        # Anchor requirements.txt to THIS script's directory, not the CWD.
+        # Claude Desktop launches the .mcpb from a foreign working directory,
+        # so a bare 'requirements.txt' isn't found and the auto-install dies
+        # with "Could not open requirements file" (server disconnects).
+        req_file = ROOT_DIR / "requirements.txt"
+        if not req_file.is_file():
+            print_error(f"requirements.txt not found at {req_file}")
+            print_info(f"Please run: pip install -r \"{req_file}\"")
+            return False
+        print_info(f"Installing missing dependencies from {req_file}...")
         try:
             subprocess.check_call([
                 sys.executable,
@@ -125,13 +140,13 @@ def check_dependencies():
                 'pip',
                 'install',
                 '-r',
-                'requirements.txt'
+                str(req_file),
             ])
             print_success("Dependencies installed successfully")
             return True
         except subprocess.CalledProcessError:
             print_error("Failed to install dependencies")
-            print_info("Please run: pip install -r requirements.txt")
+            print_info(f"Please run: pip install -r \"{req_file}\"")
             return False
     else:
         print_success("All dependencies installed")
@@ -139,29 +154,38 @@ def check_dependencies():
 
 
 def setup_directories():
-    """Create necessary directories"""
-    dirs = ['data', 'cache', 'logs']
-    for dir_name in dirs:
-        dir_path = Path(dir_name)
-        if not dir_path.exists():
-            dir_path.mkdir(parents=True)
-            print_success(f"Created {dir_name}/ directory")
-        else:
+    """Create necessary directories (anchored to the bundle root, not CWD).
+
+    A single dir failing (e.g. read-only mount) is non-fatal: warn and keep
+    going so the server still starts rather than crashing the whole launch.
+    """
+    for dir_name in ['data', 'cache', 'logs']:
+        dir_path = ROOT_DIR / dir_name
+        if dir_path.exists():
             print_info(f"{dir_name}/ directory exists")
+            continue
+        try:
+            dir_path.mkdir(parents=True, exist_ok=True)
+            print_success(f"Created {dir_name}/ directory")
+        except OSError as e:
+            print_warning(f"Could not create {dir_path} ({e}); continuing")
 
 
 def check_env_file():
-    """Check if .env file exists"""
-    env_file = Path('.env')
+    """Check if .env file exists (anchored to the bundle root, not CWD)."""
+    env_file = ROOT_DIR / '.env'
     if not env_file.exists():
         print_warning(".env file not found")
         print_info("Creating .env from template...")
-        template = Path('.env.example')
+        template = ROOT_DIR / '.env.example'
         if template.exists():
             import shutil
-            shutil.copy(template, env_file)
-            print_success("Created .env file")
-            print_info("Please edit .env and add your API keys if you want AI features")
+            try:
+                shutil.copy(template, env_file)
+                print_success("Created .env file")
+                print_info("Please edit .env and add your API keys if you want AI features")
+            except OSError as e:
+                print_warning(f"Could not create .env ({e}); using defaults/env vars")
         else:
             print_warning("No .env.example template found")
     else:
