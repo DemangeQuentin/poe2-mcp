@@ -1,0 +1,185 @@
+================================================================================
+  MCP Bridge Addon - Transparency Documentation
+  What the install.bat script does to your Path of Building installation
+================================================================================
+
+--------------------------------------------------------------------------------
+CHANGELOG
+--------------------------------------------------------------------------------
+
+Version 1.1.0 (2025-01-28)
+  - Fix: Core command infrastructure now properly handles live PoB globals
+  - Fix: Replaced broken `mainObject` references with proper `launch.main`
+  - Fix: `runCallback("OnFrame")` replaced with proper helper functions
+  - Fix: Build detection now works in both live PoB and headless modes
+  - Add: `getActiveBuild()` helper - finds build in live or headless mode
+  - Add: `ensureBuildReady()` helper - forces calculation if pending
+  - Add: `load_build_direct` command - faster build loading (no mode switch)
+  - Add: `recalculate` command - force full calculation refresh
+  - Add: `get_full_calcs` command - comprehensive mainOutput + calcsOutput
+  - Add: `get_skill_dps` command - DPS breakdown per skill group
+  - Add: `get_defense_stats` command - focused defense statistics
+
+Version 1.0.0 (2025-01-15)
+  - Initial release
+  - TCP socket server on port 49085 (localhost only)
+  - Commands: ping, status, get_build, load_build, new_build, get_calcs,
+    get_raw_output, get_skills, set_skill_group, get_passive_tree,
+    set_passive_node, get_items, set_custom_mods, get_custom_mods,
+    set_config, get_config, compare_with_snapshot
+
+This document explains exactly what the installer does so you can verify it's
+safe before running. You can also perform these steps manually if preferred.
+
+--------------------------------------------------------------------------------
+OVERVIEW
+--------------------------------------------------------------------------------
+
+The MCP Bridge addon allows external tools (like the poe2-mcp AI assistant) to
+communicate with Path of Building via a local TCP socket. This enables features
+like:
+
+  - Pushing character builds from poe.ninja to PoB for visualization
+  - Reading calculation results (DPS, EHP, etc.) from PoB
+  - Suggesting build changes and seeing their impact in real-time
+
+The addon ONLY listens on localhost (127.0.0.1) and cannot be accessed from
+other computers on your network.
+
+--------------------------------------------------------------------------------
+WHAT THE INSTALLER DOES (Step by Step)
+--------------------------------------------------------------------------------
+
+1. FINDS YOUR POB INSTALLATION
+
+   The script checks these common locations:
+   - %USERPROFILE%\Path of Building (PoE2)
+   - %LOCALAPPDATA%\Path of Building (PoE2)
+   - C:\Path of Building (PoE2)
+   - C:\Program Files\Path of Building (PoE2)
+   - C:\Program Files (x86)\Path of Building (PoE2)
+
+   If not found, it asks you to enter the path manually.
+
+2. CREATES A BACKUP OF Launch.lua
+
+   Before making any changes, it copies:
+     src\Launch.lua  -->  src\Launch.lua.mcp_backup
+
+   This backup is used by the uninstaller to restore the original file.
+
+3. COPIES THE ADDON FILES
+
+   Creates this folder structure in your PoB installation:
+
+   src\
+   └── Addons\
+       ├── init.lua              (Addon loader, ~30 lines)
+       └── MCPBridge\
+           ├── config.lua        (Configuration settings, ~20 lines)
+           ├── bridge.lua        (TCP socket server, ~180 lines)
+           └── commands.lua      (Command handlers, ~350 lines)
+
+4. PATCHES Launch.lua
+
+   Adds ONE LINE to src\Launch.lua after the main module initialization:
+
+   ORIGINAL:
+   ```lua
+   if errMsg then
+       self:ShowErrMsg("In 'Init': %s", errMsg)
+   end
+   ```
+
+   AFTER PATCH:
+   ```lua
+   if errMsg then
+       self:ShowErrMsg("In 'Init': %s", errMsg)
+   end
+   pcall(dofile, GetScriptPath()..'/Addons/init.lua') -- MCP Bridge Addon Loader
+   ```
+
+   This single line tells PoB to load the addon when it starts.
+   The pcall() wrapper ensures that if the addon fails to load, PoB continues
+   to work normally.
+
+--------------------------------------------------------------------------------
+WHAT THE ADDON DOES AT RUNTIME
+--------------------------------------------------------------------------------
+
+When Path of Building starts:
+
+1. Launch.lua runs the addon loader (Addons/init.lua)
+2. init.lua loads bridge.lua
+3. bridge.lua starts a TCP server on port 49085 (localhost only)
+4. bridge.lua hooks into PoB's main loop to check for connections
+5. When a tool connects, commands.lua handles the requests
+
+The addon:
+  - Uses ZERO external network connections (localhost only)
+  - Does NOT send any data to the internet
+  - Does NOT modify your builds without explicit commands
+  - Does NOT access any files outside PoB's folders
+  - Can be disabled by setting ENABLED = false in config.lua
+
+--------------------------------------------------------------------------------
+MANUAL INSTALLATION (If you prefer not to run the .bat)
+--------------------------------------------------------------------------------
+
+1. Copy the entire "Addons" folder to your PoB's "src" folder
+
+2. Open "src\Launch.lua" in a text editor
+
+3. Find this code (around line 77-79):
+
+   if errMsg then
+       self:ShowErrMsg("In 'Init': %s", errMsg)
+   end
+
+4. Add this line immediately after "end":
+
+   pcall(dofile, GetScriptPath()..'/Addons/init.lua') -- MCP Bridge Addon Loader
+
+5. Save the file
+
+--------------------------------------------------------------------------------
+UNINSTALLATION
+--------------------------------------------------------------------------------
+
+Run uninstall.bat, OR manually:
+
+1. Delete the "src\Addons" folder (or just src\Addons\MCPBridge)
+
+2. Either:
+   - Restore src\Launch.lua from src\Launch.lua.mcp_backup
+   - OR remove the "pcall(dofile..." line you added
+
+--------------------------------------------------------------------------------
+SECURITY NOTES
+--------------------------------------------------------------------------------
+
+- The TCP server ONLY binds to 127.0.0.1 (localhost)
+- Connections from other computers are impossible
+- All communication is local to your machine
+- No data is sent to any external servers
+- The addon does not have network access beyond local socket
+
+--------------------------------------------------------------------------------
+SOURCE CODE
+--------------------------------------------------------------------------------
+
+All source code is included in this package and on GitHub:
+https://github.com/HivemindOverlord/poe2-mcp
+
+The addon is approximately 600 lines of Lua code total. You are encouraged to
+review it before installation.
+
+--------------------------------------------------------------------------------
+SUPPORT
+--------------------------------------------------------------------------------
+
+If you encounter issues:
+  - GitHub Issues: https://github.com/HivemindOverlord/poe2-mcp/issues
+  - The uninstaller can restore your original Launch.lua
+
+================================================================================
