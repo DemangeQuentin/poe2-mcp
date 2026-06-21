@@ -8,11 +8,11 @@ from .poe2_mechanics import PoE2MechanicsKnowledgeBase, MechanicExplanation, Mec
 from .formulas import FORMULAS, get_formula, get_all_formula_names, get_formulas_by_category
 
 __all__ = [
-    'PoE2MechanicsKnowledgeBase',
-    'MechanicExplanation',
-    'MechanicCategory',
-    'FORMULAS',
-    'get_formula',
-    'get_all_formula_names',
-    'get_formulas_by_category',
+    "PoE2MechanicsKnowledgeBase",
+    "MechanicExplanation",
+    "MechanicCategory",
+    "FORMULAS",
+    "get_formula",
+    "get_all_formula_names",
+    "get_formulas_by_category",
 ]

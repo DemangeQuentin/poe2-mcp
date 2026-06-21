@@ -52,6 +52,7 @@ from src.parsers.specifications.characters_spec import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_character_row(
     *,
     size: int = CHARACTER_ROW_SIZE,
@@ -74,6 +75,7 @@ def make_character_row(
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
+
 
 def test_character_row_size_constant():
     assert CHARACTER_ROW_SIZE == 656
@@ -105,6 +107,7 @@ def test_field_offsets_documented_layout():
 # ---------------------------------------------------------------------------
 # Class / attribute / PSG dicts
 # ---------------------------------------------------------------------------
+
 
 def test_attribute_to_psg_index_complete_six():
     """All six attribute combinations map to distinct PSG indices 0..5."""
@@ -152,11 +155,14 @@ def test_poe_ninja_sorceress_is_strint():
 # CharacterRecord
 # ---------------------------------------------------------------------------
 
+
 def test_character_record_base_class_index_for_base_row():
     rec = CharacterRecord(
         row_index=2,  # Ranger (base)
-        metadata_path_ptr=0, class_name_ptr=0,
-        animation_path_ptr=0, actor_path_ptr=0,
+        metadata_path_ptr=0,
+        class_name_ptr=0,
+        animation_path_ptr=0,
+        actor_path_ptr=0,
         attribute_count=5,
         is_ascendancy=False,
     )
@@ -167,8 +173,10 @@ def test_character_record_base_class_index_for_ascendancy_row():
     """row_index 8 = Huntress (ascendancy); base class is Ranger (index 2)."""
     rec = CharacterRecord(
         row_index=8,
-        metadata_path_ptr=0, class_name_ptr=0,
-        animation_path_ptr=0, actor_path_ptr=0,
+        metadata_path_ptr=0,
+        class_name_ptr=0,
+        animation_path_ptr=0,
+        actor_path_ptr=0,
         attribute_count=5,
         is_ascendancy=True,
     )
@@ -179,16 +187,20 @@ def test_character_record_base_class_index_for_ascendancy_row():
 # extract_attribute_type
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("path, expected", [
-    ("Metadata/Characters/Str/StrFour", "Str"),
-    ("Metadata/Characters/DexInt/DexIntFour", "DexInt"),
-    ("Metadata/Characters/Int/IntFour", "Int"),
-    ("Metadata/Characters/StrDex/StrDexFour", "StrDex"),
-    # Malformed paths return empty string, don't raise
-    ("Short", ""),
-    ("Foo/Bar", ""),
-    ("", ""),
-])
+
+@pytest.mark.parametrize(
+    "path, expected",
+    [
+        ("Metadata/Characters/Str/StrFour", "Str"),
+        ("Metadata/Characters/DexInt/DexIntFour", "DexInt"),
+        ("Metadata/Characters/Int/IntFour", "Int"),
+        ("Metadata/Characters/StrDex/StrDexFour", "StrDex"),
+        # Malformed paths return empty string, don't raise
+        ("Short", ""),
+        ("Foo/Bar", ""),
+        ("", ""),
+    ],
+)
 def test_extract_attribute_type(path, expected):
     assert extract_attribute_type(path) == expected
 
@@ -196,6 +208,7 @@ def test_extract_attribute_type(path, expected):
 # ---------------------------------------------------------------------------
 # parse_character_row
 # ---------------------------------------------------------------------------
+
 
 def test_parse_character_row_rejects_too_small():
     """Unlike mods_spec (which uses `<` for 0.5 growth), characters_spec uses
@@ -236,6 +249,7 @@ def test_parse_character_row_reads_core_fields():
 # read_psg_starting_nodes
 # ---------------------------------------------------------------------------
 
+
 def test_read_psg_starting_nodes_returns_six_uint64s(tmp_path):
     """Synthesize a PSG header with known node IDs and verify the reader."""
     fake_node_ids = [11, 22, 33, 44, 55, 66]
@@ -261,14 +275,15 @@ def test_read_psg_starting_nodes_matches_documented_ids(tmp_path):
 
     result = read_psg_starting_nodes(str(psg))
     for i, node_id in enumerate(result):
-        assert node_id == PSG_STARTING_NODES[i], (
-            f"PSG index {i}: read {node_id}, expected {PSG_STARTING_NODES[i]}"
-        )
+        assert (
+            node_id == PSG_STARTING_NODES[i]
+        ), f"PSG index {i}: read {node_id}, expected {PSG_STARTING_NODES[i]}"
 
 
 # ---------------------------------------------------------------------------
 # get_class_to_starting_node_mapping
 # ---------------------------------------------------------------------------
+
 
 def test_get_class_to_starting_node_mapping_includes_all_class_names():
     """Function should produce an entry for every name in CLASS_NAMES."""
@@ -302,6 +317,6 @@ def test_get_class_to_starting_node_mapping_matches_psg_table():
     mapping = get_class_to_starting_node_mapping()
     valid_node_ids = set(PSG_STARTING_NODES.values())
     for class_name, node_id in mapping.items():
-        assert node_id in valid_node_ids, (
-            f"{class_name} -> {node_id}, not in PSG_STARTING_NODES values {valid_node_ids}"
-        )
+        assert (
+            node_id in valid_node_ids
+        ), f"{class_name} -> {node_id}, not in PSG_STARTING_NODES values {valid_node_ids}"

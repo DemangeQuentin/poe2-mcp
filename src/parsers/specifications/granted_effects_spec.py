@@ -139,11 +139,7 @@ class GrantedEffectsTables:
         """{effect_id_string: {level: cost_amount}} - the joined view."""
         rows = self.effect_rows()
         costs = self.per_level_costs()
-        return {
-            effect_id: costs[row]
-            for effect_id, row in rows.items()
-            if row in costs
-        }
+        return {effect_id: costs[row] for effect_id, row in rows.items() if row in costs}
 
 
 def load_granted_effects(extracted_root: Path | str) -> GrantedEffectsTables:

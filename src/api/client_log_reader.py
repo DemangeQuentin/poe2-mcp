@@ -17,6 +17,7 @@ Data flow:
 Line format (after the timestamp/uptime/hash/level prefix):
     2026/06/04 10:51:25 77406656 3ef23347 [INFO Client 29396] : Name (Class) is now level 66
 """
+
 from __future__ import annotations
 
 import re
@@ -48,26 +49,27 @@ _PREFIX_RE = re.compile(
 # match wins, so put the most specific patterns first.
 _EVENT_PATTERNS = [
     # ": TomawarTheSeventh (Infernalist) is now level 66"
-    ("level_up", re.compile(
-        r"^: (?P<character>[^\s(]+) \((?P<klass>[^)]+)\) is now level (?P<level>\d+)")),
+    (
+        "level_up",
+        re.compile(r"^: (?P<character>[^\s(]+) \((?P<klass>[^)]+)\) is now level (?P<level>\d+)"),
+    ),
     # 'Generating level 62 area "P2_1" with seed 3720906296'
-    ("area_change", re.compile(
-        r'Generating level (?P<area_level>\d+) area "(?P<area_code>[^"]+)" with seed (?P<seed>\d+)')),
+    (
+        "area_change",
+        re.compile(
+            r'Generating level (?P<area_level>\d+) area "(?P<area_code>[^"]+)" with seed (?P<seed>\d+)'
+        ),
+    ),
     # "Connecting to instance server at 64.87.33.204:21360"
-    ("instance_connect", re.compile(
-        r"Connecting to instance server at (?P<server>[\d.]+:\d+)")),
+    ("instance_connect", re.compile(r"Connecting to instance server at (?P<server>[\d.]+:\d+)")),
     # ": TomawarTheSeventh has been slain."
-    ("death", re.compile(
-        r"^: (?P<character>[^\s(]+) has been slain\.")),
+    ("death", re.compile(r"^: (?P<character>[^\s(]+) has been slain\.")),
     # ": AFK mode is now ON. ..." / ": AFK mode is now OFF."
-    ("afk", re.compile(
-        r"^: AFK mode is now (?P<afk_state>ON|OFF)")),
+    ("afk", re.compile(r"^: AFK mode is now (?P<afk_state>ON|OFF)")),
     # "@From blightblot: text"  /  "@To someone: text"
-    ("whisper", re.compile(
-        r"^@(?P<direction>From|To) (?P<who>[^:]+): (?P<text>.*)$")),
+    ("whisper", re.compile(r"^@(?P<direction>From|To) (?P<who>[^:]+): (?P<text>.*)$")),
     # ": 7 Items identified"
-    ("items_identified", re.compile(
-        r"^: (?P<count>\d+) Items? identified")),
+    ("items_identified", re.compile(r"^: (?P<count>\d+) Items? identified")),
 ]
 
 # Events that establish "where/who" for current-state collapsing.
@@ -82,8 +84,9 @@ class ClientLogReader:
     full multi-hundred-MB log into memory.
     """
 
-    def __init__(self, log_path: Optional[str | Path] = None,
-                 default_tail_bytes: int = 1_048_576) -> None:
+    def __init__(
+        self, log_path: Optional[str | Path] = None, default_tail_bytes: int = 1_048_576
+    ) -> None:
         """
         Args:
             log_path: explicit path to Client.txt. If None, auto-discovers.
@@ -92,9 +95,7 @@ class ClientLogReader:
                 session's recent zone/level/death events).
         """
         self.default_tail_bytes = default_tail_bytes
-        self.log_path: Optional[Path] = (
-            Path(log_path) if log_path else self._discover_log_path()
-        )
+        self.log_path: Optional[Path] = Path(log_path) if log_path else self._discover_log_path()
 
     @staticmethod
     def _discover_log_path() -> Optional[Path]:
@@ -163,9 +164,9 @@ class ClientLogReader:
             return event
         return None
 
-    def get_recent_events(self, limit: int = 50,
-                          kinds: Optional[List[str]] = None,
-                          max_bytes: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_recent_events(
+        self, limit: int = 50, kinds: Optional[List[str]] = None, max_bytes: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
         """Return up to `limit` most-recent parsed events (newest first).
 
         Args:
@@ -200,7 +201,7 @@ class ClientLogReader:
             return {
                 "available": False,
                 "reason": "Client.txt not found. Game install not at a known "
-                          "path — pass an explicit log_path.",
+                "path — pass an explicit log_path.",
                 "log_path": None,
             }
 
@@ -240,7 +241,7 @@ class ClientLogReader:
             elif kind == "instance_connect":
                 state["instance_server"] = ev["server"]
             elif kind == "afk":
-                state["afk"] = (ev["afk_state"] == "ON")
+                state["afk"] = ev["afk_state"] == "ON"
             elif kind == "death":
                 state["deaths_in_window"] += 1
                 # Fallback identity source when no level-up is in the window.

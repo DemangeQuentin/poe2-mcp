@@ -103,6 +103,7 @@ for _key, _conflicts in HARDCODED_INCOMPATIBILITIES.items():
 @dataclass
 class GemStats:
     """Base gem statistics"""
+
     name: str
     tags: List[str] = field(default_factory=list)
     base_damage_min: float = 0.0
@@ -117,6 +118,7 @@ class GemStats:
 @dataclass
 class SupportGemEffect:
     """Support gem effects and costs"""
+
     name: str
     tags: List[str] = field(default_factory=list)
 
@@ -150,13 +152,16 @@ class SupportGemEffect:
     utility_effects: List[str] = field(default_factory=list)  # ["chain", "fork", "pierce", etc.]
 
     # Requirements/restrictions
-    required_tags: List[str] = field(default_factory=list)  # Support must have matching tags with spell
+    required_tags: List[str] = field(
+        default_factory=list
+    )  # Support must have matching tags with spell
     incompatible_with: List[str] = field(default_factory=list)  # Cannot be used with these supports
 
 
 @dataclass
 class SynergyResult:
     """Result of a gem combination analysis"""
+
     spell_name: str
     support_gems: List[str]
 
@@ -212,7 +217,9 @@ class GemSynergyCalculator:
         ...     print(f"{result.spell_name}: {result.total_dps:.1f} DPS")
     """
 
-    def __init__(self, spell_db_path: Optional[Path] = None, support_db_path: Optional[Path] = None) -> None:
+    def __init__(
+        self, spell_db_path: Optional[Path] = None, support_db_path: Optional[Path] = None
+    ) -> None:
         """
         Initialize calculator with gem databases.
 
@@ -240,15 +247,21 @@ class GemSynergyCalculator:
         # Fall back to JSON files if needed
         if not self.spell_gems:
             if spell_db_path is None:
-                spell_db_path = Path(__file__).parent.parent.parent / "data" / "poe2_spell_gems_database.json"
+                spell_db_path = (
+                    Path(__file__).parent.parent.parent / "data" / "poe2_spell_gems_database.json"
+                )
             self._load_spell_database(spell_db_path)
 
         if not self.support_gems:
             if support_db_path is None:
-                support_db_path = Path(__file__).parent.parent.parent / "data" / "poe2_support_gems_database.json"
+                support_db_path = (
+                    Path(__file__).parent.parent.parent / "data" / "poe2_support_gems_database.json"
+                )
             self._load_support_database(support_db_path)
 
-        logger.info(f"Loaded {len(self.spell_gems)} spell gems and {len(self.support_gems)} support gems (SSoT: Fresh Game Data + PoB)")
+        logger.info(
+            f"Loaded {len(self.spell_gems)} spell gems and {len(self.support_gems)} support gems (SSoT: Fresh Game Data + PoB)"
+        )
 
     def _load_from_fresh_provider(self):
         """Load gems from FreshDataProvider (Single Source of Truth)."""
@@ -256,13 +269,11 @@ class GemSynergyCalculator:
         active_skills = self._fresh_provider.get_all_active_skills()
         for skill_id, skill_data in active_skills.items():
             # Skip internal/meta skills
-            if skill_id.startswith('Art/') or 'Meta' in skill_id:
+            if skill_id.startswith("Art/") or "Meta" in skill_id:
                 continue
 
             key = skill_id.lower()
-            display_name = (
-                skill_data.get('display_name') or skill_data.get('name') or skill_id
-            )
+            display_name = skill_data.get("display_name") or skill_data.get("name") or skill_id
             self.spell_gems[key] = GemStats(
                 name=display_name,
                 tags=[],  # Tags would need extraction from game files
@@ -272,29 +283,27 @@ class GemSynergyCalculator:
                 crit_chance=0.0,
                 damage_effectiveness=100.0,
                 mana_cost=0,
-                spirit_cost=0
+                spirit_cost=0,
             )
 
             # Alias by display name so callers can say "fireball", not
             # "fireballplayer". Player variants win over monster/boss skills
             # that share the same display name (e.g. boss Fireballs).
-            name_key = _normalize_gem_name(display_name) if display_name != skill_id else ''
+            name_key = _normalize_gem_name(display_name) if display_name != skill_id else ""
             if name_key and name_key != key:
-                is_player_variant = key.endswith('player')
+                is_player_variant = key.endswith("player")
                 existing = self._spell_aliases.get(name_key)
-                if existing is None or (
-                    is_player_variant and not existing.endswith('player')
-                ):
+                if existing is None or (is_player_variant and not existing.endswith("player")):
                     self._spell_aliases[name_key] = key
 
         # Load support gems
         support_gems = self._fresh_provider.get_all_support_gems()
         for support_id, support_data in support_gems.items():
             # Skip meta supports for now
-            if 'Meta' in support_id and 'CastOn' not in support_id:
+            if "Meta" in support_id and "CastOn" not in support_id:
                 continue
 
-            name = support_data.get('name', support_id)
+            name = support_data.get("name", support_id)
             support_key = support_id.lower()
             # Alias by display name (normalized — " Support" suffix dropped)
             # so "Spell Echo" finds the gem stored under its internal id.
@@ -303,27 +312,33 @@ class GemSynergyCalculator:
                 self._support_aliases.setdefault(support_name_key, support_key)
             self.support_gems[support_key] = SupportGemEffect(
                 name=name,
-                tags=support_data.get('tags', []),
+                tags=support_data.get("tags", []),
                 # Effects would need detailed extraction from grantedeffectsperlevel
                 # For now, use defaults (0) and rely on hardcoded values for key supports
-                more_damage=support_data.get('effects', {}).get('more_damage', 0.0),
-                more_cast_speed=support_data.get('effects', {}).get('more_cast_speed', 0.0),
-                more_aoe=support_data.get('effects', {}).get('more_area', 0.0),
-                more_crit_chance=support_data.get('effects', {}).get('more_crit_chance', 0.0),
-                more_crit_damage=support_data.get('effects', {}).get('more_crit_damage', 0.0),
-                less_damage=support_data.get('effects', {}).get('less_damage', 0.0),
-                less_cast_speed=support_data.get('effects', {}).get('less_cast_speed', 0.0),
-                increased_damage=support_data.get('effects', {}).get('increased_damage', 0.0),
-                increased_cast_speed=support_data.get('effects', {}).get('increased_cast_speed', 0.0),
-                increased_crit_chance=support_data.get('effects', {}).get('increased_crit_chance', 0.0),
-                spirit_cost=support_data.get('spirit_cost', 0) or 0,
-                mana_cost_multiplier=support_data.get('cost_multiplier', 100.0) or 100.0,
+                more_damage=support_data.get("effects", {}).get("more_damage", 0.0),
+                more_cast_speed=support_data.get("effects", {}).get("more_cast_speed", 0.0),
+                more_aoe=support_data.get("effects", {}).get("more_area", 0.0),
+                more_crit_chance=support_data.get("effects", {}).get("more_crit_chance", 0.0),
+                more_crit_damage=support_data.get("effects", {}).get("more_crit_damage", 0.0),
+                less_damage=support_data.get("effects", {}).get("less_damage", 0.0),
+                less_cast_speed=support_data.get("effects", {}).get("less_cast_speed", 0.0),
+                increased_damage=support_data.get("effects", {}).get("increased_damage", 0.0),
+                increased_cast_speed=support_data.get("effects", {}).get(
+                    "increased_cast_speed", 0.0
+                ),
+                increased_crit_chance=support_data.get("effects", {}).get(
+                    "increased_crit_chance", 0.0
+                ),
+                spirit_cost=support_data.get("spirit_cost", 0) or 0,
+                mana_cost_multiplier=support_data.get("cost_multiplier", 100.0) or 100.0,
                 utility_effects=[],
-                required_tags=support_data.get('compatible_with', ['spell', 'attack']),
-                incompatible_with=support_data.get('incompatible_with', [])
+                required_tags=support_data.get("compatible_with", ["spell", "attack"]),
+                incompatible_with=support_data.get("incompatible_with", []),
             )
 
-        logger.info(f"FreshDataProvider: {len(self.spell_gems)} active skills, {len(support_gems)} support gems")
+        logger.info(
+            f"FreshDataProvider: {len(self.spell_gems)} active skills, {len(support_gems)} support gems"
+        )
 
     def _get_spell(self, spell_name: str) -> Optional[GemStats]:
         """
@@ -382,7 +397,9 @@ class GemSynergyCalculator:
                 db_gems = result.scalars().all()
 
                 if not db_gems:
-                    logger.warning("No support gems found in database, keeping FreshDataProvider data")
+                    logger.warning(
+                        "No support gems found in database, keeping FreshDataProvider data"
+                    )
                     return 0
 
                 # Clear existing support gems and reload from database
@@ -399,21 +416,21 @@ class GemSynergyCalculator:
                     support_effect = SupportGemEffect(
                         name=display_name,
                         tags=gem.tags or [],
-                        more_damage=stats.get('more_damage', 0.0),
-                        more_cast_speed=stats.get('more_cast_speed', 0.0),
-                        more_aoe=stats.get('more_aoe', 0.0),
-                        more_crit_chance=stats.get('more_crit_chance', 0.0),
-                        more_crit_damage=stats.get('more_crit_damage', 0.0),
-                        less_damage=stats.get('less_damage', 0.0),
-                        less_cast_speed=stats.get('less_cast_speed', 0.0),
-                        increased_damage=stats.get('increased_damage', 0.0),
-                        increased_cast_speed=stats.get('increased_cast_speed', 0.0),
-                        increased_crit_chance=stats.get('increased_crit_chance', 0.0),
+                        more_damage=stats.get("more_damage", 0.0),
+                        more_cast_speed=stats.get("more_cast_speed", 0.0),
+                        more_aoe=stats.get("more_aoe", 0.0),
+                        more_crit_chance=stats.get("more_crit_chance", 0.0),
+                        more_crit_damage=stats.get("more_crit_damage", 0.0),
+                        less_damage=stats.get("less_damage", 0.0),
+                        less_cast_speed=stats.get("less_cast_speed", 0.0),
+                        increased_damage=stats.get("increased_damage", 0.0),
+                        increased_cast_speed=stats.get("increased_cast_speed", 0.0),
+                        increased_crit_chance=stats.get("increased_crit_chance", 0.0),
                         spirit_cost=gem.spirit_cost or 0,
                         mana_cost_multiplier=gem.mana_multiplier or 100.0,
-                        utility_effects=stats.get('utility_effects', []),
+                        utility_effects=stats.get("utility_effects", []),
                         required_tags=gem.compatible_tags or [],
-                        incompatible_with=[]
+                        incompatible_with=[],
                     )
 
                     # Store by multiple keys for flexible lookup
@@ -428,7 +445,9 @@ class GemSynergyCalculator:
                         if base_name.lower() not in self.support_gems:
                             self.support_gems[base_name.lower()] = support_effect
 
-                logger.info(f"Loaded {len(db_gems)} support gems from SQLite database (replacing FreshDataProvider data)")
+                logger.info(
+                    f"Loaded {len(db_gems)} support gems from SQLite database (replacing FreshDataProvider data)"
+                )
                 return len(db_gems)
 
         except Exception as e:
@@ -448,17 +467,17 @@ class GemSynergyCalculator:
             Dict of parsed stats for SupportGemEffect
         """
         stats = {
-            'more_damage': 0.0,
-            'more_cast_speed': 0.0,
-            'more_aoe': 0.0,
-            'more_crit_chance': 0.0,
-            'more_crit_damage': 0.0,
-            'less_damage': 0.0,
-            'less_cast_speed': 0.0,
-            'increased_damage': 0.0,
-            'increased_cast_speed': 0.0,
-            'increased_crit_chance': 0.0,
-            'utility_effects': []
+            "more_damage": 0.0,
+            "more_cast_speed": 0.0,
+            "more_aoe": 0.0,
+            "more_crit_chance": 0.0,
+            "more_crit_damage": 0.0,
+            "less_damage": 0.0,
+            "less_cast_speed": 0.0,
+            "increased_damage": 0.0,
+            "increased_cast_speed": 0.0,
+            "increased_crit_chance": 0.0,
+            "utility_effects": [],
         }
 
         if not modifiers:
@@ -468,31 +487,33 @@ class GemSynergyCalculator:
         # Format: stat_id -> (field_name, multiplier)
         stat_mapping = {
             # More multipliers (multiplicative)
-            'support_gem_damage_+%_final': ('more_damage', 1.0),
-            'support_gem_elemental_damage_+%_final': ('more_damage', 1.0),
-            'support_attack_skills_elemental_damage_+%_final': ('more_damage', 1.0),
-            'support_faster_attacks_damage_+%_final': ('less_damage', -1.0),  # Negative = less
-            'support_increased_area_damage_+%_final': ('more_damage', 1.0),
-            'support_far_combat_attack_damage_+%_final_from_distance': ('more_damage', 1.0),
-
+            "support_gem_damage_+%_final": ("more_damage", 1.0),
+            "support_gem_elemental_damage_+%_final": ("more_damage", 1.0),
+            "support_attack_skills_elemental_damage_+%_final": ("more_damage", 1.0),
+            "support_faster_attacks_damage_+%_final": ("less_damage", -1.0),  # Negative = less
+            "support_increased_area_damage_+%_final": ("more_damage", 1.0),
+            "support_far_combat_attack_damage_+%_final_from_distance": ("more_damage", 1.0),
             # Cast/Attack speed
-            'attack_speed_+%': ('increased_cast_speed', 1.0),
-            'cast_speed_+%': ('increased_cast_speed', 1.0),
-            'reload_speed_+%': ('increased_cast_speed', 0.5),  # Partial effect on overall speed
-
+            "attack_speed_+%": ("increased_cast_speed", 1.0),
+            "cast_speed_+%": ("increased_cast_speed", 1.0),
+            "reload_speed_+%": ("increased_cast_speed", 0.5),  # Partial effect on overall speed
             # Area of Effect
-            'base_skill_area_of_effect_+%': ('more_aoe', 1.0),
-
+            "base_skill_area_of_effect_+%": ("more_aoe", 1.0),
             # Critical
-            'critical_strike_chance_+%': ('increased_crit_chance', 1.0),
-            'support_inevitable_criticals_critical_strike_chance_+%_per_second': ('increased_crit_chance', 1.0),
-
+            "critical_strike_chance_+%": ("increased_crit_chance", 1.0),
+            "support_inevitable_criticals_critical_strike_chance_+%_per_second": (
+                "increased_crit_chance",
+                1.0,
+            ),
             # Utility effects (flagged, not numeric)
-            'support_chain_hit_count_+': ('utility_effects', 'chain'),
-            'support_fork_forked_projectiles_add': ('utility_effects', 'fork'),
-            'support_pierce_pierce_chance_%': ('utility_effects', 'pierce'),
-            'support_conduction_chance_to_shock_+%_final': ('utility_effects', 'shock'),
-            'support_hypothermia_hit_damage_freeze_multiplier_+%_final': ('utility_effects', 'freeze'),
+            "support_chain_hit_count_+": ("utility_effects", "chain"),
+            "support_fork_forked_projectiles_add": ("utility_effects", "fork"),
+            "support_pierce_pierce_chance_%": ("utility_effects", "pierce"),
+            "support_conduction_chance_to_shock_+%_final": ("utility_effects", "shock"),
+            "support_hypothermia_hit_damage_freeze_multiplier_+%_final": (
+                "utility_effects",
+                "freeze",
+            ),
         }
 
         for mod in modifiers:
@@ -504,21 +525,21 @@ class GemSynergyCalculator:
             # Check direct mapping
             if stat_id in stat_mapping:
                 field, multiplier = stat_mapping[stat_id]
-                if field == 'utility_effects':
-                    stats['utility_effects'].append(multiplier)
+                if field == "utility_effects":
+                    stats["utility_effects"].append(multiplier)
                 else:
                     stats[field] += float(value) * multiplier
 
             # Check for generic patterns
-            elif '_damage_+%_final' in stat_id:
+            elif "_damage_+%_final" in stat_id:
                 if value < 0:
-                    stats['less_damage'] += abs(float(value))
+                    stats["less_damage"] += abs(float(value))
                 else:
-                    stats['more_damage'] += float(value)
-            elif '_damage_+%' in stat_id and '_final' not in stat_id:
-                stats['increased_damage'] += float(value)
-            elif 'attack_speed' in stat_id or 'cast_speed' in stat_id:
-                stats['increased_cast_speed'] += float(value)
+                    stats["more_damage"] += float(value)
+            elif "_damage_+%" in stat_id and "_final" not in stat_id:
+                stats["increased_damage"] += float(value)
+            elif "attack_speed" in stat_id or "cast_speed" in stat_id:
+                stats["increased_cast_speed"] += float(value)
 
         return stats
 
@@ -534,7 +555,8 @@ class GemSynergyCalculator:
         """
         # Remove Roman numeral suffixes
         import re
-        return re.sub(r'\s+[IVX]+$', '', gem_name).strip()
+
+        return re.sub(r"\s+[IVX]+$", "", gem_name).strip()
 
     def _load_pob_complete_skills(self):
         """
@@ -542,26 +564,32 @@ class GemSynergyCalculator:
         This provides constantStats (conversions, built-in modifiers), damage effectiveness, etc.
         """
         try:
-            pob_skills_path = Path(__file__).parent.parent.parent / "data" / "pob_complete_skills.json"
+            pob_skills_path = (
+                Path(__file__).parent.parent.parent / "data" / "pob_complete_skills.json"
+            )
             if not pob_skills_path.exists():
-                logger.warning("pob_complete_skills.json not found, constantStats won't be available")
+                logger.warning(
+                    "pob_complete_skills.json not found, constantStats won't be available"
+                )
                 return
 
-            with open(pob_skills_path, 'r', encoding='utf-8') as f:
+            with open(pob_skills_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            skills = data.get('skills', {})
+            skills = data.get("skills", {})
             for skill_id, skill_data in skills.items():
                 if not isinstance(skill_data, dict):
                     continue
 
                 self._pob_skills[skill_id.lower()] = skill_data
                 # Also index by name for easier lookup
-                skill_name = skill_data.get('name', '')
+                skill_name = skill_data.get("name", "")
                 if skill_name:
                     self._pob_skills[skill_name.lower()] = skill_data
 
-            logger.info(f"Loaded {len(skills)} skills from PoB complete skills (with constantStats)")
+            logger.info(
+                f"Loaded {len(skills)} skills from PoB complete skills (with constantStats)"
+            )
 
         except Exception as e:
             logger.error(f"Failed to load PoB complete skills: {e}")
@@ -581,7 +609,7 @@ class GemSynergyCalculator:
             return []
 
         # Extract constantStats from statSets (usually the first statSet)
-        stat_sets = skill_data.get('statSets', [])
+        stat_sets = skill_data.get("statSets", [])
         if not stat_sets:
             return []
 
@@ -589,7 +617,7 @@ class GemSynergyCalculator:
         if not isinstance(primary_stat_set, dict):
             return []
 
-        const_stats = primary_stat_set.get('constantStats', [])
+        const_stats = primary_stat_set.get("constantStats", [])
         return const_stats
 
     def get_skill_damage_effectiveness(self, skill_name: str) -> Dict[str, float]:
@@ -603,26 +631,26 @@ class GemSynergyCalculator:
         skill_data = self._pob_skills.get(skill_name_lower)
 
         if not skill_data:
-            return {'base': 100.0, 'incremental': 0.0}
+            return {"base": 100.0, "incremental": 0.0}
 
         # Extract from statSets
-        stat_sets = skill_data.get('statSets', [])
+        stat_sets = skill_data.get("statSets", [])
         if not stat_sets:
-            return {'base': 100.0, 'incremental': 0.0}
+            return {"base": 100.0, "incremental": 0.0}
 
         primary_stat_set = stat_sets[0] if isinstance(stat_sets, list) else stat_sets
         if not isinstance(primary_stat_set, dict):
-            return {'base': 100.0, 'incremental': 0.0}
+            return {"base": 100.0, "incremental": 0.0}
 
         return {
-            'base': primary_stat_set.get('baseEffectiveness', 100.0),
-            'incremental': primary_stat_set.get('incrementalEffectiveness', 0.0)
+            "base": primary_stat_set.get("baseEffectiveness", 100.0),
+            "incremental": primary_stat_set.get("incrementalEffectiveness", 0.0),
         }
 
     def _load_spell_database(self, path: Path):
         """Load spell gems from JSON database"""
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             # Parse spell gems by category
@@ -632,17 +660,17 @@ class GemSynergyCalculator:
 
                 for spell_id, spell_data in spells.items():
                     # Use level 20 stats if available, otherwise level 1
-                    stats = spell_data.get('level_20', spell_data.get('level_1', {}))
+                    stats = spell_data.get("level_20", spell_data.get("level_1", {}))
 
                     self.spell_gems[spell_id] = GemStats(
-                        name=spell_data.get('name', spell_id),
-                        tags=spell_data.get('tags', []),
-                        base_damage_min=stats.get('damage_min', 0) or 0,
-                        base_damage_max=stats.get('damage_max', 0) or 0,
-                        cast_time=stats.get('cast_time', 1.0) or 1.0,
-                        crit_chance=stats.get('crit_chance', 0.0) or 0.0,
-                        damage_effectiveness=stats.get('damage_effectiveness', 100) or 100,
-                        mana_cost=stats.get('mana_cost', 0) or 0
+                        name=spell_data.get("name", spell_id),
+                        tags=spell_data.get("tags", []),
+                        base_damage_min=stats.get("damage_min", 0) or 0,
+                        base_damage_max=stats.get("damage_max", 0) or 0,
+                        cast_time=stats.get("cast_time", 1.0) or 1.0,
+                        crit_chance=stats.get("crit_chance", 0.0) or 0.0,
+                        damage_effectiveness=stats.get("damage_effectiveness", 100) or 100,
+                        mana_cost=stats.get("mana_cost", 0) or 0,
                     )
 
             logger.info(f"Loaded {len(self.spell_gems)} spells from {path}")
@@ -653,11 +681,11 @@ class GemSynergyCalculator:
     def _load_support_database(self, path: Path):
         """Load support gems from JSON database"""
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             # Parse support gems from "support_gems" key
-            supports = data.get('support_gems', {})
+            supports = data.get("support_gems", {})
 
             for support_id, support_data in supports.items():
                 # Skip if not a dictionary
@@ -665,29 +693,31 @@ class GemSynergyCalculator:
                     continue
 
                 # Parse effects
-                effects = support_data.get('effects', {})
+                effects = support_data.get("effects", {})
 
                 # Determine which tags this support needs (compatible_with)
-                compatible_with = support_data.get('compatible_with', [])
+                compatible_with = support_data.get("compatible_with", [])
 
                 self.support_gems[support_id] = SupportGemEffect(
-                    name=support_data.get('name', support_id),
-                    tags=support_data.get('tags', []),
-                    more_damage=effects.get('more_spell_damage', effects.get('more_damage', 0.0)),
-                    more_cast_speed=effects.get('more_cast_speed', 0.0),
-                    more_aoe=effects.get('more_area', 0.0),
-                    more_crit_chance=effects.get('more_crit_chance', 0.0),
-                    more_crit_damage=effects.get('more_crit_damage', 0.0),
-                    less_damage=effects.get('less_spell_damage', effects.get('less_damage', 0.0)),
-                    less_cast_speed=effects.get('less_cast_speed', 0.0),
-                    increased_damage=effects.get('increased_spell_damage', effects.get('increased_damage', 0.0)),
-                    increased_cast_speed=effects.get('increased_cast_speed', 0.0),
-                    increased_crit_chance=effects.get('increased_crit_chance', 0.0),
-                    spirit_cost=support_data.get('spirit_cost', 0) or 0,
-                    mana_cost_multiplier=support_data.get('cost_multiplier', 100.0) or 100.0,
+                    name=support_data.get("name", support_id),
+                    tags=support_data.get("tags", []),
+                    more_damage=effects.get("more_spell_damage", effects.get("more_damage", 0.0)),
+                    more_cast_speed=effects.get("more_cast_speed", 0.0),
+                    more_aoe=effects.get("more_area", 0.0),
+                    more_crit_chance=effects.get("more_crit_chance", 0.0),
+                    more_crit_damage=effects.get("more_crit_damage", 0.0),
+                    less_damage=effects.get("less_spell_damage", effects.get("less_damage", 0.0)),
+                    less_cast_speed=effects.get("less_cast_speed", 0.0),
+                    increased_damage=effects.get(
+                        "increased_spell_damage", effects.get("increased_damage", 0.0)
+                    ),
+                    increased_cast_speed=effects.get("increased_cast_speed", 0.0),
+                    increased_crit_chance=effects.get("increased_crit_chance", 0.0),
+                    spirit_cost=support_data.get("spirit_cost", 0) or 0,
+                    mana_cost_multiplier=support_data.get("cost_multiplier", 100.0) or 100.0,
                     utility_effects=[],  # Would need to parse from effects
                     required_tags=compatible_with,
-                    incompatible_with=[]
+                    incompatible_with=[],
                 )
 
             logger.info(f"Loaded {len(self.support_gems)} supports from {path}")
@@ -703,7 +733,7 @@ class GemSynergyCalculator:
         num_supports: int = 5,
         optimization_goal: str = "dps",
         top_n: int = 10,
-        return_trace: bool = False
+        return_trace: bool = False,
     ) -> Union[List[SynergyResult], Dict[str, Any]]:
         """
         Find the best support gem combinations for a spell
@@ -732,7 +762,7 @@ class GemSynergyCalculator:
             "valid_combinations": 0,
             "invalid_combinations": 0,
             "spirit_filtered": 0,
-            "optimization_goal": optimization_goal
+            "optimization_goal": optimization_goal,
         }
 
         # Get spell (key, display-name alias, or name scan)
@@ -754,7 +784,9 @@ class GemSynergyCalculator:
         trace_data["compatible_supports"] = [s[0] for s in compatible_supports[:20]]  # First 20
 
         if len(compatible_supports) < num_supports:
-            logger.warning(f"Only {len(compatible_supports)} compatible supports found (need {num_supports})")
+            logger.warning(
+                f"Only {len(compatible_supports)} compatible supports found (need {num_supports})"
+            )
             num_supports = len(compatible_supports)
 
         logger.info(f"Found {len(compatible_supports)} compatible support gems")
@@ -775,10 +807,7 @@ class GemSynergyCalculator:
 
             # Calculate DPS and metrics
             result = self._calculate_combination_dps(
-                spell,
-                list(support_combo),
-                character_mods,
-                max_spirit
+                spell, list(support_combo), character_mods, max_spirit
             )
 
             if result is None:
@@ -842,7 +871,9 @@ class GemSynergyCalculator:
             if support.incompatible_with:
                 for incompatible in support.incompatible_with:
                     if incompatible in support_names:
-                        logger.warning(f"Rejecting {support_id} + {incompatible} (database incompatibility)")
+                        logger.warning(
+                            f"Rejecting {support_id} + {incompatible} (database incompatibility)"
+                        )
                         return False
 
         # Hardcoded incompatibilities — match on normalized id AND display
@@ -850,15 +881,16 @@ class GemSynergyCalculator:
         # and display names ("Projectile Acceleration Support") both trip
         # the same rule.
         for i, (id_a, sup_a) in enumerate(support_combo):
-            conflict_set = (
-                _NORMALIZED_INCOMPATIBILITIES.get(_normalize_gem_name(id_a), set())
-                | _NORMALIZED_INCOMPATIBILITIES.get(_normalize_gem_name(sup_a.name), set())
-            )
+            conflict_set = _NORMALIZED_INCOMPATIBILITIES.get(
+                _normalize_gem_name(id_a), set()
+            ) | _NORMALIZED_INCOMPATIBILITIES.get(_normalize_gem_name(sup_a.name), set())
             if not conflict_set:
                 continue
-            for id_b, sup_b in support_combo[i + 1:]:
+            for id_b, sup_b in support_combo[i + 1 :]:
                 if {_normalize_gem_name(id_b), _normalize_gem_name(sup_b.name)} & conflict_set:
-                    logger.warning(f"Rejecting {sup_a.name} + {sup_b.name} (hardcoded incompatibility)")
+                    logger.warning(
+                        f"Rejecting {sup_a.name} + {sup_b.name} (hardcoded incompatibility)"
+                    )
                     return False
 
         return True
@@ -907,12 +939,10 @@ class GemSynergyCalculator:
         #     " Support" suffix) before matching so callers can pass either
         #     "Concentrated Effect" or "Concentrated Effect Support".
         for i, support_a in enumerate(support_names):
-            conflict_set = _NORMALIZED_INCOMPATIBILITIES.get(
-                _normalize_gem_name(support_a), set()
-            )
+            conflict_set = _NORMALIZED_INCOMPATIBILITIES.get(_normalize_gem_name(support_a), set())
             if not conflict_set:
                 continue
-            for support_b in support_names[i + 1:]:
+            for support_b in support_names[i + 1 :]:
                 if _normalize_gem_name(support_b) in conflict_set:
                     conflicts.append((support_a, support_b))
 
@@ -967,7 +997,7 @@ class GemSynergyCalculator:
         spell_name: str,
         support_names: List[str],
         character_mods: Optional[Dict[str, float]] = None,
-        max_spirit: int = 100
+        max_spirit: int = 100,
     ) -> Dict[str, Any]:
         """
         Trace DPS calculation step-by-step for debugging and explanation
@@ -1007,7 +1037,7 @@ class GemSynergyCalculator:
             "calculations": {},
             "spirit": {},
             "valid": True,
-            "errors": []
+            "errors": [],
         }
 
         # Get spell (key, display-name alias, or name scan)
@@ -1021,7 +1051,7 @@ class GemSynergyCalculator:
             "name": spell.name,
             "base_damage_min": spell.base_damage_min,
             "base_damage_max": spell.base_damage_max,
-            "cast_time": spell.cast_time
+            "cast_time": spell.cast_time,
         }
 
         # Get supports (key, display-name alias, or name scan — suffix tolerant)
@@ -1031,13 +1061,15 @@ class GemSynergyCalculator:
             if resolved:
                 sup_id, sup_obj = resolved
                 support_objs.append((sup_id, sup_obj))
-                trace["supports"].append({
-                    "name": sup_obj.name,
-                    "more_damage": sup_obj.more_damage,
-                    "less_damage": sup_obj.less_damage,
-                    "increased_damage": sup_obj.increased_damage,
-                    "spirit_cost": sup_obj.spirit_cost
-                })
+                trace["supports"].append(
+                    {
+                        "name": sup_obj.name,
+                        "more_damage": sup_obj.more_damage,
+                        "less_damage": sup_obj.less_damage,
+                        "increased_damage": sup_obj.increased_damage,
+                        "spirit_cost": sup_obj.spirit_cost,
+                    }
+                )
             else:
                 trace["errors"].append(f"Support '{sup_name}' not found")
 
@@ -1057,7 +1089,7 @@ class GemSynergyCalculator:
         trace["spirit"] = {
             "total": total_spirit,
             "available": max_spirit,
-            "overflow": max(0, total_spirit - max_spirit)
+            "overflow": max(0, total_spirit - max_spirit),
         }
 
         if total_spirit > max_spirit:
@@ -1075,11 +1107,9 @@ class GemSynergyCalculator:
             # Net more multiplier (more_damage - less_damage)
             net_more = (1.0 + sup.more_damage / 100.0) * (1.0 - sup.less_damage / 100.0)
             more_total *= net_more
-            more_steps.append({
-                "support_name": sup.name,
-                "net_multiplier": net_more,
-                "cumulative": more_total
-            })
+            more_steps.append(
+                {"support_name": sup.name, "net_multiplier": net_more, "cumulative": more_total}
+            )
 
         trace["calculations"]["more_multipliers"] = more_steps
         trace["calculations"]["more_total"] = more_total
@@ -1115,7 +1145,7 @@ class GemSynergyCalculator:
         spell: GemStats,
         supports: List[Tuple[str, SupportGemEffect]],
         character_mods: Dict[str, float],
-        max_spirit: int
+        max_spirit: int,
     ) -> Optional[SynergyResult]:
         """Calculate DPS for a specific spell + support combination"""
 
@@ -1135,9 +1165,9 @@ class GemSynergyCalculator:
 
         # Accumulate modifiers
         total_more_damage = 1.0
-        total_increased_damage = character_mods.get('increased_damage', 0.0)
+        total_increased_damage = character_mods.get("increased_damage", 0.0)
         total_more_cast_speed = 1.0
-        total_increased_cast_speed = character_mods.get('increased_cast_speed', 0.0)
+        total_increased_cast_speed = character_mods.get("increased_cast_speed", 0.0)
         total_added_damage = 0.0
         utility_effects = []
         total_mana_cost = spell.mana_cost
@@ -1146,17 +1176,17 @@ class GemSynergyCalculator:
         for support_id, support in supports:
             # More multipliers (multiplicative)
             if support.more_damage != 0:
-                total_more_damage *= (1.0 + support.more_damage / 100.0)
+                total_more_damage *= 1.0 + support.more_damage / 100.0
 
             if support.more_cast_speed != 0:
-                total_more_cast_speed *= (1.0 + support.more_cast_speed / 100.0)
+                total_more_cast_speed *= 1.0 + support.more_cast_speed / 100.0
 
             # Less multipliers (multiplicative penalties)
             if support.less_damage != 0:
-                total_more_damage *= (1.0 - support.less_damage / 100.0)
+                total_more_damage *= 1.0 - support.less_damage / 100.0
 
             if support.less_cast_speed != 0:
-                total_more_cast_speed *= (1.0 - support.less_cast_speed / 100.0)
+                total_more_cast_speed *= 1.0 - support.less_cast_speed / 100.0
 
             # Increased (additive)
             total_increased_damage += support.increased_damage
@@ -1172,7 +1202,7 @@ class GemSynergyCalculator:
             utility_effects.extend(support.utility_effects)
 
             # Mana cost
-            total_mana_cost *= (support.mana_cost_multiplier / 100.0)
+            total_mana_cost *= support.mana_cost_multiplier / 100.0
 
         # Calculate final damage
         damage_after_added = base_damage_avg + total_added_damage
@@ -1200,15 +1230,15 @@ class GemSynergyCalculator:
             total_increased_damage=total_increased_damage,
             utility_effects=utility_effects,
             calculation_breakdown={
-                'base_damage': base_damage_avg,
-                'added_damage': total_added_damage,
-                'after_increased': damage_after_increased,
-                'after_more': final_damage,
-                'more_multiplier': total_more_damage,
-                'increased_total': total_increased_damage,
-                'cast_speed_multiplier': total_more_cast_speed,
-                'spirit_per_support': [s[1].spirit_cost for s in supports]
-            }
+                "base_damage": base_damage_avg,
+                "added_damage": total_added_damage,
+                "after_increased": damage_after_increased,
+                "after_more": final_damage,
+                "more_multiplier": total_more_damage,
+                "increased_total": total_increased_damage,
+                "cast_speed_multiplier": total_more_cast_speed,
+                "spirit_per_support": [s[1].spirit_cost for s in supports],
+            },
         )
 
         return result
@@ -1237,9 +1267,9 @@ class GemSynergyCalculator:
             result.overall_score = result.dps_score * 0.7 + utility_score
         else:  # balanced
             result.overall_score = (
-                result.dps_score * 0.6 +
-                result.efficiency_score * 10.0 +  # Scale up efficiency
-                utility_score * 0.1
+                result.dps_score * 0.6
+                + result.efficiency_score * 10.0  # Scale up efficiency
+                + utility_score * 0.1
             )
 
         return result
@@ -1280,10 +1310,7 @@ class GemSynergyCalculator:
 
 # Convenience function
 def find_best_supports_for_spell(
-    spell_name: str,
-    max_spirit: int = 100,
-    num_supports: int = 5,
-    goal: str = "dps"
+    spell_name: str, max_spirit: int = 100, num_supports: int = 5, goal: str = "dps"
 ) -> List[SynergyResult]:
     """
     Quick function to find best support combinations
@@ -1303,15 +1330,14 @@ def find_best_supports_for_spell(
         max_spirit=max_spirit,
         num_supports=num_supports,
         optimization_goal=goal,
-        top_n=10
+        top_n=10,
     )
 
 
 if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     print("=" * 80)
@@ -1326,10 +1352,7 @@ if __name__ == "__main__":
     print()
 
     results = find_best_supports_for_spell(
-        spell_name="fireball",
-        max_spirit=100,
-        num_supports=5,
-        goal="dps"
+        spell_name="fireball", max_spirit=100, num_supports=5, goal="dps"
     )
 
     if results:

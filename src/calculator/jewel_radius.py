@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 class JewelRadiusSize(Enum):
     """Jewel radius sizes and their unit values."""
+
     SMALL = 800
     MEDIUM = 1000
     LARGE = 1075
@@ -59,6 +60,7 @@ class JewelSocket:
         name: Node name (typically "Jewel Socket")
         group_id: The group this socket belongs to
     """
+
     node_id: int
     x: float
     y: float
@@ -84,6 +86,7 @@ class AffectedNode:
         x: X coordinate
         y: Y coordinate
     """
+
     node_id: int
     name: str
     distance: float
@@ -114,6 +117,7 @@ class RadiusAnalysis:
         notable_names: List of notable node names
         keystone_names: List of keystone node names
     """
+
     socket: JewelSocket
     radius: float
     radius_name: str
@@ -136,7 +140,9 @@ class RadiusAnalysis:
         self.small_passives = len(self.affected_nodes) - self.keystones - self.notables
 
         self.keystone_names = [n.name for n in self.affected_nodes if n.is_keystone and n.name]
-        self.notable_names = [n.name for n in self.affected_nodes if n.is_notable and not n.is_keystone and n.name]
+        self.notable_names = [
+            n.name for n in self.affected_nodes if n.is_notable and not n.is_keystone and n.name
+        ]
 
 
 def euclidean_distance(x1: float, y1: float, x2: float, y2: float) -> float:
@@ -193,7 +199,7 @@ def get_jewel_sockets(tree_data: Dict[str, Any]) -> List[JewelSocket]:
                 x=node.get("x", 0.0),
                 y=node.get("y", 0.0),
                 name=name,
-                group_id=node.get("group_id")
+                group_id=node.get("group_id"),
             )
             sockets.append(socket)
 
@@ -203,10 +209,7 @@ def get_jewel_sockets(tree_data: Dict[str, Any]) -> List[JewelSocket]:
 
 
 def get_nodes_in_radius(
-    tree_data: Dict[str, Any],
-    socket_id: int,
-    radius: float = 1500.0,
-    exclude_socket: bool = True
+    tree_data: Dict[str, Any], socket_id: int, radius: float = 1500.0, exclude_socket: bool = True
 ) -> List[AffectedNode]:
     """
     Get all passive nodes within a specified radius of a jewel socket.
@@ -260,7 +263,7 @@ def get_nodes_in_radius(
                 is_keystone=node.get("is_keystone", False),
                 stats=node.get("stats", []),
                 x=x,
-                y=y
+                y=y,
             )
             affected.append(affected_node)
 
@@ -270,9 +273,7 @@ def get_nodes_in_radius(
 
 
 def analyze_socket_radius(
-    socket_id: int,
-    radius: float = 1500.0,
-    tree_data: Optional[Dict[str, Any]] = None
+    socket_id: int, radius: float = 1500.0, tree_data: Optional[Dict[str, Any]] = None
 ) -> RadiusAnalysis:
     """
     Analyze all nodes within a jewel socket's radius.
@@ -298,7 +299,7 @@ def analyze_socket_radius(
         x=socket_node.get("x", 0.0),
         y=socket_node.get("y", 0.0),
         name=socket_node.get("name", "Jewel Socket"),
-        group_id=socket_node.get("group_id")
+        group_id=socket_node.get("group_id"),
     )
 
     affected_nodes = get_nodes_in_radius(tree_data, socket_id, radius)
@@ -311,16 +312,12 @@ def analyze_socket_radius(
             break
 
     return RadiusAnalysis(
-        socket=socket,
-        radius=radius,
-        radius_name=radius_name,
-        affected_nodes=affected_nodes
+        socket=socket, radius=radius, radius_name=radius_name, affected_nodes=affected_nodes
     )
 
 
 def analyze_all_sockets(
-    radius: float = 1500.0,
-    tree_data: Optional[Dict[str, Any]] = None
+    radius: float = 1500.0, tree_data: Optional[Dict[str, Any]] = None
 ) -> List[RadiusAnalysis]:
     """
     Analyze all jewel sockets in the passive tree.
@@ -346,9 +343,7 @@ def analyze_all_sockets(
 
 
 def find_best_socket_for_notables(
-    target_notables: List[str],
-    radius: float = 1500.0,
-    tree_data: Optional[Dict[str, Any]] = None
+    target_notables: List[str], radius: float = 1500.0, tree_data: Optional[Dict[str, Any]] = None
 ) -> Optional[Tuple[JewelSocket, List[str]]]:
     """
     Find the jewel socket that covers the most target notables.
@@ -370,8 +365,7 @@ def find_best_socket_for_notables(
 
     for analysis in analyze_all_sockets(radius, tree_data):
         matches = [
-            n.name for n in analysis.affected_nodes
-            if n.name and n.name.lower() in target_set
+            n.name for n in analysis.affected_nodes if n.name and n.name.lower() in target_set
         ]
         if len(matches) > len(best_matches):
             best_matches = matches

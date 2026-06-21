@@ -13,9 +13,9 @@ from .datc64_parser import (
 )
 
 __all__ = [
-    'DAT_MAGIC_NUMBER',
-    'ColumnSpec',
-    'DataType',
-    'Datc64Parser',
-    'ParsedValue',
+    "DAT_MAGIC_NUMBER",
+    "ColumnSpec",
+    "DataType",
+    "Datc64Parser",
+    "ParsedValue",
 ]

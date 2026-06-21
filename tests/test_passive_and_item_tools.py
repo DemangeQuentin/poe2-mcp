@@ -60,13 +60,20 @@ class TestKeystoneTools:
         text = result[0].text
 
         # Should either find it or show available keystones or show not initialized
-        assert "Chaos Inoculation" in text or "Available keystones" in text or "Not Found" in text or "not initialized" in text
+        assert (
+            "Chaos Inoculation" in text
+            or "Available keystones" in text
+            or "Not Found" in text
+            or "not initialized" in text
+        )
 
     @pytest.mark.asyncio
     @pytest.mark.skipif(not HAS_PSG_DATABASE, reason="PSG database not found")
     async def test_inspect_keystone_not_found(self, server):
         """Test inspecting a non-existent keystone"""
-        result = await server._handle_inspect_keystone({"keystone_name": "NonExistentKeystone12345"})
+        result = await server._handle_inspect_keystone(
+            {"keystone_name": "NonExistentKeystone12345"}
+        )
         text = result[0].text
 
         # Should show not found message with suggestions or not initialized
@@ -97,10 +104,7 @@ class TestNotableTools:
     @pytest.mark.skipif(not HAS_PSG_DATABASE, reason="PSG database not found")
     async def test_list_all_notables_with_filter(self, server):
         """Test filtering notables by stat text"""
-        result = await server._handle_list_all_notables({
-            "filter_stat": "projectile",
-            "limit": 20
-        })
+        result = await server._handle_list_all_notables({"filter_stat": "projectile", "limit": 20})
 
         assert len(result) == 1
         text = result[0].text
@@ -134,7 +138,11 @@ class TestPassiveNodeTools:
         text = result[0].text
 
         # Should show error about required input (or not initialized)
-        assert "required" in text.lower() or "error" in text.lower() or "not initialized" in text.lower()
+        assert (
+            "required" in text.lower()
+            or "error" in text.lower()
+            or "not initialized" in text.lower()
+        )
 
     @pytest.mark.asyncio
     @pytest.mark.skipif(not HAS_PSG_DATABASE, reason="PSG database not found")
@@ -170,10 +178,7 @@ class TestBaseItemTools:
     @pytest.mark.asyncio
     async def test_list_all_base_items_with_filter(self, server):
         """Test filtering base items"""
-        result = await server._handle_list_all_base_items({
-            "filter_name": "sword",
-            "limit": 20
-        })
+        result = await server._handle_list_all_base_items({"filter_name": "sword", "limit": 20})
 
         assert len(result) == 1
         text = result[0].text
@@ -201,18 +206,18 @@ class TestToolRegistration:
     def test_keystone_tools_in_dispatch(self, server):
         """Verify keystone tools are in the dispatch table"""
         # The dispatch is handled in handle_call_tool, verify handlers exist
-        assert hasattr(server, '_handle_list_all_keystones')
-        assert hasattr(server, '_handle_inspect_keystone')
+        assert hasattr(server, "_handle_list_all_keystones")
+        assert hasattr(server, "_handle_inspect_keystone")
 
     def test_notable_tools_in_dispatch(self, server):
         """Verify notable tools are in the dispatch table"""
-        assert hasattr(server, '_handle_list_all_notables')
-        assert hasattr(server, '_handle_inspect_passive_node')
+        assert hasattr(server, "_handle_list_all_notables")
+        assert hasattr(server, "_handle_inspect_passive_node")
 
     def test_base_item_tools_in_dispatch(self, server):
         """Verify base item tools are in the dispatch table"""
-        assert hasattr(server, '_handle_list_all_base_items')
-        assert hasattr(server, '_handle_inspect_base_item')
+        assert hasattr(server, "_handle_list_all_base_items")
+        assert hasattr(server, "_handle_inspect_base_item")
 
 
 if __name__ == "__main__":

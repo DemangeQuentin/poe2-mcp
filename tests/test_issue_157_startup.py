@@ -12,6 +12,7 @@ process CWD at C:\\WINDOWS\\system32 and exposed four failure modes:
      corrupting the JSON stream ('Unexpected end of JSON input')
   4. launch.py's suggested config path was built from Path.cwd()
 """
+
 from __future__ import annotations
 
 import sys
@@ -41,6 +42,7 @@ def _no_ambient_secrets(monkeypatch):
 # 1. DATABASE_URL anchoring
 # ---------------------------------------------------------------------------
 
+
 def test_relative_sqlite_url_is_anchored_to_repo():
     """The exact .env value from the report must not resolve into CWD."""
     s = _clean_settings(DATABASE_URL="sqlite:///data/poe2_optimizer.db")
@@ -69,7 +71,7 @@ def test_non_sqlite_url_untouched():
 def test_default_database_url_is_absolute_posix():
     s = _clean_settings()
     assert s.DATABASE_URL.startswith("sqlite:///")
-    path_part = s.DATABASE_URL[len("sqlite:///"):]
+    path_part = s.DATABASE_URL[len("sqlite:///") :]
     assert "\\" not in path_part
     assert Path(path_part).is_absolute()
 
@@ -77,6 +79,7 @@ def test_default_database_url_is_absolute_posix():
 # ---------------------------------------------------------------------------
 # 2. Secret keys: fresh install must start
 # ---------------------------------------------------------------------------
+
 
 def test_missing_secrets_generate_ephemeral_keys():
     """Fresh install (no .env): Settings() must construct, not raise."""
@@ -99,6 +102,7 @@ def test_configured_secrets_respected():
 
 def test_missing_secrets_warn(caplog):
     import logging
+
     with caplog.at_level(logging.WARNING, logger="src.config"):
         _clean_settings()
     warnings = [r for r in caplog.records if "ephemeral" in r.message]
@@ -109,11 +113,13 @@ def test_missing_secrets_warn(caplog):
 # 3 + 4. launch.py: stdout hygiene and repo-anchored paths
 # ---------------------------------------------------------------------------
 
+
 def test_launch_import_does_not_replace_streams():
     """Importing launch must not rewrap sys.stdout (pytest capture survives
     this very test running — plus an identity check for good measure)."""
     before_out, before_err = sys.stdout, sys.stderr
     import launch  # noqa: F401
+
     assert sys.stdout is before_out
     assert sys.stderr is before_err
 
@@ -121,6 +127,7 @@ def test_launch_import_does_not_replace_streams():
 def test_launch_print_goes_to_stderr(capsys):
     """The module-level print shadow keeps stdout clean for MCP JSON."""
     import launch
+
     launch.print_header("Test Header")
     launch.print_info("info line")
     launch.show_welcome()
@@ -134,6 +141,7 @@ def test_launch_usage_instructions_stdout_clean_and_repo_anchored(capsys, monkey
     """show_usage_instructions: nothing on stdout, and the suggested MCP
     config path comes from the repo, not the (arbitrary) CWD."""
     import launch
+
     monkeypatch.chdir(tmp_path)  # simulate Claude Desktop's foreign CWD
     launch.show_usage_instructions()
     captured = capsys.readouterr()

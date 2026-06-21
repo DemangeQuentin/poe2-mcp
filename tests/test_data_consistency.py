@@ -75,7 +75,9 @@ async def test_no_null_names_passive_nodes(db):
     async with db.async_session() as session:
         # Keystones should all have names
         result = await session.execute(
-            text("SELECT COUNT(*) FROM passive_nodes WHERE is_keystone = 1 AND (name IS NULL OR name = '')")
+            text(
+                "SELECT COUNT(*) FROM passive_nodes WHERE is_keystone = 1 AND (name IS NULL OR name = '')"
+            )
         )
         null_keystones = result.scalar()
 
@@ -83,7 +85,9 @@ async def test_no_null_names_passive_nodes(db):
 
         # Notables should all have names
         result = await session.execute(
-            text("SELECT COUNT(*) FROM passive_nodes WHERE is_notable = 1 AND (name IS NULL OR name = '')")
+            text(
+                "SELECT COUNT(*) FROM passive_nodes WHERE is_notable = 1 AND (name IS NULL OR name = '')"
+            )
         )
         null_notables = result.scalar()
 
@@ -101,7 +105,9 @@ async def test_no_duplicate_skill_names(db):
 
         # Some duplicates may be legitimate (e.g., different weapon variants)
         if duplicates:
-            print(f"\nFound {len(duplicates)} skill names with multiple entries (may be legitimate variants):")
+            print(
+                f"\nFound {len(duplicates)} skill names with multiple entries (may be legitimate variants):"
+            )
             for row in duplicates[:10]:
                 print(f"  {row[0]}: {row[1]} occurrences")
 
@@ -128,7 +134,9 @@ async def test_no_duplicate_passive_node_ids(db):
     """Verify no duplicate passive node IDs"""
     async with db.async_session() as session:
         result = await session.execute(
-            text("SELECT node_id, COUNT(*) as cnt FROM passive_nodes GROUP BY node_id HAVING cnt > 1")
+            text(
+                "SELECT node_id, COUNT(*) as cnt FROM passive_nodes GROUP BY node_id HAVING cnt > 1"
+            )
         )
         duplicates = result.fetchall()
 
@@ -154,7 +162,9 @@ async def test_skill_tags_are_valid_json(db):
             except (json.JSONDecodeError, TypeError) as e:
                 parse_errors.append((row[0], str(e)))
 
-        assert len(parse_errors) == 0, f"Found {len(parse_errors)} skills with invalid tags: {parse_errors[:5]}"
+        assert (
+            len(parse_errors) == 0
+        ), f"Found {len(parse_errors)} skills with invalid tags: {parse_errors[:5]}"
 
 
 @pytest.mark.asyncio
@@ -174,7 +184,9 @@ async def test_support_tags_are_valid_json(db):
             except (json.JSONDecodeError, TypeError) as e:
                 parse_errors.append((row[0], str(e)))
 
-        assert len(parse_errors) == 0, f"Found {len(parse_errors)} supports with invalid tags: {parse_errors[:5]}"
+        assert (
+            len(parse_errors) == 0
+        ), f"Found {len(parse_errors)} supports with invalid tags: {parse_errors[:5]}"
 
 
 @pytest.mark.asyncio
@@ -195,7 +207,9 @@ async def test_passive_stats_are_valid_json(db):
                 parse_errors.append((row[1], str(e)))
 
         error_rate = (len(parse_errors) / len(rows) * 100) if rows else 0
-        assert error_rate < 5, f"Found {error_rate:.1f}% nodes with invalid stats: {parse_errors[:3]}"
+        assert (
+            error_rate < 5
+        ), f"Found {error_rate:.1f}% nodes with invalid stats: {parse_errors[:3]}"
 
 
 @pytest.mark.asyncio
@@ -219,7 +233,9 @@ async def test_per_level_stats_are_valid_json(db):
             except (json.JSONDecodeError, TypeError, AssertionError) as e:
                 parse_errors.append((row[0], str(e)))
 
-        assert len(parse_errors) == 0, f"Found {len(parse_errors)} skills with invalid per-level stats: {parse_errors[:5]}"
+        assert (
+            len(parse_errors) == 0
+        ), f"Found {len(parse_errors)} skills with invalid per-level stats: {parse_errors[:5]}"
 
 
 @pytest.mark.asyncio
@@ -233,8 +249,9 @@ async def test_cross_reference_sample_skills(db, pob_skills):
         db_skills = [row[0] for row in result.fetchall()]
 
     # Check if they exist in PoB source
-    pob_skill_names = {skill_data.get('name'): skill_id
-                       for skill_id, skill_data in pob_skills['skills'].items()}
+    pob_skill_names = {
+        skill_data.get("name"): skill_id for skill_id, skill_data in pob_skills["skills"].items()
+    }
 
     found_in_pob = 0
     not_found = []
@@ -261,7 +278,9 @@ async def test_cross_reference_sample_passives(db, merged_tree):
     async with db.async_session() as session:
         # Database may store node_id as name, so use pattern matching
         result = await session.execute(
-            text("SELECT node_id, name FROM passive_nodes WHERE node_id LIKE '%keystone%' AND name IS NOT NULL LIMIT 20")
+            text(
+                "SELECT node_id, name FROM passive_nodes WHERE node_id LIKE '%keystone%' AND name IS NOT NULL LIMIT 20"
+            )
         )
         db_keystones = result.fetchall()
 
@@ -269,7 +288,9 @@ async def test_cross_reference_sample_passives(db, merged_tree):
         # Try by is_keystone flag
         async with db.async_session() as session:
             result = await session.execute(
-                text("SELECT node_id, name FROM passive_nodes WHERE is_keystone = 1 AND name IS NOT NULL LIMIT 20")
+                text(
+                    "SELECT node_id, name FROM passive_nodes WHERE is_keystone = 1 AND name IS NOT NULL LIMIT 20"
+                )
             )
             db_keystones = result.fetchall()
 
@@ -278,13 +299,17 @@ async def test_cross_reference_sample_passives(db, merged_tree):
         return
 
     # Get keystones from merged tree
-    merged_keystones_by_id = {node_id: node_data
-                              for node_id, node_data in merged_tree.items()
-                              if node_data.get('is_keystone')}
+    merged_keystones_by_id = {
+        node_id: node_data
+        for node_id, node_data in merged_tree.items()
+        if node_data.get("is_keystone")
+    }
 
-    merged_keystones_by_name = {node_data.get('name'): node_id
-                                for node_id, node_data in merged_tree.items()
-                                if node_data.get('is_keystone') and node_data.get('name')}
+    merged_keystones_by_name = {
+        node_data.get("name"): node_id
+        for node_id, node_data in merged_tree.items()
+        if node_data.get("is_keystone") and node_data.get("name")
+    }
 
     found_in_merged = 0
     for node_id, name in db_keystones:
@@ -293,7 +318,9 @@ async def test_cross_reference_sample_passives(db, merged_tree):
             found_in_merged += 1
 
     match_rate = (found_in_merged / len(db_keystones) * 100) if db_keystones else 0
-    print(f"Keystones found in merged tree: {found_in_merged}/{len(db_keystones)} ({match_rate:.1f}%)")
+    print(
+        f"Keystones found in merged tree: {found_in_merged}/{len(db_keystones)} ({match_rate:.1f}%)"
+    )
 
     # Should have some match rate (may not be 100% due to naming differences)
     assert match_rate >= 50, f"Expected >=50% keystone match rate, got {match_rate:.1f}%"
@@ -302,20 +329,21 @@ async def test_cross_reference_sample_passives(db, merged_tree):
 @pytest.mark.asyncio
 async def test_data_freshness_metadata(pob_skills):
     """Verify source data has fresh extraction date"""
-    metadata = pob_skills.get('metadata', {})
+    metadata = pob_skills.get("metadata", {})
 
-    assert 'extraction_date' in metadata, "Source data should have extraction_date"
-    extraction_date = metadata['extraction_date']
+    assert "extraction_date" in metadata, "Source data should have extraction_date"
+    extraction_date = metadata["extraction_date"]
 
     # Should be recent (2025-12-13 or nearby)
-    assert '2025-12' in extraction_date or '2025-11' in extraction_date, \
-        f"Source data should be recent, found {extraction_date}"
+    assert (
+        "2025-12" in extraction_date or "2025-11" in extraction_date
+    ), f"Source data should be recent, found {extraction_date}"
 
 
 @pytest.mark.asyncio
 async def test_skill_counts_match_metadata(db, pob_skills):
     """Verify skill counts are consistent with metadata"""
-    metadata = pob_skills.get('metadata', {})
+    metadata = pob_skills.get("metadata", {})
 
     async with db.async_session() as session:
         result = await session.execute(text("SELECT COUNT(*) FROM skill_gems"))
@@ -324,7 +352,9 @@ async def test_skill_counts_match_metadata(db, pob_skills):
         result = await session.execute(text("SELECT COUNT(*) FROM support_gems"))
         db_support_count = result.scalar()
 
-    print(f"Database: {db_active_count} active + {db_support_count} support = {db_active_count + db_support_count} total")
+    print(
+        f"Database: {db_active_count} active + {db_support_count} support = {db_active_count + db_support_count} total"
+    )
     print(f"Metadata: {metadata.get('total_skills')} total in source")
 
     # Database may have slightly different count due to filtering
@@ -349,7 +379,9 @@ async def test_required_level_constraints(db):
             text("SELECT COUNT(*) FROM support_gems WHERE required_level < 0")
         )
         invalid_count = result.scalar()
-        assert invalid_count == 0, f"Found {invalid_count} support gems with negative required_level"
+        assert (
+            invalid_count == 0
+        ), f"Found {invalid_count} support gems with negative required_level"
 
 
 @pytest.mark.asyncio
@@ -357,12 +389,16 @@ async def test_passive_node_positions_valid(db):
     """Verify passive node positions are reasonable"""
     async with db.async_session() as session:
         result = await session.execute(
-            text("SELECT COUNT(*) FROM passive_nodes WHERE position_x IS NOT NULL AND (position_x < -10000 OR position_x > 10000)")
+            text(
+                "SELECT COUNT(*) FROM passive_nodes WHERE position_x IS NOT NULL AND (position_x < -10000 OR position_x > 10000)"
+            )
         )
         invalid_x = result.scalar()
 
         result = await session.execute(
-            text("SELECT COUNT(*) FROM passive_nodes WHERE position_y IS NOT NULL AND (position_y < -10000 OR position_y > 10000)")
+            text(
+                "SELECT COUNT(*) FROM passive_nodes WHERE position_y IS NOT NULL AND (position_y < -10000 OR position_y > 10000)"
+            )
         )
         invalid_y = result.scalar()
 
@@ -375,18 +411,16 @@ async def test_passive_node_positions_valid(db):
 async def test_database_has_all_expected_tables(db):
     """Verify all expected tables exist in database"""
     expected_tables = [
-        'skill_gems',
-        'support_gems',
-        'passive_nodes',
-        'items',
-        'unique_items',
-        'modifiers',
+        "skill_gems",
+        "support_gems",
+        "passive_nodes",
+        "items",
+        "unique_items",
+        "modifiers",
     ]
 
     async with db.async_session() as session:
-        result = await session.execute(
-            text("SELECT name FROM sqlite_master WHERE type='table'")
-        )
+        result = await session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
         actual_tables = [row[0] for row in result.fetchall()]
 
     missing_tables = [t for t in expected_tables if t not in actual_tables]
@@ -401,37 +435,51 @@ async def test_data_completeness_summary(db):
         result = await session.execute(text("SELECT COUNT(*) FROM skill_gems"))
         total_skills = result.scalar()
 
-        result = await session.execute(text("SELECT COUNT(*) FROM skill_gems WHERE tags IS NOT NULL"))
+        result = await session.execute(
+            text("SELECT COUNT(*) FROM skill_gems WHERE tags IS NOT NULL")
+        )
         skills_with_tags = result.scalar()
 
-        result = await session.execute(text("SELECT COUNT(*) FROM skill_gems WHERE per_level_stats IS NOT NULL"))
+        result = await session.execute(
+            text("SELECT COUNT(*) FROM skill_gems WHERE per_level_stats IS NOT NULL")
+        )
         skills_with_levels = result.scalar()
 
         print("\n=== SKILL GEMS COMPLETENESS ===")
         print(f"Total: {total_skills}")
         print(f"With tags: {skills_with_tags} ({skills_with_tags/total_skills*100:.1f}%)")
-        print(f"With per-level stats: {skills_with_levels} ({skills_with_levels/total_skills*100:.1f}%)")
+        print(
+            f"With per-level stats: {skills_with_levels} ({skills_with_levels/total_skills*100:.1f}%)"
+        )
 
         # Support gems completeness
         result = await session.execute(text("SELECT COUNT(*) FROM support_gems"))
         total_supports = result.scalar()
 
-        result = await session.execute(text("SELECT COUNT(*) FROM support_gems WHERE tags IS NOT NULL"))
+        result = await session.execute(
+            text("SELECT COUNT(*) FROM support_gems WHERE tags IS NOT NULL")
+        )
         supports_with_tags = result.scalar()
 
-        result = await session.execute(text("SELECT COUNT(*) FROM support_gems WHERE modifiers IS NOT NULL"))
+        result = await session.execute(
+            text("SELECT COUNT(*) FROM support_gems WHERE modifiers IS NOT NULL")
+        )
         supports_with_mods = result.scalar()
 
         print("\n=== SUPPORT GEMS COMPLETENESS ===")
         print(f"Total: {total_supports}")
         print(f"With tags: {supports_with_tags} ({supports_with_tags/total_supports*100:.1f}%)")
-        print(f"With modifiers: {supports_with_mods} ({supports_with_mods/total_supports*100:.1f}%)")
+        print(
+            f"With modifiers: {supports_with_mods} ({supports_with_mods/total_supports*100:.1f}%)"
+        )
 
         # Passive nodes completeness
         result = await session.execute(text("SELECT COUNT(*) FROM passive_nodes"))
         total_passives = result.scalar()
 
-        result = await session.execute(text("SELECT COUNT(*) FROM passive_nodes WHERE stats IS NOT NULL AND stats != '[]'"))
+        result = await session.execute(
+            text("SELECT COUNT(*) FROM passive_nodes WHERE stats IS NOT NULL AND stats != '[]'")
+        )
         passives_with_stats = result.scalar()
 
         print("\n=== PASSIVE NODES COMPLETENESS ===")

@@ -25,14 +25,15 @@ logger = logging.getLogger(__name__)
 
 class ContentType(Enum):
     """Types of endgame content."""
+
     CAMPAIGN = "campaign"
-    WHITE_MAPS = "white_maps"          # T1-5
-    YELLOW_MAPS = "yellow_maps"        # T6-10
-    RED_MAPS = "red_maps"              # T11-15
+    WHITE_MAPS = "white_maps"  # T1-5
+    YELLOW_MAPS = "yellow_maps"  # T6-10
+    RED_MAPS = "red_maps"  # T11-15
     T16_MAPS = "t16_maps"
     T17_MAPS = "t17_maps"
     PINNACLE_BOSSES = "pinnacle_bosses"  # Maven, Searing Exarch, etc.
-    UBER_BOSSES = "uber_bosses"        # Uber Maven, Uber Searing, etc.
+    UBER_BOSSES = "uber_bosses"  # Uber Maven, Uber Searing, etc.
     SIMULACRUM = "simulacrum"
     DELVE_300 = "delve_300"
     DELVE_500 = "delve_500"
@@ -46,6 +47,7 @@ class ContentRequirements:
 
     Based on successful build analysis from top players.
     """
+
     content_type: ContentType
 
     # Minimum DPS (damage per second)
@@ -80,6 +82,7 @@ class Blocker:
         fix_cost: Estimated chaos to fix
         fix_description: How to fix it
     """
+
     stat: str
     current_value: float
     required_value: float
@@ -103,6 +106,7 @@ class PredictionResult:
         time_to_viable: Estimated hours to farm upgrades
         alternative_path: Suggested easier content to farm first
     """
+
     content_type: ContentType
     success_probability: float
     confidence: str
@@ -133,7 +137,9 @@ class BuildSuccessPredictor:
     def __init__(self) -> None:
         """Initialize predictor with content requirements."""
         self.requirements = self._define_content_requirements()
-        logger.info(f"BuildSuccessPredictor initialized with {len(self.requirements)} content types")
+        logger.info(
+            f"BuildSuccessPredictor initialized with {len(self.requirements)} content types"
+        )
 
     def _define_content_requirements(self) -> Dict[ContentType, ContentRequirements]:
         """
@@ -154,9 +160,8 @@ class BuildSuccessPredictor:
                 min_chaos_ehp=1000,
                 min_ele_res=0,
                 min_chaos_res=-60,
-                requires_defensive_layers=1
+                requires_defensive_layers=1,
             ),
-
             ContentType.WHITE_MAPS: ContentRequirements(
                 content_type=ContentType.WHITE_MAPS,
                 min_dps=150000,
@@ -166,9 +171,8 @@ class BuildSuccessPredictor:
                 min_chaos_ehp=4000,
                 min_ele_res=60,
                 min_chaos_res=-30,
-                requires_defensive_layers=2
+                requires_defensive_layers=2,
             ),
-
             ContentType.YELLOW_MAPS: ContentRequirements(
                 content_type=ContentType.YELLOW_MAPS,
                 min_dps=400000,
@@ -178,9 +182,8 @@ class BuildSuccessPredictor:
                 min_chaos_ehp=8000,
                 min_ele_res=75,
                 min_chaos_res=-10,
-                requires_defensive_layers=2
+                requires_defensive_layers=2,
             ),
-
             ContentType.RED_MAPS: ContentRequirements(
                 content_type=ContentType.RED_MAPS,
                 min_dps=800000,
@@ -190,9 +193,8 @@ class BuildSuccessPredictor:
                 min_chaos_ehp=15000,
                 min_ele_res=75,
                 min_chaos_res=0,
-                requires_defensive_layers=3
+                requires_defensive_layers=3,
             ),
-
             ContentType.T16_MAPS: ContentRequirements(
                 content_type=ContentType.T16_MAPS,
                 min_dps=1200000,
@@ -203,9 +205,8 @@ class BuildSuccessPredictor:
                 min_ele_res=75,
                 min_chaos_res=20,
                 requires_defensive_layers=3,
-                max_acceptable_deaths_per_hour=3.0
+                max_acceptable_deaths_per_hour=3.0,
             ),
-
             ContentType.T17_MAPS: ContentRequirements(
                 content_type=ContentType.T17_MAPS,
                 min_dps=2000000,
@@ -216,9 +217,8 @@ class BuildSuccessPredictor:
                 min_ele_res=75,
                 min_chaos_res=30,
                 requires_defensive_layers=4,
-                max_acceptable_deaths_per_hour=2.0
+                max_acceptable_deaths_per_hour=2.0,
             ),
-
             ContentType.PINNACLE_BOSSES: ContentRequirements(
                 content_type=ContentType.PINNACLE_BOSSES,
                 min_dps=1500000,
@@ -229,9 +229,8 @@ class BuildSuccessPredictor:
                 min_ele_res=75,
                 min_chaos_res=20,
                 requires_defensive_layers=3,
-                max_acceptable_deaths_per_hour=1.0
+                max_acceptable_deaths_per_hour=1.0,
             ),
-
             ContentType.UBER_BOSSES: ContentRequirements(
                 content_type=ContentType.UBER_BOSSES,
                 min_dps=3000000,
@@ -242,7 +241,7 @@ class BuildSuccessPredictor:
                 min_ele_res=75,
                 min_chaos_res=40,
                 requires_defensive_layers=4,
-                max_acceptable_deaths_per_hour=0.5
+                max_acceptable_deaths_per_hour=0.5,
             ),
         }
 
@@ -251,7 +250,7 @@ class BuildSuccessPredictor:
         character_data: Dict,
         content: ContentType,
         dps: Optional[float] = None,
-        ehp: Optional[Dict[str, float]] = None
+        ehp: Optional[Dict[str, float]] = None,
     ) -> PredictionResult:
         """
         Predict build success for specific content.
@@ -273,28 +272,28 @@ class BuildSuccessPredictor:
         reqs = self.requirements[content]
 
         # Extract or calculate stats
-        actual_dps = dps or character_data.get('total_dps', 0)
+        actual_dps = dps or character_data.get("total_dps", 0)
 
         # EHP by damage type
         if ehp:
-            phys_ehp = ehp.get('physical', character_data.get('life', 0))
-            fire_ehp = ehp.get('fire', character_data.get('life', 0))
-            cold_ehp = ehp.get('cold', character_data.get('life', 0))
-            light_ehp = ehp.get('lightning', character_data.get('life', 0))
-            chaos_ehp = ehp.get('chaos', character_data.get('life', 0))
+            phys_ehp = ehp.get("physical", character_data.get("life", 0))
+            fire_ehp = ehp.get("fire", character_data.get("life", 0))
+            cold_ehp = ehp.get("cold", character_data.get("life", 0))
+            light_ehp = ehp.get("lightning", character_data.get("life", 0))
+            chaos_ehp = ehp.get("chaos", character_data.get("life", 0))
             ele_ehp = min(fire_ehp, cold_ehp, light_ehp)
         else:
             # Estimate based on life/ES and resistances
-            base_hp = character_data.get('life', 0) + character_data.get('energy_shield', 0)
+            base_hp = character_data.get("life", 0) + character_data.get("energy_shield", 0)
             phys_ehp = base_hp  # Simplified
             ele_ehp = base_hp  # Simplified
             chaos_ehp = base_hp  # Simplified
 
         # Resistances
-        fire_res = character_data.get('fire_res', 0)
-        cold_res = character_data.get('cold_res', 0)
-        light_res = character_data.get('lightning_res', 0)
-        chaos_res = character_data.get('chaos_res', 0)
+        fire_res = character_data.get("fire_res", 0)
+        cold_res = character_data.get("cold_res", 0)
+        light_res = character_data.get("lightning_res", 0)
+        chaos_res = character_data.get("chaos_res", 0)
         min_ele_res = min(fire_res, cold_res, light_res)
 
         # Identify blockers
@@ -304,78 +303,90 @@ class BuildSuccessPredictor:
         if actual_dps < reqs.min_dps:
             deficit = reqs.recommended_dps - actual_dps
             severity = 10 if actual_dps < reqs.min_dps * 0.5 else 7
-            blockers.append(Blocker(
-                stat="DPS",
-                current_value=actual_dps,
-                required_value=reqs.recommended_dps,
-                severity=severity,
-                fix_cost=int(deficit / 5000),  # Rough estimate: 1c per 5k DPS
-                fix_description=f"Upgrade weapon and damage gear to reach {reqs.recommended_dps:,.0f} DPS"
-            ))
+            blockers.append(
+                Blocker(
+                    stat="DPS",
+                    current_value=actual_dps,
+                    required_value=reqs.recommended_dps,
+                    severity=severity,
+                    fix_cost=int(deficit / 5000),  # Rough estimate: 1c per 5k DPS
+                    fix_description=f"Upgrade weapon and damage gear to reach {reqs.recommended_dps:,.0f} DPS",
+                )
+            )
 
         # Physical EHP check
         if phys_ehp < reqs.min_phys_ehp:
             deficit = reqs.min_phys_ehp - phys_ehp
             severity = 9
-            blockers.append(Blocker(
-                stat="Physical EHP",
-                current_value=phys_ehp,
-                required_value=reqs.min_phys_ehp,
-                severity=severity,
-                fix_cost=int(deficit / 100),  # Rough: 1c per 100 EHP
-                fix_description=f"Add armor, endurance charges, or physical mitigation"
-            ))
+            blockers.append(
+                Blocker(
+                    stat="Physical EHP",
+                    current_value=phys_ehp,
+                    required_value=reqs.min_phys_ehp,
+                    severity=severity,
+                    fix_cost=int(deficit / 100),  # Rough: 1c per 100 EHP
+                    fix_description=f"Add armor, endurance charges, or physical mitigation",
+                )
+            )
 
         # Elemental EHP check
         if ele_ehp < reqs.min_elemental_ehp:
             deficit = reqs.min_elemental_ehp - ele_ehp
             severity = 8
-            blockers.append(Blocker(
-                stat="Elemental EHP",
-                current_value=ele_ehp,
-                required_value=reqs.min_elemental_ehp,
-                severity=severity,
-                fix_cost=int(deficit / 150),
-                fix_description=f"Cap resistances and add life/ES"
-            ))
+            blockers.append(
+                Blocker(
+                    stat="Elemental EHP",
+                    current_value=ele_ehp,
+                    required_value=reqs.min_elemental_ehp,
+                    severity=severity,
+                    fix_cost=int(deficit / 150),
+                    fix_description=f"Cap resistances and add life/ES",
+                )
+            )
 
         # Chaos EHP check
         if chaos_ehp < reqs.min_chaos_ehp:
             deficit = reqs.min_chaos_ehp - chaos_ehp
             severity = 7
-            blockers.append(Blocker(
-                stat="Chaos EHP",
-                current_value=chaos_ehp,
-                required_value=reqs.min_chaos_ehp,
-                severity=severity,
-                fix_cost=int(deficit / 120),
-                fix_description=f"Improve chaos resistance"
-            ))
+            blockers.append(
+                Blocker(
+                    stat="Chaos EHP",
+                    current_value=chaos_ehp,
+                    required_value=reqs.min_chaos_ehp,
+                    severity=severity,
+                    fix_cost=int(deficit / 120),
+                    fix_description=f"Improve chaos resistance",
+                )
+            )
 
         # Resistance checks
         if min_ele_res < reqs.min_ele_res:
             deficit = reqs.min_ele_res - min_ele_res
             severity = 10  # CRITICAL
-            blockers.append(Blocker(
-                stat="Elemental Resistances",
-                current_value=min_ele_res,
-                required_value=reqs.min_ele_res,
-                severity=severity,
-                fix_cost=int(deficit * 3),  # ~3c per % res
-                fix_description=f"Cap all elemental resistances to {reqs.min_ele_res}%"
-            ))
+            blockers.append(
+                Blocker(
+                    stat="Elemental Resistances",
+                    current_value=min_ele_res,
+                    required_value=reqs.min_ele_res,
+                    severity=severity,
+                    fix_cost=int(deficit * 3),  # ~3c per % res
+                    fix_description=f"Cap all elemental resistances to {reqs.min_ele_res}%",
+                )
+            )
 
         if chaos_res < reqs.min_chaos_res:
             deficit = reqs.min_chaos_res - chaos_res
             severity = 8
-            blockers.append(Blocker(
-                stat="Chaos Resistance",
-                current_value=chaos_res,
-                required_value=reqs.min_chaos_res,
-                severity=severity,
-                fix_cost=int(deficit * 2),  # ~2c per % chaos res
-                fix_description=f"Increase chaos resistance to {reqs.min_chaos_res}%"
-            ))
+            blockers.append(
+                Blocker(
+                    stat="Chaos Resistance",
+                    current_value=chaos_res,
+                    required_value=reqs.min_chaos_res,
+                    severity=severity,
+                    fix_cost=int(deficit * 2),  # ~2c per % chaos res
+                    fix_description=f"Increase chaos resistance to {reqs.min_chaos_res}%",
+                )
+            )
 
         # Calculate success probability
         success_prob = self._calculate_success_probability(reqs, blockers)
@@ -391,8 +402,7 @@ class BuildSuccessPredictor:
 
         # Identify strengths
         strengths = self._identify_strengths(
-            actual_dps, phys_ehp, ele_ehp, chaos_ehp,
-            min_ele_res, chaos_res, reqs
+            actual_dps, phys_ehp, ele_ehp, chaos_ehp, min_ele_res, chaos_res, reqs
         )
 
         # Generate upgrade priority
@@ -413,7 +423,7 @@ class BuildSuccessPredictor:
             time_to_viable=self._estimate_time_to_farm(total_investment),
             alternative_path=alternative,
             strengths=strengths,
-            upgrade_priority=upgrade_priority
+            upgrade_priority=upgrade_priority,
         )
 
         logger.info(
@@ -424,9 +434,7 @@ class BuildSuccessPredictor:
         return result
 
     def _calculate_success_probability(
-        self,
-        requirements: ContentRequirements,
-        blockers: List[Blocker]
+        self, requirements: ContentRequirements, blockers: List[Blocker]
     ) -> float:
         """Calculate success probability based on blockers."""
         if not blockers:
@@ -444,9 +452,7 @@ class BuildSuccessPredictor:
         return max(0.0, probability)
 
     def _estimate_death_rate(
-        self,
-        requirements: ContentRequirements,
-        blockers: List[Blocker]
+        self, requirements: ContentRequirements, blockers: List[Blocker]
     ) -> float:
         """Estimate deaths per hour based on blockers."""
         base_rate = requirements.max_acceptable_deaths_per_hour
@@ -459,13 +465,9 @@ class BuildSuccessPredictor:
 
         return base_rate
 
-    def _determine_confidence(
-        self,
-        character_data: Dict,
-        requirements: ContentRequirements
-    ) -> str:
+    def _determine_confidence(self, character_data: Dict, requirements: ContentRequirements) -> str:
         """Determine prediction confidence level."""
-        level = character_data.get('level', 1)
+        level = character_data.get("level", 1)
 
         # Low confidence if underleveled
         if level < 85:
@@ -485,7 +487,7 @@ class BuildSuccessPredictor:
         chaos_ehp: float,
         min_ele_res: float,
         chaos_res: float,
-        requirements: ContentRequirements
+        requirements: ContentRequirements,
     ) -> List[str]:
         """Identify build strengths."""
         strengths = []
@@ -531,7 +533,7 @@ class BuildSuccessPredictor:
             ContentType.T16_MAPS,
             ContentType.T17_MAPS,
             ContentType.PINNACLE_BOSSES,
-            ContentType.UBER_BOSSES
+            ContentType.UBER_BOSSES,
         ]
 
         try:
@@ -572,14 +574,14 @@ if __name__ == "__main__":
 
     # Example: Mid-tier build trying T17s
     char = {
-        'total_dps': 850000,  # Below requirement
-        'life': 1413,
-        'energy_shield': 4847,
-        'fire_res': -2,  # Problem!
-        'cold_res': -8,  # Problem!
-        'lightning_res': 75,
-        'chaos_res': -60,  # Problem!
-        'level': 91
+        "total_dps": 850000,  # Below requirement
+        "life": 1413,
+        "energy_shield": 4847,
+        "fire_res": -2,  # Problem!
+        "cold_res": -8,  # Problem!
+        "lightning_res": 75,
+        "chaos_res": -60,  # Problem!
+        "level": 91,
     }
 
     predictor = BuildSuccessPredictor()
@@ -600,7 +602,9 @@ if __name__ == "__main__":
 
     print("BLOCKERS:")
     for blocker in result.blockers:
-        print(f"  ✗ {blocker.stat}: {blocker.current_value:.0f} (need {blocker.required_value:.0f})")
+        print(
+            f"  ✗ {blocker.stat}: {blocker.current_value:.0f} (need {blocker.required_value:.0f})"
+        )
         print(f"    Fix: {blocker.fix_description} (~{blocker.fix_cost}c)")
     print()
 

@@ -1,6 +1,7 @@
 """
 Configuration management for PoE2 Build Optimizer
 """
+
 import logging
 import secrets as _secrets
 from pathlib import Path
@@ -34,9 +35,7 @@ class Settings(BaseSettings):
     ENV: str = Field(default="development")
 
     # Database
-    DATABASE_URL: str = Field(
-        default=f"sqlite:///{(DATA_DIR / 'poe2_optimizer.db').as_posix()}"
-    )
+    DATABASE_URL: str = Field(default=f"sqlite:///{(DATA_DIR / 'poe2_optimizer.db').as_posix()}")
     DB_POOL_SIZE: int = Field(default=10)
     DB_ECHO: bool = Field(default=False)
 
@@ -54,7 +53,7 @@ class Settings(BaseSettings):
         """
         for scheme in ("sqlite+aiosqlite:///", "sqlite:///"):
             if v.startswith(scheme):
-                raw = v[len(scheme):]
+                raw = v[len(scheme) :]
                 path = Path(raw)
                 if not path.is_absolute():
                     path = BASE_DIR / raw
@@ -90,13 +89,13 @@ class Settings(BaseSettings):
     ENABLE_TRADE_INTEGRATION: bool = Field(default=True)
     ENABLE_POB_EXPORT: bool = Field(default=True)
     ENABLE_BUILD_SHARING: bool = Field(default=True)
-    ENABLE_AI_INSIGHTS: bool = Field(default=False)  # AI-powered insights (requires additional setup)
+    ENABLE_AI_INSIGHTS: bool = Field(
+        default=False
+    )  # AI-powered insights (requires additional setup)
 
     # Web Interface
     WEB_PORT: int = Field(default=3000)
-    CORS_ORIGINS: str = Field(
-        default="http://localhost:3000,http://127.0.0.1:3000"
-    )
+    CORS_ORIGINS: str = Field(default="http://localhost:3000,http://127.0.0.1:3000")
     MAX_SAVED_BUILDS_PER_USER: int = Field(default=50)
 
     def get_cors_origins_list(self) -> List[str]:
@@ -120,12 +119,10 @@ class Settings(BaseSettings):
     # dying in a Pydantic ValidationError at import time (#157). Ephemeral
     # keys mean anything they encrypt/sign does not survive a restart.
     SECRET_KEY: Optional[str] = Field(
-        default=None,
-        description="Cryptographically secure random key for session management"
+        default=None, description="Cryptographically secure random key for session management"
     )
     ENCRYPTION_KEY: Optional[str] = Field(
-        default=None,
-        description="Cryptographically secure random key for data encryption"
+        default=None, description="Cryptographically secure random key for data encryption"
     )
     SESSION_TIMEOUT: int = Field(default=86400)
 
@@ -170,7 +167,7 @@ def load_yaml_config(config_path: str = "config.yaml") -> dict:
     """Load configuration from YAML file"""
     config_file = Path(config_path)
     if config_file.exists():
-        with open(config_file, 'r') as f:
+        with open(config_file, "r") as f:
             return yaml.safe_load(f)
     return {}
 

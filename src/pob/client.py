@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 
 class PoBConnectionError(Exception):
     """Raised when connection to PoB fails."""
+
     pass
 
 
 class PoBCommandError(Exception):
     """Raised when a PoB command returns an error."""
+
     pass
 
 
@@ -37,12 +39,7 @@ class PoBClient:
             print(f"DPS: {calcs.get('TotalDPS')}")
     """
 
-    def __init__(
-        self,
-        host: str = "127.0.0.1",
-        port: int = 49085,
-        timeout: float = 5.0
-    ):
+    def __init__(self, host: str = "127.0.0.1", port: int = 49085, timeout: float = 5.0):
         """
         Initialize PoB client.
 
@@ -58,11 +55,7 @@ class PoBClient:
         self._connected = False
         self._last_error: Optional[str] = None
 
-    def _send_command(
-        self,
-        method: str,
-        params: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    def _send_command(self, method: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Send a JSON-RPC command to PoB.
 
@@ -82,7 +75,7 @@ class PoBClient:
             "jsonrpc": "2.0",
             "id": self._request_id,
             "method": method,
-            "params": params or {}
+            "params": params or {},
         }
 
         try:
@@ -91,7 +84,7 @@ class PoBClient:
                 sock.connect((self.host, self.port))
 
                 # Send request
-                request_bytes = (json.dumps(request) + "\n").encode('utf-8')
+                request_bytes = (json.dumps(request) + "\n").encode("utf-8")
                 sock.sendall(request_bytes)
 
                 # Receive response
@@ -107,7 +100,7 @@ class PoBClient:
                 if not response_bytes:
                     raise PoBConnectionError("Empty response from PoB")
 
-                response = json.loads(response_bytes.decode('utf-8'))
+                response = json.loads(response_bytes.decode("utf-8"))
 
                 # Check for error
                 if "error" in response:
@@ -148,7 +141,7 @@ class PoBClient:
         Returns a connected PoBClient on the first port that answers ping(), or
         None if nothing is reachable. Use this instead of assuming 49085.
         """
-        for port in (ports or cls.BRIDGE_PORTS):
+        for port in ports or cls.BRIDGE_PORTS:
             client = cls(host=host, port=port, timeout=timeout)
             if client.is_connected():
                 return client
@@ -205,10 +198,7 @@ class PoBClient:
         return self._send_command("get_build", {"format": format})
 
     def load_build(
-        self,
-        xml: Optional[str] = None,
-        code: Optional[str] = None,
-        name: str = "MCP Build"
+        self, xml: Optional[str] = None, code: Optional[str] = None, name: str = "MCP Build"
     ) -> Dict[str, Any]:
         """
         Load a build into PoB.
@@ -277,11 +267,7 @@ class PoBClient:
         """
         return self._send_command("get_skills")
 
-    def set_skill_group(
-        self,
-        skills: str,
-        replace_all: bool = False
-    ) -> Dict[str, Any]:
+    def set_skill_group(self, skills: str, replace_all: bool = False) -> Dict[str, Any]:
         """
         Add or replace skill groups.
 
@@ -293,10 +279,7 @@ class PoBClient:
         Returns:
             Dict with success status
         """
-        return self._send_command("set_skill_group", {
-            "skills": skills,
-            "replace_all": replace_all
-        })
+        return self._send_command("set_skill_group", {"skills": skills, "replace_all": replace_all})
 
     # =========================================================================
     # Passive Tree Commands
@@ -311,11 +294,7 @@ class PoBClient:
         """
         return self._send_command("get_passive_tree")
 
-    def set_passive_node(
-        self,
-        node_id: int,
-        allocate: bool = True
-    ) -> Dict[str, Any]:
+    def set_passive_node(self, node_id: int, allocate: bool = True) -> Dict[str, Any]:
         """
         Allocate or deallocate a passive node.
 
@@ -326,10 +305,7 @@ class PoBClient:
         Returns:
             Dict with success status
         """
-        return self._send_command("set_passive_node", {
-            "node_id": node_id,
-            "allocate": allocate
-        })
+        return self._send_command("set_passive_node", {"node_id": node_id, "allocate": allocate})
 
     # =========================================================================
     # Item Commands
@@ -394,10 +370,7 @@ class PoBClient:
     # Comparison Commands
     # =========================================================================
 
-    def compare_with_snapshot(
-        self,
-        snapshot: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def compare_with_snapshot(self, snapshot: Dict[str, Any]) -> Dict[str, Any]:
         """
         Compare current build with a previous calculation snapshot.
 
@@ -407,9 +380,7 @@ class PoBClient:
         Returns:
             Dict with diff (old, new, delta, percent for each stat)
         """
-        return self._send_command("compare_with_snapshot", {
-            "snapshot": snapshot
-        })
+        return self._send_command("compare_with_snapshot", {"snapshot": snapshot})
 
     # =========================================================================
     # Convenience Methods
@@ -432,7 +403,7 @@ class PoBClient:
                 "es": calcs.get("EnergyShield", 0),
                 "armour": calcs.get("Armour", 0),
                 "evasion": calcs.get("Evasion", 0),
-                "phys_reduction": calcs.get("PhysicalDamageReduction", 0)
+                "phys_reduction": calcs.get("PhysicalDamageReduction", 0),
             }
         except (PoBConnectionError, PoBCommandError):
             return None
@@ -445,7 +416,7 @@ class PoBClient:
                 "fire": calcs.get("FireResist", 0),
                 "cold": calcs.get("ColdResist", 0),
                 "lightning": calcs.get("LightningResist", 0),
-                "chaos": calcs.get("ChaosResist", 0)
+                "chaos": calcs.get("ChaosResist", 0),
             }
         except (PoBConnectionError, PoBCommandError):
             return None
@@ -455,9 +426,7 @@ class PoBClient:
     # =========================================================================
 
     def load_build_direct(
-        self,
-        xml: Optional[str] = None,
-        code: Optional[str] = None
+        self, xml: Optional[str] = None, code: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Load build XML directly into existing build (faster, no mode switch).
@@ -526,11 +495,7 @@ class PoBClient:
         """
         return self._send_command("get_defense_stats")
 
-    def wait_for_build(
-        self,
-        max_attempts: int = 10,
-        delay: float = 0.1
-    ) -> bool:
+    def wait_for_build(self, max_attempts: int = 10, delay: float = 0.1) -> bool:
         """
         Wait for a build to be loaded after load_build() or new_build().
 
@@ -545,6 +510,7 @@ class PoBClient:
             True if build loaded, False if timeout
         """
         import time
+
         for _ in range(max_attempts):
             try:
                 result = self.ping()
@@ -564,8 +530,7 @@ class PoBClient:
         return self._send_command("set_main_skill_group", {"index": index})
 
     def set_displayed_skill(
-        self, group_index: int, skill_index: Optional[int] = None,
-        part: Optional[int] = None
+        self, group_index: int, skill_index: Optional[int] = None, part: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         Set the DISPLAYED active skill (and skill part) within a group.
@@ -584,9 +549,7 @@ class PoBClient:
         """List the active skills (and parts) in a group + which is displayed."""
         return self._send_command("get_skill_parts", {"group_index": group_index})
 
-    def set_group_gems(
-        self, index: int, gems: list
-    ) -> Dict[str, Any]:
+    def set_group_gems(self, index: int, gems: list) -> Dict[str, Any]:
         """
         Replace a socket group's gems in place (keeps the rest of the build).
 
@@ -626,9 +589,7 @@ class PoBClient:
         """
         return self._send_command("get_stat_breakdown", {"stat": stat, "minion": minion})
 
-    def list_config_options(
-        self, filter: Optional[str] = None, limit: int = 400
-    ) -> Dict[str, Any]:
+    def list_config_options(self, filter: Optional[str] = None, limit: int = 400) -> Dict[str, Any]:
         """Enumerate PoB's available config options + current values."""
         params: Dict[str, Any] = {"limit": limit}
         if filter:
@@ -641,6 +602,7 @@ class PoBClient:
         """Search the full passive tree for nodes whose stats match keyword(s)."""
         if isinstance(keywords, str):
             keywords = [keywords]
-        return self._send_command("search_tree_nodes", {
-            "keywords": keywords, "notables_only": notables_only, "limit": limit
-        })
+        return self._send_command(
+            "search_tree_nodes",
+            {"keywords": keywords, "notables_only": notables_only, "limit": limit},
+        )

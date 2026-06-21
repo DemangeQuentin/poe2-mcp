@@ -39,7 +39,9 @@ def format_analysis(analysis) -> str:
     lines = []
 
     # Header
-    lines.append(f"Jewel Socket {analysis.socket.node_id} at ({analysis.socket.x:.1f}, {analysis.socket.y:.1f})")
+    lines.append(
+        f"Jewel Socket {analysis.socket.node_id} at ({analysis.socket.x:.1f}, {analysis.socket.y:.1f})"
+    )
     lines.append(f"  Nodes in radius ({analysis.radius:.0f}): {len(analysis.affected_nodes)}")
     lines.append(f"  - Keystones: {analysis.keystones}")
     lines.append(f"  - Notables: {analysis.notables}")
@@ -66,22 +68,18 @@ def main():
         "--radius",
         type=float,
         default=1500.0,
-        help="Radius in tree units (default: 1500 for Very Large)"
+        help="Radius in tree units (default: 1500 for Very Large)",
     )
     parser.add_argument(
         "--size",
         choices=["small", "medium", "large", "very_large"],
-        help="Use predefined radius size instead of --radius"
+        help="Use predefined radius size instead of --radius",
     )
-    parser.add_argument(
-        "--socket",
-        type=int,
-        help="Analyze only this specific socket ID"
-    )
+    parser.add_argument("--socket", type=int, help="Analyze only this specific socket ID")
     parser.add_argument(
         "--summary",
         action="store_true",
-        help="Show only summary statistics, not full notable lists"
+        help="Show only summary statistics, not full notable lists",
     )
 
     args = parser.parse_args()

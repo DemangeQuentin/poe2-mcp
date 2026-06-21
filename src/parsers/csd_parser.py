@@ -43,12 +43,12 @@ from typing import Any, Dict, List, Tuple
 
 
 VARIANT_LINE_RE = re.compile(
-    r'^\s*'
-    r'(?P<range>\S+)'                            # range token
-    r'\s+'
-    r'"(?P<template>(?:[^"\\]|\\.)*)"'           # quoted template
-    r'(?:\s+(?P<handlers>.+))?'                  # optional handler list
-    r'\s*$'
+    r"^\s*"
+    r"(?P<range>\S+)"  # range token
+    r"\s+"
+    r'"(?P<template>(?:[^"\\]|\\.)*)"'  # quoted template
+    r"(?:\s+(?P<handlers>.+))?"  # optional handler list
+    r"\s*$"
 )
 
 
@@ -79,21 +79,23 @@ def parse_csd(text: str, source_relpath: str) -> Tuple[List[Dict[str, Any]], Lis
         stripped = raw.strip()
 
         # Skip blank lines + include directives.
-        if not stripped or stripped.startswith('include '):
+        if not stripped or stripped.startswith("include "):
             i += 1
             continue
 
         # no_description one-liner.
-        if stripped.startswith('no_description '):
-            no_descriptions.append({
-                "stat_id": stripped[len("no_description "):].strip(),
-                "source_line": i + 1,
-            })
+        if stripped.startswith("no_description "):
+            no_descriptions.append(
+                {
+                    "stat_id": stripped[len("no_description ") :].strip(),
+                    "source_line": i + 1,
+                }
+            )
             i += 1
             continue
 
         # description block.
-        if stripped == 'description':
+        if stripped == "description":
             block_start_line = i + 1
             i += 1
             if i >= n:
@@ -118,7 +120,7 @@ def parse_csd(text: str, source_relpath: str) -> Tuple[List[Dict[str, Any]], Lis
                 vstrip = vline.strip()
 
                 # Block-end conditions.
-                if vstrip == 'description' or vstrip.startswith('no_description '):
+                if vstrip == "description" or vstrip.startswith("no_description "):
                     break
                 if not vstrip:
                     # Single blank within a block is tolerated; double or
@@ -130,7 +132,9 @@ def parse_csd(text: str, source_relpath: str) -> Tuple[List[Dict[str, Any]], Lis
                         i = j
                         break
                     next_nonblank = lines[j].strip()
-                    if next_nonblank == 'description' or next_nonblank.startswith('no_description '):
+                    if next_nonblank == "description" or next_nonblank.startswith(
+                        "no_description "
+                    ):
                         i = j
                         break
                     i = j
@@ -138,11 +142,15 @@ def parse_csd(text: str, source_relpath: str) -> Tuple[List[Dict[str, Any]], Lis
 
                 # lang "Foo" - language switch; we collect English variants
                 # only but track which other languages are declared.
-                if vstrip.startswith('lang '):
+                if vstrip.startswith("lang "):
                     m = re.match(r'lang\s+"([^"]*)"', vstrip)
                     if m:
                         current_lang = m.group(1)
-                        if current_lang and current_lang not in other_languages and current_lang != "English":
+                        if (
+                            current_lang
+                            and current_lang not in other_languages
+                            and current_lang != "English"
+                        ):
                             other_languages.append(current_lang)
                     i += 1
                     continue
@@ -150,11 +158,13 @@ def parse_csd(text: str, source_relpath: str) -> Tuple[List[Dict[str, Any]], Lis
                 # Variant line.
                 vmatch = VARIANT_LINE_RE.match(vline)
                 if vmatch and current_lang == "English":
-                    english_variants.append({
-                        "range": vmatch.group("range"),
-                        "template": vmatch.group("template"),
-                        "handlers": (vmatch.group("handlers") or "").split(),
-                    })
+                    english_variants.append(
+                        {
+                            "range": vmatch.group("range"),
+                            "template": vmatch.group("template"),
+                            "handlers": (vmatch.group("handlers") or "").split(),
+                        }
+                    )
                     i += 1
                     continue
                 elif vmatch:
@@ -168,14 +178,18 @@ def parse_csd(text: str, source_relpath: str) -> Tuple[List[Dict[str, Any]], Lis
                 i += 1
 
             if stat_ids:
-                descriptions.append({
-                    "stat_ids": stat_ids,
-                    "primary_stat_id": stat_ids[0],
-                    "variants": english_variants,
-                    "primary_template": english_variants[0]["template"] if english_variants else None,
-                    "languages_available": ["English"] + other_languages,
-                    "source_line": block_start_line,
-                })
+                descriptions.append(
+                    {
+                        "stat_ids": stat_ids,
+                        "primary_stat_id": stat_ids[0],
+                        "variants": english_variants,
+                        "primary_template": (
+                            english_variants[0]["template"] if english_variants else None
+                        ),
+                        "languages_available": ["English"] + other_languages,
+                        "source_line": block_start_line,
+                    }
+                )
             continue
 
         # Unrecognized top-level line - skip.

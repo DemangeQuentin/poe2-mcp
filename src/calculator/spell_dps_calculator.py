@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SpellStats:
     """Spell base statistics"""
+
     name: str
     base_damage_min: float
     base_damage_max: float
@@ -35,6 +36,7 @@ class SpellStats:
 @dataclass
 class CharacterModifiers:
     """Character damage modifiers"""
+
     # Increased/Decreased (additive)
     increased_spell_damage: float = 0.0  # Sum of all % increased
     increased_cast_speed: float = 0.0
@@ -66,6 +68,7 @@ class CharacterModifiers:
 @dataclass
 class EnemyStats:
     """Enemy defensive stats"""
+
     fire_resistance: float = 0.0  # 0-100
     cold_resistance: float = 0.0
     lightning_resistance: float = 0.0
@@ -103,7 +106,7 @@ class SpellDPSCalculator:
             damage_effectiveness=1.0,
             base_crit_chance=5.0,
             base_cast_time=0.8,
-            damage_types=["lightning"]
+            damage_types=["lightning"],
         ),
         "spark": SpellStats(
             name="Spark",
@@ -112,7 +115,7 @@ class SpellDPSCalculator:
             damage_effectiveness=1.0,
             base_crit_chance=9.0,
             base_cast_time=0.7,
-            damage_types=["lightning"]
+            damage_types=["lightning"],
         ),
         "fireball": SpellStats(
             name="Fireball",
@@ -121,16 +124,13 @@ class SpellDPSCalculator:
             damage_effectiveness=1.0,
             base_crit_chance=6.0,
             base_cast_time=0.9,
-            damage_types=["fire"]
+            damage_types=["fire"],
         ),
         # Add more spells as needed
     }
 
     def calculate_dps(
-        self,
-        spell: SpellStats,
-        char_mods: CharacterModifiers,
-        enemy: Optional[EnemyStats] = None
+        self, spell: SpellStats, char_mods: CharacterModifiers, enemy: Optional[EnemyStats] = None
     ) -> Dict[str, Any]:
         """
         Calculate complete spell DPS
@@ -157,8 +157,7 @@ class SpellDPSCalculator:
             # Step 3: Archmage scaling (if applicable)
             if char_mods.has_archmage:
                 archmage_bonus = self._calculate_archmage_bonus(
-                    char_mods.maximum_mana,
-                    total_base_damage
+                    char_mods.maximum_mana, total_base_damage
                 )
                 total_base_damage += archmage_bonus
 
@@ -171,10 +170,11 @@ class SpellDPSCalculator:
             damage_after_more = damage_after_increased * more_multiplier
 
             # Step 6: Calculate expected damage with crits
-            crit_chance = min(spell.base_crit_chance + char_mods.increased_crit_chance, 100.0) / 100.0
+            crit_chance = (
+                min(spell.base_crit_chance + char_mods.increased_crit_chance, 100.0) / 100.0
+            )
             crit_multiplier = self._calculate_crit_multiplier(
-                char_mods.added_crit_bonus,
-                char_mods.increased_crit_damage
+                char_mods.added_crit_bonus, char_mods.increased_crit_damage
             )
 
             non_crit_damage = damage_after_more * (1.0 - crit_chance)
@@ -183,9 +183,7 @@ class SpellDPSCalculator:
 
             # Step 7: Apply resistance/penetration
             damage_after_resistance = self._apply_resistances(
-                expected_hit_damage,
-                spell.damage_types,
-                enemy
+                expected_hit_damage, spell.damage_types, enemy
             )
 
             # Step 8: Apply Shock if applicable
@@ -194,8 +192,7 @@ class SpellDPSCalculator:
 
             # Step 9: Calculate DPS (damage × casts per second)
             cast_speed = self._calculate_cast_speed(
-                spell.base_cast_time,
-                char_mods.increased_cast_speed
+                spell.base_cast_time, char_mods.increased_cast_speed
             )
             dps = damage_after_resistance * cast_speed
 
@@ -214,19 +211,14 @@ class SpellDPSCalculator:
                     "multipliers": {
                         "increased": round(increased_multiplier, 3),
                         "more": round(more_multiplier, 3),
-                        "crit": round(crit_multiplier, 3) if crit_chance > 0 else 1.0
-                    }
-                }
+                        "crit": round(crit_multiplier, 3) if crit_chance > 0 else 1.0,
+                    },
+                },
             }
 
         except Exception as e:
             logger.error(f"Error calculating DPS for {spell.name}: {e}", exc_info=True)
-            return {
-                "total_dps": 0,
-                "average_hit": 0,
-                "casts_per_second": 0,
-                "error": str(e)
-            }
+            return {"total_dps": 0, "average_hit": 0, "casts_per_second": 0, "error": str(e)}
 
     def _calculate_added_damage(self, spell: SpellStats, char_mods: CharacterModifiers) -> float:
         """Calculate added damage with damage effectiveness applied.
@@ -252,11 +244,11 @@ class SpellDPSCalculator:
             64.0
         """
         total_added = (
-            char_mods.added_fire +
-            char_mods.added_cold +
-            char_mods.added_lightning +
-            char_mods.added_chaos +
-            char_mods.added_physical
+            char_mods.added_fire
+            + char_mods.added_cold
+            + char_mods.added_lightning
+            + char_mods.added_chaos
+            + char_mods.added_physical
         )
         return total_added * spell.damage_effectiveness
 
@@ -313,7 +305,7 @@ class SpellDPSCalculator:
         """
         total = 1.0
         for more_percent in more_multipliers:
-            total *= (1.0 + more_percent / 100.0)
+            total *= 1.0 + more_percent / 100.0
         return total
 
     def _calculate_crit_multiplier(self, added_crit_bonus: float, increased_crit: float) -> float:
@@ -346,10 +338,7 @@ class SpellDPSCalculator:
         return 1.0 + (total_bonus * increased_mult)
 
     def _apply_resistances(
-        self,
-        damage: float,
-        damage_types: List[str],
-        enemy: EnemyStats
+        self, damage: float, damage_types: List[str], enemy: EnemyStats
     ) -> float:
         """Apply enemy resistances, exposure, and penetration to damage.
 
@@ -384,9 +373,13 @@ class SpellDPSCalculator:
         resistance_map = {
             "fire": (enemy.fire_resistance, enemy.fire_exposure, enemy.fire_penetration),
             "cold": (enemy.cold_resistance, enemy.cold_exposure, enemy.cold_penetration),
-            "lightning": (enemy.lightning_resistance, enemy.lightning_exposure, enemy.lightning_penetration),
+            "lightning": (
+                enemy.lightning_resistance,
+                enemy.lightning_exposure,
+                enemy.lightning_penetration,
+            ),
             "chaos": (enemy.chaos_resistance, 0, 0),
-            "physical": (enemy.physical_resistance, 0, 0)
+            "physical": (enemy.physical_resistance, 0, 0),
         }
 
         if primary_type not in resistance_map:

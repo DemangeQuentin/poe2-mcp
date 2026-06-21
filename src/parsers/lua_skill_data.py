@@ -109,9 +109,8 @@ def _lua_to_python(obj: Any) -> Any:
     # Detect array-shape: all keys are positive ints AND form a contiguous
     # 1..N sequence (Lua's array convention).
     keys = [k for k, _ in pairs]
-    is_array = (
-        all(isinstance(k, int) and k > 0 for k in keys)
-        and sorted(keys) == list(range(1, len(keys) + 1))
+    is_array = all(isinstance(k, int) and k > 0 for k in keys) and sorted(keys) == list(
+        range(1, len(keys) + 1)
     )
 
     if is_array:
@@ -151,6 +150,7 @@ def parse_skills_lua(path: Path) -> Dict[str, Dict[str, Any]]:
         raise FileNotFoundError(f"Lua skills file not found: {path}")
 
     import lupa
+
     L = lupa.LuaRuntime(unpack_returned_tuples=True)
 
     body = path.read_text(encoding="utf-8")
@@ -161,6 +161,7 @@ def parse_skills_lua(path: Path) -> Dict[str, Dict[str, Any]]:
     # nil, shadowing the globals our prelude defines. Strip that line so
     # the global stubs (`skills`, `mod`, `flag`) carry through.
     import re
+
     body = re.sub(
         r"^\s*local\s+skills\s*,\s*mod\s*,\s*flag\s*,\s*skill\s*=\s*\.\.\.\s*$",
         "-- (line stripped by parser: file expects chunk varargs)",
@@ -173,9 +174,7 @@ def parse_skills_lua(path: Path) -> Dict[str, Dict[str, Any]]:
     lua_table = L.execute(full_script)
     py = _lua_to_python(lua_table)
     if not isinstance(py, dict):
-        raise RuntimeError(
-            f"Expected skills table to be a dict, got {type(py).__name__}"
-        )
+        raise RuntimeError(f"Expected skills table to be a dict, got {type(py).__name__}")
     return py
 
 

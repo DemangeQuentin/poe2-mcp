@@ -91,14 +91,15 @@ def diff_fingerprints(old: Dict[str, Any], new: Dict[str, Any]) -> Dict[str, Any
         o, n = ot[name], nt[name]
         if o.get("row_size") != n.get("row_size"):
             layout_changed.append(
-                {"table": name,
-                 "row_size": [o.get("row_size"), n.get("row_size")],
-                 "row_count": [o.get("row_count"), n.get("row_count")]}
+                {
+                    "table": name,
+                    "row_size": [o.get("row_size"), n.get("row_size")],
+                    "row_count": [o.get("row_count"), n.get("row_count")],
+                }
             )
         elif o.get("row_count") != n.get("row_count"):
             rows_changed.append(
-                {"table": name,
-                 "row_count": [o.get("row_count"), n.get("row_count")]}
+                {"table": name, "row_count": [o.get("row_count"), n.get("row_count")]}
             )
         elif o.get("sha256") != n.get("sha256"):
             content_changed.append(name)
@@ -108,8 +109,7 @@ def diff_fingerprints(old: Dict[str, Any], new: Dict[str, Any]) -> Dict[str, Any
         "layout_changed": layout_changed,
         "rows_changed": rows_changed,
         "content_changed": content_changed,
-        "clean": not (added or removed or layout_changed
-                      or rows_changed or content_changed),
+        "clean": not (added or removed or layout_changed or rows_changed or content_changed),
     }
 
 
@@ -126,14 +126,16 @@ def format_diff_report(diff: Dict[str, Any]) -> str:
                 f"{e['row_size'][1]} (rows {e['row_count'][0]} -> {e['row_count'][1]})"
             )
     if diff["added"]:
-        lines.append(f"  + added tables ({len(diff['added'])}): "
-                     + ", ".join(diff["added"][:10]))
+        lines.append(f"  + added tables ({len(diff['added'])}): " + ", ".join(diff["added"][:10]))
     if diff["removed"]:
-        lines.append(f"  - removed tables ({len(diff['removed'])}): "
-                     + ", ".join(diff["removed"][:10]))
+        lines.append(
+            f"  - removed tables ({len(diff['removed'])}): " + ", ".join(diff["removed"][:10])
+        )
     if diff["rows_changed"]:
-        lines.append(f"  ~ row-count changes ({len(diff['rows_changed'])}): "
-                     + ", ".join(e["table"] for e in diff["rows_changed"][:10]))
+        lines.append(
+            f"  ~ row-count changes ({len(diff['rows_changed'])}): "
+            + ", ".join(e["table"] for e in diff["rows_changed"][:10])
+        )
     if diff["content_changed"]:
         lines.append(f"  ~ content-only changes ({len(diff['content_changed'])})")
     return "\n".join(lines)

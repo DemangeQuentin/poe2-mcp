@@ -28,13 +28,14 @@ V2_FILE = PROJECT_ROOT / "data" / "game" / "skill_gems" / "skill_gems_v2.json"
 needs_v2 = pytest.mark.skipif(
     not V2_FILE.exists(),
     reason="data/game/skill_gems/skill_gems_v2.json not present "
-           "(depends on PR #125 - run extractor + commit before testing).",
+    "(depends on PR #125 - run extractor + commit before testing).",
 )
 
 
 # ---------------------------------------------------------------------------
 # Real-data lookups (skip when v2 file isn't shipped)
 # ---------------------------------------------------------------------------
+
 
 @needs_v2
 def test_resolve_ice_nova_by_name():
@@ -128,6 +129,7 @@ def test_cast_time_preserved():
 # ---------------------------------------------------------------------------
 # Schema vocab
 # ---------------------------------------------------------------------------
+
 
 def test_skilltype_mapping_covers_all_elements():
     """The damage-type mapping should handle the 5 PoE damage types."""

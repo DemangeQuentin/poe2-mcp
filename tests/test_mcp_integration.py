@@ -33,9 +33,9 @@ class TestMCPIntegration:
         The canonical extraction (data-v0.5.0-r10) carries compatibility and
         provenance but NOT effects/requirements (empty in support_gems v1) —
         assert what the data can actually express."""
-        result = await mcp_server._handle_inspect_support_gem({
-            "support_name": "Controlled Destruction"
-        })
+        result = await mcp_server._handle_inspect_support_gem(
+            {"support_name": "Controlled Destruction"}
+        )
 
         assert len(result) == 1
         text = result[0].text
@@ -51,10 +51,7 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_list_all_supports(self, mcp_server):
         """Test list_all_supports listing format and pagination."""
-        result = await mcp_server._handle_list_all_supports({
-            "sort_by": "tier",
-            "limit": 10
-        })
+        result = await mcp_server._handle_list_all_supports({"sort_by": "tier", "limit": 10})
 
         assert len(result) == 1
         text = result[0].text
@@ -68,9 +65,7 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_inspect_spell_gem(self, mcp_server):
         """Test inspect_spell_gem renders the canonical per-level gem data."""
-        result = await mcp_server._handle_inspect_spell_gem({
-            "spell_name": "Fireball"
-        })
+        result = await mcp_server._handle_inspect_spell_gem({"spell_name": "Fireball"})
 
         assert len(result) == 1
         text = result[0].text
@@ -88,10 +83,7 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_list_all_spells(self, mcp_server):
         """Test list_all_spells filtered listing format."""
-        result = await mcp_server._handle_list_all_spells({
-            "filter_element": "fire",
-            "limit": 5
-        })
+        result = await mcp_server._handle_list_all_spells({"filter_element": "fire", "limit": 5})
 
         assert len(result) == 1
         text = result[0].text
@@ -105,11 +97,9 @@ class TestMCPIntegration:
     @pytest.mark.asyncio
     async def test_optimize_passives_with_extractor(self, mcp_server):
         """Test optimize_passives uses passive tree extractor."""
-        result = await mcp_server._handle_optimize_passives({
-            "character_data": {"class": "Warrior"},
-            "available_points": 5,
-            "goal": "damage"
-        })
+        result = await mcp_server._handle_optimize_passives(
+            {"character_data": {"class": "Warrior"}, "available_points": 5, "goal": "damage"}
+        )
 
         assert len(result) == 1
         text = result[0].text
@@ -124,9 +114,7 @@ class TestMCPIntegration:
             pytest.skip("Passive optimizer not initialized")
 
         recommendations = await mcp_server.passive_optimizer.optimize(
-            character_data={"class": "Tank"},
-            available_points=3,
-            goal="defense"
+            character_data={"class": "Tank"}, available_points=3, goal="defense"
         )
 
         assert "suggested_allocations" in recommendations
@@ -145,10 +133,10 @@ class TestMCPIntegration:
         The standalone reverse-engineering extractors (stat/active-skill/
         text/passive-tree) were replaced by the resolver + fresh-data
         pipeline — verify the components the handlers actually use."""
-        assert hasattr(mcp_server, 'passive_tree_resolver')
+        assert hasattr(mcp_server, "passive_tree_resolver")
         assert mcp_server.passive_tree_resolver is not None
-        assert hasattr(mcp_server, 'gem_synergy_calculator')
-        assert hasattr(mcp_server, 'db_manager')
+        assert hasattr(mcp_server, "gem_synergy_calculator")
+        assert hasattr(mcp_server, "db_manager")
 
     @pytest.mark.asyncio
     async def test_support_gem_json_structure(self, mcp_server):
@@ -157,9 +145,7 @@ class TestMCPIntegration:
         Uses Spell Echo — Faster Projectiles is a PoE1 gem that doesn't
         exist in the PoE2 0.5 dataset. Also locks the suffix-tolerant
         lookup ("Spell Echo" resolving "Spell Echo Support")."""
-        result = await mcp_server._handle_inspect_support_gem({
-            "support_name": "Spell Echo"
-        })
+        result = await mcp_server._handle_inspect_support_gem({"support_name": "Spell Echo"})
 
         assert len(result) == 1
         text = result[0].text
@@ -171,9 +157,7 @@ class TestMCPIntegration:
     async def test_spell_gem_json_structure(self, mcp_server):
         """Test that spell gem JSON is accessed correctly."""
         # Test with a known spell
-        result = await mcp_server._handle_inspect_spell_gem({
-            "spell_name": "Lightning Bolt"
-        })
+        result = await mcp_server._handle_inspect_spell_gem({"spell_name": "Lightning Bolt"})
 
         assert len(result) == 1
         text = result[0].text

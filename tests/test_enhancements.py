@@ -18,10 +18,10 @@ from pathlib import Path
 # Fix Windows encoding for Unicode. reconfigure() keeps the same stream
 # object — rewrapping sys.stdout.buffer here used to close pytest's capture
 # file and abort collection of the entire suite.
-if sys.platform == 'win32':
+if sys.platform == "win32":
     for _stream in (sys.stdout, sys.stderr):
         try:
-            _stream.reconfigure(encoding='utf-8')
+            _stream.reconfigure(encoding="utf-8")
         except (AttributeError, io.UnsupportedOperation):
             pass  # pytest capture streams don't support reconfigure — fine
 
@@ -42,9 +42,9 @@ class TestEnhancements:
     @pytest.mark.asyncio
     async def test_poe_ninja_api(self):
         """Test poe.ninja API client"""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("Testing poe.ninja API Client")
-        print("="*60)
+        print("=" * 60)
 
         ninja_api = PoeNinjaAPI()
 
@@ -56,7 +56,9 @@ class TestEnhancements:
             if builds:
                 print(f"✓ Successfully fetched {len(builds)} builds")
                 for build in builds[:2]:
-                    print(f"  - {build.get('character', 'Unknown')} ({build.get('class', 'Unknown')})")
+                    print(
+                        f"  - {build.get('character', 'Unknown')} ({build.get('class', 'Unknown')})"
+                    )
             else:
                 print("⚠ No builds returned (may be expected if poe.ninja structure changed)")
 
@@ -79,9 +81,9 @@ class TestEnhancements:
     @pytest.mark.asyncio
     async def test_character_fetcher(self):
         """Test multi-source character fetching"""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("Testing Multi-Source Character Fetcher")
-        print("="*60)
+        print("=" * 60)
 
         cache_manager = CacheManager()
         await cache_manager.initialize()
@@ -128,9 +130,9 @@ class TestEnhancements:
     @pytest.mark.asyncio
     async def test_gear_optimizer(self):
         """Test enhanced gear optimizer"""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("Testing Enhanced Gear Optimizer")
-        print("="*60)
+        print("=" * 60)
 
         db_manager = DatabaseManager()
         await db_manager.initialize()
@@ -144,26 +146,19 @@ class TestEnhancements:
                 "class": "Warrior",
                 "level": 70,
                 "items": [
-                    {
-                        "inventoryId": "helmet",
-                        "name": "Old Helmet",
-                        "rarity": "magic",
-                        "ilvl": 45
-                    },
+                    {"inventoryId": "helmet", "name": "Old Helmet", "rarity": "magic", "ilvl": 45},
                     {
                         "inventoryId": "body_armour",
                         "name": "Basic Chestplate",
                         "rarity": "normal",
-                        "ilvl": 50
-                    }
-                ]
+                        "ilvl": 50,
+                    },
+                ],
             }
 
             print("\nGenerating gear optimization recommendations...")
             recommendations = await optimizer.optimize(
-                mock_character,
-                budget="medium",
-                goal="balanced"
+                mock_character, budget="medium", goal="balanced"
             )
 
             print(f"✓ Gear optimizer completed")
@@ -172,9 +167,9 @@ class TestEnhancements:
             print(f"  - Upgrades found: {len(recommendations['priority_upgrades'])}")
             print(f"  - Summary: {recommendations['summary']}")
 
-            if recommendations['priority_upgrades']:
+            if recommendations["priority_upgrades"]:
                 print("\n  Top recommendations:")
-                for upgrade in recommendations['priority_upgrades'][:3]:
+                for upgrade in recommendations["priority_upgrades"][:3]:
                     print(f"    • {upgrade['slot']}: {upgrade['suggested_item']}")
                     print(f"      Priority: {upgrade['priority']}")
                     print(f"      Reasoning: {upgrade['reasoning']}")
@@ -187,9 +182,9 @@ class TestEnhancements:
     @pytest.mark.asyncio
     async def test_database_population_dry_run(self):
         """Test database population script (dry run)"""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("Testing Database Population (Dry Run)")
-        print("="*60)
+        print("=" * 60)
 
         print("\nChecking if database manager can initialize...")
         db_manager = DatabaseManager()
@@ -219,7 +214,8 @@ class TestEnhancements:
 
 async def run_all_tests():
     """Run all enhancement tests"""
-    print("""
+    print(
+        """
 ================================================================
          PoE2 MCP Server - Enhancement Test Suite
 
@@ -229,7 +225,8 @@ async def run_all_tests():
   - Enhanced gear optimizer
   - Database population capabilities
 ================================================================
-    """)
+    """
+    )
 
     tester = TestEnhancements()
 
@@ -250,12 +247,13 @@ async def run_all_tests():
         except Exception as e:
             print(f"\n✗ {test_name} test failed: {e}")
             import traceback
+
             traceback.print_exc()
             failed += 1
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Test Summary")
-    print("="*60)
+    print("=" * 60)
     print(f"Passed: {passed}/{len(tests)}")
     print(f"Failed: {failed}/{len(tests)}")
 

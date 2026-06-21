@@ -22,12 +22,13 @@ try:
     from ..config import BASE_DIR, DATA_DIR
 except ImportError:
     BASE_DIR = Path(__file__).parent.parent.parent
-    DATA_DIR = BASE_DIR / 'data'
+    DATA_DIR = BASE_DIR / "data"
 
 
 @dataclass
 class ModFilter:
     """Filter parameters for mod queries"""
+
     generation_type: Optional[str] = None  # PREFIX, SUFFIX, IMPLICIT, CORRUPTED
     min_level: Optional[int] = None
     max_level: Optional[int] = None
@@ -56,12 +57,7 @@ class ModDataProvider:
     _initialized = False
 
     # Generation type constants (from PoB spec.lua)
-    GENERATION_TYPES = {
-        1: "PREFIX",
-        2: "SUFFIX",
-        3: "IMPLICIT",
-        5: "CORRUPTED"
-    }
+    GENERATION_TYPES = {1: "PREFIX", 2: "SUFFIX", 3: "IMPLICIT", 5: "CORRUPTED"}
 
     def __new__(cls):
         if cls._instance is None:
@@ -88,7 +84,7 @@ class ModDataProvider:
 
         # Set data path - use corrected extraction with proper stat data
         if data_path is None:
-            data_path = DATA_DIR / 'poe2_mods_corrected.json'
+            data_path = DATA_DIR / "poe2_mods_corrected.json"
         self.data_path = data_path
 
         # Load data
@@ -103,17 +99,17 @@ class ModDataProvider:
 
             logger.info(f"Loading mod data from {self.data_path}")
 
-            with open(self.data_path, 'r', encoding='utf-8') as f:
+            with open(self.data_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             # Store metadata
-            self._metadata = data.get('metadata', {})
+            self._metadata = data.get("metadata", {})
 
             # Load mods
-            mods = data.get('mods', [])
+            mods = data.get("mods", [])
             for mod in mods:
-                mod_id = mod.get('mod_id')
-                row_index = mod.get('row_index')
+                mod_id = mod.get("mod_id")
+                row_index = mod.get("row_index")
 
                 if not mod_id:
                     continue
@@ -126,7 +122,7 @@ class ModDataProvider:
                     self._mods_by_index[row_index] = mod
 
                 # Index by generation type
-                gen_type = mod.get('generation_type_name', 'UNKNOWN')
+                gen_type = mod.get("generation_type_name", "UNKNOWN")
                 if gen_type not in self._mods_by_type:
                     self._mods_by_type[gen_type] = []
                 self._mods_by_type[gen_type].append(mod)
@@ -137,11 +133,13 @@ class ModDataProvider:
                     self._mod_families[family] = []
                 self._mod_families[family].append(mod)
 
-            logger.info(f"Loaded {len(self._mods_by_id)} mods: "
-                       f"Prefix={len(self._mods_by_type.get('PREFIX', []))}, "
-                       f"Suffix={len(self._mods_by_type.get('SUFFIX', []))}, "
-                       f"Implicit={len(self._mods_by_type.get('IMPLICIT', []))}, "
-                       f"Corrupted={len(self._mods_by_type.get('CORRUPTED', []))}")
+            logger.info(
+                f"Loaded {len(self._mods_by_id)} mods: "
+                f"Prefix={len(self._mods_by_type.get('PREFIX', []))}, "
+                f"Suffix={len(self._mods_by_type.get('SUFFIX', []))}, "
+                f"Implicit={len(self._mods_by_type.get('IMPLICIT', []))}, "
+                f"Corrupted={len(self._mods_by_type.get('CORRUPTED', []))}"
+            )
 
         except Exception as e:
             logger.error(f"Failed to load mod data: {e}", exc_info=True)
@@ -156,7 +154,7 @@ class ModDataProvider:
             "LifeRegen" -> "LifeRegen"
         """
         # Remove trailing digits
-        family = mod_id.rstrip('0123456789')
+        family = mod_id.rstrip("0123456789")
 
         # Handle edge case where mod_id is all digits
         if not family:
@@ -193,9 +191,7 @@ class ModDataProvider:
         return self._mods_by_index.get(row_index)
 
     def list_mods(
-        self,
-        filters: Optional[ModFilter] = None,
-        sort_by: str = "level_requirement"
+        self, filters: Optional[ModFilter] = None, sort_by: str = "level_requirement"
     ) -> List[Dict]:
         """
         List mods with optional filtering and sorting.
@@ -218,35 +214,36 @@ class ModDataProvider:
 
         # Apply filters
         if filters.min_level is not None:
-            result = [m for m in result if m.get('level_requirement', 0) >= filters.min_level]
+            result = [m for m in result if m.get("level_requirement", 0) >= filters.min_level]
 
         if filters.max_level is not None:
-            result = [m for m in result if m.get('level_requirement', 0) <= filters.max_level]
+            result = [m for m in result if m.get("level_requirement", 0) <= filters.max_level]
 
         if filters.domain_flag is not None:
-            result = [m for m in result if m.get('domain_flag', 0) == filters.domain_flag]
+            result = [m for m in result if m.get("domain_flag", 0) == filters.domain_flag]
 
         if filters.mod_family:
-            result = [m for m in result if self._extract_mod_family(m.get('mod_id', '')) == filters.mod_family]
+            result = [
+                m
+                for m in result
+                if self._extract_mod_family(m.get("mod_id", "")) == filters.mod_family
+            ]
 
         # Sort
         if sort_by == "level_requirement":
-            result.sort(key=lambda m: m.get('level_requirement', 0))
+            result.sort(key=lambda m: m.get("level_requirement", 0))
         elif sort_by == "mod_id":
-            result.sort(key=lambda m: m.get('mod_id', ''))
+            result.sort(key=lambda m: m.get("mod_id", ""))
         elif sort_by == "generation_type":
-            result.sort(key=lambda m: m.get('generation_type', 0))
+            result.sort(key=lambda m: m.get("generation_type", 0))
 
         # Pagination
         offset = filters.offset
         limit = filters.limit
-        return result[offset:offset + limit]
+        return result[offset : offset + limit]
 
     def search_by_stat(
-        self,
-        stat_keyword: str,
-        case_sensitive: bool = False,
-        limit: int = 100
+        self, stat_keyword: str, case_sensitive: bool = False, limit: int = 100
     ) -> List[Dict]:
         """
         Search mods by keyword in mod_id AND stat_id fields.
@@ -275,9 +272,9 @@ class ModDataProvider:
 
             # Search in stat_id fields (from corrected extraction)
             if not found:
-                stats = mod.get('stats', [])
+                stats = mod.get("stats", [])
                 for stat in stats:
-                    stat_id = stat.get('stat_id', '')
+                    stat_id = stat.get("stat_id", "")
                     search_stat = stat_id if case_sensitive else stat_id.lower()
                     if search_term in search_stat:
                         found = True
@@ -303,14 +300,12 @@ class ModDataProvider:
         family_mods = self._mod_families.get(mod_base_name, [])
 
         # Sort by level requirement (ascending)
-        sorted_mods = sorted(family_mods, key=lambda m: m.get('level_requirement', 0))
+        sorted_mods = sorted(family_mods, key=lambda m: m.get("level_requirement", 0))
 
         return sorted_mods
 
     def get_mods_for_item_type(
-        self,
-        item_type: str,
-        generation_type: Optional[str] = None
+        self, item_type: str, generation_type: Optional[str] = None
     ) -> List[Dict]:
         """
         Get mods that can roll on a specific item type.
@@ -354,12 +349,7 @@ class ModDataProvider:
                 "conflicts": List[Tuple[str, str]]
             }
         """
-        result = {
-            "valid": True,
-            "errors": [],
-            "warnings": [],
-            "conflicts": []
-        }
+        result = {"valid": True, "errors": [], "warnings": [], "conflicts": []}
 
         if not mod_ids:
             result["errors"].append("No mods provided")
@@ -382,23 +372,21 @@ class ModDataProvider:
         # Check mod family conflicts (can't have Strength1 and Strength2)
         families_seen = {}
         for mod in mods:
-            mod_id = mod.get('mod_id')
+            mod_id = mod.get("mod_id")
             family = self._extract_mod_family(mod_id)
 
             if family in families_seen:
                 conflict_mod = families_seen[family]
-                result["errors"].append(
-                    f"Multiple tiers of same mod: {conflict_mod} and {mod_id}"
-                )
+                result["errors"].append(f"Multiple tiers of same mod: {conflict_mod} and {mod_id}")
                 result["conflicts"].append((conflict_mod, mod_id))
                 result["valid"] = False
             else:
                 families_seen[family] = mod_id
 
         # Check prefix/suffix limits
-        prefix_count = sum(1 for m in mods if m.get('generation_type_name') == 'PREFIX')
-        suffix_count = sum(1 for m in mods if m.get('generation_type_name') == 'SUFFIX')
-        implicit_count = sum(1 for m in mods if m.get('generation_type_name') == 'IMPLICIT')
+        prefix_count = sum(1 for m in mods if m.get("generation_type_name") == "PREFIX")
+        suffix_count = sum(1 for m in mods if m.get("generation_type_name") == "SUFFIX")
+        implicit_count = sum(1 for m in mods if m.get("generation_type_name") == "IMPLICIT")
 
         # PoE2 typical limits (can vary by item type)
         MAX_PREFIXES = 3
@@ -433,12 +421,12 @@ class ModDataProvider:
         """
         return {
             "total_mods": len(self._mods_by_id),
-            "prefix_count": len(self._mods_by_type.get('PREFIX', [])),
-            "suffix_count": len(self._mods_by_type.get('SUFFIX', [])),
-            "implicit_count": len(self._mods_by_type.get('IMPLICIT', [])),
-            "corrupted_count": len(self._mods_by_type.get('CORRUPTED', [])),
+            "prefix_count": len(self._mods_by_type.get("PREFIX", [])),
+            "suffix_count": len(self._mods_by_type.get("SUFFIX", [])),
+            "implicit_count": len(self._mods_by_type.get("IMPLICIT", [])),
+            "corrupted_count": len(self._mods_by_type.get("CORRUPTED", [])),
             "mod_families": len(self._mod_families),
-            "metadata": self._metadata
+            "metadata": self._metadata,
         }
 
     def get_metadata(self) -> Dict[str, Any]:
@@ -455,34 +443,31 @@ class ModDataProvider:
 
     def get_prefixes(self, min_level: int = 0, max_level: int = 100) -> List[Dict]:
         """Get all prefix mods within level range"""
-        return self.list_mods(ModFilter(
-            generation_type="PREFIX",
-            min_level=min_level,
-            max_level=max_level,
-            limit=1000
-        ))
+        return self.list_mods(
+            ModFilter(
+                generation_type="PREFIX", min_level=min_level, max_level=max_level, limit=1000
+            )
+        )
 
     def get_suffixes(self, min_level: int = 0, max_level: int = 100) -> List[Dict]:
         """Get all suffix mods within level range"""
-        return self.list_mods(ModFilter(
-            generation_type="SUFFIX",
-            min_level=min_level,
-            max_level=max_level,
-            limit=1000
-        ))
+        return self.list_mods(
+            ModFilter(
+                generation_type="SUFFIX", min_level=min_level, max_level=max_level, limit=1000
+            )
+        )
 
     def get_implicits(self, min_level: int = 0, max_level: int = 100) -> List[Dict]:
         """Get all implicit mods within level range"""
-        return self.list_mods(ModFilter(
-            generation_type="IMPLICIT",
-            min_level=min_level,
-            max_level=max_level,
-            limit=1000
-        ))
+        return self.list_mods(
+            ModFilter(
+                generation_type="IMPLICIT", min_level=min_level, max_level=max_level, limit=1000
+            )
+        )
 
     def get_corrupted_mods(self) -> List[Dict]:
         """Get all corrupted implicit mods"""
-        return self._mods_by_type.get('CORRUPTED', [])
+        return self._mods_by_type.get("CORRUPTED", [])
 
     def get_all_families(self) -> List[str]:
         """Get list of all mod family names"""
@@ -507,7 +492,7 @@ class ModDataProvider:
         if not mods:
             return (0, 0)
 
-        levels = [m.get('level_requirement', 0) for m in mods]
+        levels = [m.get("level_requirement", 0) for m in mods]
         return (min(levels), max(levels))
 
 
@@ -520,8 +505,7 @@ def get_mod_data_provider() -> ModDataProvider:
 if __name__ == "__main__":
     # Configure logging for testing
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     print("=" * 80)
@@ -547,7 +531,9 @@ if __name__ == "__main__":
     print("Test 1: Get specific mod")
     mod = provider.get_mod("Strength1")
     if mod:
-        print(f"  Found: {mod['mod_id']} (Level {mod['level_requirement']}, {mod['generation_type_name']})")
+        print(
+            f"  Found: {mod['mod_id']} (Level {mod['level_requirement']}, {mod['generation_type_name']})"
+        )
     print()
 
     # Test get_mod_tiers
@@ -555,7 +541,7 @@ if __name__ == "__main__":
     strength_tiers = provider.get_mod_tiers("Strength")
     print(f"  Found {len(strength_tiers)} tiers:")
     for tier in strength_tiers[:5]:
-        stats = tier.get('stats', [])
+        stats = tier.get("stats", [])
         stat_info = ""
         if stats:
             s = stats[0]
@@ -570,16 +556,14 @@ if __name__ == "__main__":
     lightning_mods = provider.search_by_stat("Lightning", limit=10)
     print(f"  Found {len(lightning_mods)} mods:")
     for mod in lightning_mods[:5]:
-        print(f"    {mod['mod_id']}: {mod['generation_type_name']}, Level {mod['level_requirement']}")
+        print(
+            f"    {mod['mod_id']}: {mod['generation_type_name']}, Level {mod['level_requirement']}"
+        )
     print()
 
     # Test list_mods with filters
     print("Test 4: List high-level prefixes")
-    high_prefixes = provider.list_mods(ModFilter(
-        generation_type="PREFIX",
-        min_level=50,
-        limit=5
-    ))
+    high_prefixes = provider.list_mods(ModFilter(generation_type="PREFIX", min_level=50, limit=5))
     print(f"  Found {len(high_prefixes)} prefixes (level 50+):")
     for mod in high_prefixes:
         print(f"    {mod['mod_id']}: Level {mod['level_requirement']}")
@@ -591,15 +575,15 @@ if __name__ == "__main__":
     validation = provider.validate_mod_combination(test_mods)
     print(f"  Combination: {', '.join(test_mods)}")
     print(f"  Valid: {validation['valid']}")
-    if validation['errors']:
+    if validation["errors"]:
         print(f"  Errors: {', '.join(validation['errors'])}")
-    if validation['warnings']:
+    if validation["warnings"]:
         print(f"  Warnings: {', '.join(validation['warnings'])}")
     print()
 
     # Test level range
     print("Test 6: Get level ranges")
-    for gen_type in ['PREFIX', 'SUFFIX', 'IMPLICIT']:
+    for gen_type in ["PREFIX", "SUFFIX", "IMPLICIT"]:
         min_lvl, max_lvl = provider.get_level_range(gen_type)
         print(f"  {gen_type}: Level {min_lvl} to {max_lvl}")
     print()

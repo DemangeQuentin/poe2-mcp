@@ -14,6 +14,7 @@ Verifies:
   - Bad oracle values (intentionally far off) correctly flip
     ``all_within_tolerance`` to False.
 """
+
 from __future__ import annotations
 
 import copy
@@ -41,11 +42,20 @@ def test_fixture_loads_and_has_required_keys():
     char = _load_fixture()
     ds = char["defensiveStats"]
     for key in [
-        "life", "energyShield", "armour", "evasion",
-        "fireResistance", "coldResistance", "lightningResistance", "chaosResistance",
+        "life",
+        "energyShield",
+        "armour",
+        "evasion",
+        "fireResistance",
+        "coldResistance",
+        "lightningResistance",
+        "chaosResistance",
         "effectiveHealthPool",
-        "physicalMaximumHitTaken", "fireMaximumHitTaken",
-        "coldMaximumHitTaken", "lightningMaximumHitTaken", "chaosMaximumHitTaken",
+        "physicalMaximumHitTaken",
+        "fireMaximumHitTaken",
+        "coldMaximumHitTaken",
+        "lightningMaximumHitTaken",
+        "chaosMaximumHitTaken",
     ]:
         assert key in ds, f"fixture missing required oracle key {key!r}"
 
@@ -54,6 +64,7 @@ def test_adapter_maps_poe_ninja_field_names():
     """``build_defensive_stats_from_charmodel`` must read British camelCase
     keys from a poe.ninja payload."""
     from src.calculator.reconcile_poe_ninja import build_defensive_stats_from_charmodel
+
     char = _load_fixture()
     stats = build_defensive_stats_from_charmodel(char)
     ds = char["defensiveStats"]
@@ -68,6 +79,7 @@ def test_adapter_accepts_inner_dict_shape():
     """If a caller already extracted ``defensiveStats``, the adapter should
     accept that sub-dict directly without barfing."""
     from src.calculator.reconcile_poe_ninja import build_defensive_stats_from_charmodel
+
     char = _load_fixture()
     stats = build_defensive_stats_from_charmodel(char["defensiveStats"])
     assert stats.life == 5500
@@ -77,12 +89,17 @@ def test_adapter_accepts_inner_dict_shape():
 def test_reconcile_produces_one_delta_per_oracle_stat():
     """A clean fixture should yield 6 deltas (effective_hp + 5 per-type maxes)."""
     from src.calculator.reconcile_poe_ninja import reconcile_defensive_stats
+
     char = _load_fixture()
     report = reconcile_defensive_stats(char)
     stat_names = {d.stat for d in report.deltas}
     expected = {
-        "effective_hp", "physical_max_hit", "fire_max_hit",
-        "cold_max_hit", "lightning_max_hit", "chaos_max_hit",
+        "effective_hp",
+        "physical_max_hit",
+        "fire_max_hit",
+        "cold_max_hit",
+        "lightning_max_hit",
+        "chaos_max_hit",
     }
     assert stat_names == expected
     assert report.char_name == "ReconcileTestChar_Synthetic"
@@ -93,19 +110,20 @@ def test_synthetic_fixture_passes_default_tolerance():
     constructed so our calc lands inside the default 15% band on every
     reconciled stat. A breaking calc change will trip this first."""
     from src.calculator.reconcile_poe_ninja import reconcile_defensive_stats
+
     char = _load_fixture()
     report = reconcile_defensive_stats(char)
-    failing = [(d.stat, d.pct_delta, d.tolerance_pct) for d in report.deltas
-               if not d.within_tolerance]
-    assert not failing, (
-        f"calc drifted outside synthetic fixture's tolerance: {failing}"
-    )
+    failing = [
+        (d.stat, d.pct_delta, d.tolerance_pct) for d in report.deltas if not d.within_tolerance
+    ]
+    assert not failing, f"calc drifted outside synthetic fixture's tolerance: {failing}"
     assert report.all_within_tolerance
 
 
 def test_missing_oracle_field_is_skipped_not_crashed():
     """If poe.ninja omits a field, the harness skips it instead of crashing."""
     from src.calculator.reconcile_poe_ninja import reconcile_defensive_stats
+
     char = _load_fixture()
     trimmed = copy.deepcopy(char)
     del trimmed["defensiveStats"]["chaosMaximumHitTaken"]
@@ -119,6 +137,7 @@ def test_bad_oracle_trips_all_within_tolerance():
     """Move the oracle's effectiveHealthPool to a value we can't reach
     (1.0) - the report must flip to FAIL."""
     from src.calculator.reconcile_poe_ninja import reconcile_defensive_stats
+
     char = _load_fixture()
     sabotaged = copy.deepcopy(char)
     sabotaged["defensiveStats"]["effectiveHealthPool"] = 1.0
@@ -135,6 +154,7 @@ def test_format_report_renders_a_table():
         format_report,
         reconcile_defensive_stats,
     )
+
     char = _load_fixture()
     report = reconcile_defensive_stats(char)
     text = format_report(report)
@@ -148,6 +168,7 @@ def test_format_report_handles_empty():
         ReconciliationReport,
         format_report,
     )
+
     r = ReconciliationReport(char_name="empty", skipped=["effective_hp"])
     text = format_report(r)
     assert "no deltas computed" in text

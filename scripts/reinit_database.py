@@ -12,9 +12,9 @@ import io
 from pathlib import Path
 
 # Fix Windows encoding
-if sys.platform == 'win32':
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -35,7 +35,7 @@ async def reinitialize_database():
 
     if db_path.exists():
         response = input("\nDatabase exists. Delete and recreate? (y/N): ")
-        if response.lower() != 'y':
+        if response.lower() != "y":
             print("Cancelled.")
             return
 

@@ -24,20 +24,20 @@ class PoBExporter:
         """
         try:
             # Create XML structure
-            root = ET.Element('PathOfBuilding')
+            root = ET.Element("PathOfBuilding")
 
             # Add character data
-            build = ET.SubElement(root, 'Build')
-            build.set('name', character_data.get('name', 'Exported Build'))
-            build.set('className', character_data.get('class', 'Unknown'))
-            build.set('level', str(character_data.get('level', 1)))
+            build = ET.SubElement(root, "Build")
+            build.set("name", character_data.get("name", "Exported Build"))
+            build.set("className", character_data.get("class", "Unknown"))
+            build.set("level", str(character_data.get("level", 1)))
 
             # Convert to string
-            xml_str = ET.tostring(root, encoding='utf-8')
+            xml_str = ET.tostring(root, encoding="utf-8")
 
             # Compress and encode
             compressed = zlib.compress(xml_str)
-            encoded = base64.b64encode(compressed).decode('utf-8')
+            encoded = base64.b64encode(compressed).decode("utf-8")
 
             return encoded
 

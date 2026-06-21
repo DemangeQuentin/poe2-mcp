@@ -45,6 +45,7 @@ logger = logging.getLogger(__name__)
 
 class DamageType(Enum):
     """Types of damage in Path of Exile 2."""
+
     PHYSICAL = "physical"
     FIRE = "fire"
     COLD = "cold"
@@ -70,6 +71,7 @@ class DefensiveStats:
         chaos_res: Chaos resistance %
         phys_taken_as_elemental: % of physical taken as elemental (reduces armor effectiveness)
     """
+
     life: float
     energy_shield: float = 0.0
     runic_ward: float = 0.0  # TODO: 0.5 - requires local extraction; not yet layered into EHP calc
@@ -104,6 +106,7 @@ class ThreatProfile:
         expected_hit_size: Expected raw damage per hit (for armor calculation)
         attacker_accuracy: Attacker accuracy (for evasion calculation)
     """
+
     expected_hit_size: float = 1000.0  # Default: moderate hit
     attacker_accuracy: float = 2000.0  # Default: moderate accuracy
 
@@ -124,6 +127,7 @@ class EHPResult:
         effective_hp: Final EHP value
         layers_breakdown: Detailed breakdown of each layer's contribution
     """
+
     damage_type: DamageType
     raw_hp: float
     evade_mitigation: float
@@ -148,6 +152,7 @@ class DefenseGap:
         current_value: Current value of the defense
         recommended_value: Recommended target value
     """
+
     gap_type: str
     severity: float
     description: str
@@ -177,10 +182,7 @@ class EHPCalculator:
     # ============================================================================
 
     def calculate_ehp(
-        self,
-        stats: DefensiveStats,
-        damage_type: DamageType,
-        threat: ThreatProfile
+        self, stats: DefensiveStats, damage_type: DamageType, threat: ThreatProfile
     ) -> EHPResult:
         """
         Calculate Effective Health Pool for a specific damage type.
@@ -245,36 +247,42 @@ class EHPCalculator:
         if damage_multiplier > 0:
             effective_hp = raw_hp / damage_multiplier
         else:
-            effective_hp = float('inf')
+            effective_hp = float("inf")
 
         # Build detailed breakdown
         layers_breakdown = {
-            'raw_hp': raw_hp,
-            'evasion': {
-                'mitigation_percent': evade_mitigation * 100,
-                'multiplier': 1 / (1 - evade_mitigation) if evade_mitigation < 1 else float('inf')
+            "raw_hp": raw_hp,
+            "evasion": {
+                "mitigation_percent": evade_mitigation * 100,
+                "multiplier": 1 / (1 - evade_mitigation) if evade_mitigation < 1 else float("inf"),
             },
-            'block': {
-                'chance_percent': stats.block_chance,
-                'effective_chance_percent': min(stats.block_chance, DefenseConstants.BLOCK_MAX_CHANCE),
-                'mitigation_percent': block_mitigation * 100,
-                'multiplier': 1 / (1 - block_mitigation) if block_mitigation < 1 else float('inf')
+            "block": {
+                "chance_percent": stats.block_chance,
+                "effective_chance_percent": min(
+                    stats.block_chance, DefenseConstants.BLOCK_MAX_CHANCE
+                ),
+                "mitigation_percent": block_mitigation * 100,
+                "multiplier": 1 / (1 - block_mitigation) if block_mitigation < 1 else float("inf"),
             },
-            'armor': {
-                'rating': stats.armor,
-                'dr_percent': armor_dr * 100,
-                'vs_hit_size': threat.expected_hit_size,
-                'multiplier': 1 / (1 - armor_dr) if armor_dr < 1 else float('inf')
-            } if damage_type == DamageType.PHYSICAL else None,
-            'resistance': {
-                'value_percent': self._get_resistance_value(stats, damage_type),
-                'dr_percent': resistance_dr * 100,
-                'multiplier': 1 / (1 - resistance_dr) if resistance_dr < 1 else float('inf')
+            "armor": (
+                {
+                    "rating": stats.armor,
+                    "dr_percent": armor_dr * 100,
+                    "vs_hit_size": threat.expected_hit_size,
+                    "multiplier": 1 / (1 - armor_dr) if armor_dr < 1 else float("inf"),
+                }
+                if damage_type == DamageType.PHYSICAL
+                else None
+            ),
+            "resistance": {
+                "value_percent": self._get_resistance_value(stats, damage_type),
+                "dr_percent": resistance_dr * 100,
+                "multiplier": 1 / (1 - resistance_dr) if resistance_dr < 1 else float("inf"),
             },
-            'combined': {
-                'total_mitigation_percent': total_mitigation * 100,
-                'total_multiplier': effective_hp / raw_hp if raw_hp > 0 else 0
-            }
+            "combined": {
+                "total_mitigation_percent": total_mitigation * 100,
+                "total_multiplier": effective_hp / raw_hp if raw_hp > 0 else 0,
+            },
         }
 
         result = EHPResult(
@@ -286,7 +294,7 @@ class EHPCalculator:
             resistance_dr=resistance_dr,
             total_mitigation=total_mitigation,
             effective_hp=effective_hp,
-            layers_breakdown=layers_breakdown
+            layers_breakdown=layers_breakdown,
         )
 
         logger.info(
@@ -297,9 +305,7 @@ class EHPCalculator:
         return result
 
     def calculate_all_ehp(
-        self,
-        stats: DefensiveStats,
-        threat: ThreatProfile
+        self, stats: DefensiveStats, threat: ThreatProfile
     ) -> Dict[DamageType, EHPResult]:
         """
         Calculate EHP for all damage types.
@@ -333,9 +339,7 @@ class EHPCalculator:
     # ============================================================================
 
     def analyze_armor_vs_hit_sizes(
-        self,
-        stats: DefensiveStats,
-        hit_sizes: Optional[List[float]] = None
+        self, stats: DefensiveStats, hit_sizes: Optional[List[float]] = None
     ) -> Dict[float, Dict[str, float]]:
         """
         Analyze armor effectiveness against different hit sizes.
@@ -367,28 +371,24 @@ class EHPCalculator:
 
             # Calculate EHP for this hit size
             threat = ThreatProfile(expected_hit_size=hit_size, attacker_accuracy=2000)
-            ehp_result = self.calculate_ehp(
-                stats,
-                DamageType.PHYSICAL,
-                threat
-            )
+            ehp_result = self.calculate_ehp(stats, DamageType.PHYSICAL, threat)
 
             analysis[hit_size] = {
-                'armor_rating': stats.armor,
-                'dr_percent': armor_result.damage_reduction_percent,
-                'effective_damage': armor_result.effective_damage,
-                'is_capped': armor_result.is_capped,
-                'physical_ehp': ehp_result.effective_hp,
-                'ehp_per_1000_armor': (ehp_result.effective_hp / (stats.armor / 1000)) if stats.armor > 0 else 0
+                "armor_rating": stats.armor,
+                "dr_percent": armor_result.damage_reduction_percent,
+                "effective_damage": armor_result.effective_damage,
+                "is_capped": armor_result.is_capped,
+                "physical_ehp": ehp_result.effective_hp,
+                "ehp_per_1000_armor": (
+                    (ehp_result.effective_hp / (stats.armor / 1000)) if stats.armor > 0 else 0
+                ),
             }
 
         logger.info(f"Analyzed armor effectiveness against {len(hit_sizes)} hit sizes")
         return analysis
 
     def find_armor_breakpoints(
-        self,
-        stats: DefensiveStats,
-        target_dr_values: Optional[List[float]] = None
+        self, stats: DefensiveStats, target_dr_values: Optional[List[float]] = None
     ) -> Dict[float, float]:
         """
         Find armor values needed to achieve target DR against expected hit size.
@@ -420,12 +420,14 @@ class EHPCalculator:
         breakpoints = {}
         for target_dr in target_dr_values:
             if target_dr >= DefenseConstants.ARMOR_MAX_DR:
-                breakpoints[target_dr] = float('inf')
+                breakpoints[target_dr] = float("inf")
             else:
                 armor_needed = self.defense_calc.armor_needed_for_dr(target_dr, hit_size)
                 breakpoints[target_dr] = armor_needed
 
-        logger.info(f"Calculated armor breakpoints for {len(target_dr_values)} DR targets vs {hit_size} hit size")
+        logger.info(
+            f"Calculated armor breakpoints for {len(target_dr_values)} DR targets vs {hit_size} hit size"
+        )
         return breakpoints
 
     # ============================================================================
@@ -433,9 +435,7 @@ class EHPCalculator:
     # ============================================================================
 
     def identify_defense_gaps(
-        self,
-        stats: DefensiveStats,
-        threat: ThreatProfile
+        self, stats: DefensiveStats, threat: ThreatProfile
     ) -> List[DefenseGap]:
         """
         Identify defensive weaknesses and provide recommendations.
@@ -469,10 +469,10 @@ class EHPCalculator:
 
         # Check 1: Resistance caps (CRITICAL)
         resistances = {
-            'fire': (stats.fire_res, DamageType.FIRE),
-            'cold': (stats.cold_res, DamageType.COLD),
-            'lightning': (stats.lightning_res, DamageType.LIGHTNING),
-            'chaos': (stats.chaos_res, DamageType.CHAOS)
+            "fire": (stats.fire_res, DamageType.FIRE),
+            "cold": (stats.cold_res, DamageType.COLD),
+            "lightning": (stats.lightning_res, DamageType.LIGHTNING),
+            "chaos": (stats.chaos_res, DamageType.CHAOS),
         }
 
         for res_name, (res_value, dmg_type) in resistances.items():
@@ -483,17 +483,19 @@ class EHPCalculator:
                 severity = min(10.0, (deficit / 10.0))  # 10% deficit = 1 severity
 
                 # Chaos res is less critical
-                if res_name == 'chaos':
+                if res_name == "chaos":
                     severity *= 0.5
 
-                gaps.append(DefenseGap(
-                    gap_type=f"uncapped_{res_name}_resistance",
-                    severity=severity,
-                    description=f"{res_name.capitalize()} resistance is {deficit:.0f}% below cap",
-                    recommendation=f"Increase {res_name} resistance by {deficit:.0f}% to reach {cap}% cap",
-                    current_value=res_value,
-                    recommended_value=cap
-                ))
+                gaps.append(
+                    DefenseGap(
+                        gap_type=f"uncapped_{res_name}_resistance",
+                        severity=severity,
+                        description=f"{res_name.capitalize()} resistance is {deficit:.0f}% below cap",
+                        recommendation=f"Increase {res_name} resistance by {deficit:.0f}% to reach {cap}% cap",
+                        current_value=res_value,
+                        recommended_value=cap,
+                    )
+                )
 
         # Check 2: HP pool (life + ES)
         total_hp = stats.life + stats.energy_shield
@@ -503,14 +505,16 @@ class EHPCalculator:
             deficit = min_hp_endgame - total_hp
             severity = min(10.0, (deficit / 500.0))  # 500 HP deficit = 1 severity
 
-            gaps.append(DefenseGap(
-                gap_type="low_hp_pool",
-                severity=severity,
-                description=f"Total HP pool ({total_hp:.0f}) is below recommended minimum ({min_hp_endgame:.0f})",
-                recommendation=f"Increase life and/or energy shield by {deficit:.0f} total",
-                current_value=total_hp,
-                recommended_value=min_hp_endgame
-            ))
+            gaps.append(
+                DefenseGap(
+                    gap_type="low_hp_pool",
+                    severity=severity,
+                    description=f"Total HP pool ({total_hp:.0f}) is below recommended minimum ({min_hp_endgame:.0f})",
+                    recommendation=f"Increase life and/or energy shield by {deficit:.0f} total",
+                    current_value=total_hp,
+                    recommended_value=min_hp_endgame,
+                )
+            )
 
         # Check 3: No layered defenses
         has_armor = stats.armor >= 5000
@@ -521,37 +525,43 @@ class EHPCalculator:
         defense_layers = sum([has_armor, has_evasion, has_block, has_es])
 
         if defense_layers == 0:
-            gaps.append(DefenseGap(
-                gap_type="no_layered_defenses",
-                severity=8.0,
-                description="No meaningful layered defenses (only relying on resistances and HP)",
-                recommendation="Invest in at least one additional defense layer: armor, evasion, block, or ES",
-                current_value=0,
-                recommended_value=1
-            ))
+            gaps.append(
+                DefenseGap(
+                    gap_type="no_layered_defenses",
+                    severity=8.0,
+                    description="No meaningful layered defenses (only relying on resistances and HP)",
+                    recommendation="Invest in at least one additional defense layer: armor, evasion, block, or ES",
+                    current_value=0,
+                    recommended_value=1,
+                )
+            )
         elif defense_layers == 1:
-            gaps.append(DefenseGap(
-                gap_type="single_defense_layer",
-                severity=4.0,
-                description="Only one defense layer present",
-                recommendation="Consider adding a second defense layer for better survivability",
-                current_value=1,
-                recommended_value=2
-            ))
+            gaps.append(
+                DefenseGap(
+                    gap_type="single_defense_layer",
+                    severity=4.0,
+                    description="Only one defense layer present",
+                    recommendation="Consider adding a second defense layer for better survivability",
+                    current_value=1,
+                    recommended_value=2,
+                )
+            )
 
         # Check 4: Block over-investment
         if stats.block_chance > DefenseConstants.BLOCK_MAX_CHANCE:
             waste = stats.block_chance - DefenseConstants.BLOCK_MAX_CHANCE
             severity = min(5.0, waste / 10.0)
 
-            gaps.append(DefenseGap(
-                gap_type="overcapped_block",
-                severity=severity,
-                description=f"Block chance ({stats.block_chance:.0f}%) exceeds cap ({DefenseConstants.BLOCK_MAX_CHANCE}%), wasting {waste:.0f}%",
-                recommendation=f"Reallocate {waste:.0f}% block chance to other defenses",
-                current_value=stats.block_chance,
-                recommended_value=DefenseConstants.BLOCK_MAX_CHANCE
-            ))
+            gaps.append(
+                DefenseGap(
+                    gap_type="overcapped_block",
+                    severity=severity,
+                    description=f"Block chance ({stats.block_chance:.0f}%) exceeds cap ({DefenseConstants.BLOCK_MAX_CHANCE}%), wasting {waste:.0f}%",
+                    recommendation=f"Reallocate {waste:.0f}% block chance to other defenses",
+                    current_value=stats.block_chance,
+                    recommended_value=DefenseConstants.BLOCK_MAX_CHANCE,
+                )
+            )
 
         # Check 5: Armor effectiveness vs large hits
         if stats.armor > 0:
@@ -560,45 +570,50 @@ class EHPCalculator:
 
             if armor_result.damage_reduction_percent < 30.0:
                 severity = 5.0
-                gaps.append(DefenseGap(
-                    gap_type="armor_ineffective_vs_large_hits",
-                    severity=severity,
-                    description=f"Armor provides only {armor_result.damage_reduction_percent:.1f}% DR against large hits ({large_hit:.0f} damage)",
-                    recommendation="Consider supplementing armor with other defenses for one-shot protection",
-                    current_value=armor_result.damage_reduction_percent,
-                    recommended_value=50.0
-                ))
+                gaps.append(
+                    DefenseGap(
+                        gap_type="armor_ineffective_vs_large_hits",
+                        severity=severity,
+                        description=f"Armor provides only {armor_result.damage_reduction_percent:.1f}% DR against large hits ({large_hit:.0f} damage)",
+                        recommendation="Consider supplementing armor with other defenses for one-shot protection",
+                        current_value=armor_result.damage_reduction_percent,
+                        recommended_value=50.0,
+                    )
+                )
 
         # Check 6: Chaos resistance (special case - common oversight)
         if stats.chaos_res < 0:
             severity = min(6.0, abs(stats.chaos_res) / 20.0)
 
-            gaps.append(DefenseGap(
-                gap_type="negative_chaos_resistance",
-                severity=severity,
-                description=f"Negative chaos resistance ({stats.chaos_res:.0f}%) amplifies chaos damage",
-                recommendation=f"Increase chaos resistance by {abs(stats.chaos_res):.0f}% to reach 0% minimum",
-                current_value=stats.chaos_res,
-                recommended_value=0.0
-            ))
+            gaps.append(
+                DefenseGap(
+                    gap_type="negative_chaos_resistance",
+                    severity=severity,
+                    description=f"Negative chaos resistance ({stats.chaos_res:.0f}%) amplifies chaos damage",
+                    recommendation=f"Increase chaos resistance by {abs(stats.chaos_res):.0f}% to reach 0% minimum",
+                    current_value=stats.chaos_res,
+                    recommended_value=0.0,
+                )
+            )
 
         # Check 7: Evasion with no accuracy check
         if stats.evasion > 0:
             evasion_result = self.defense_calc.calculate_evasion_chance(
-                stats.evasion,
-                threat.attacker_accuracy
+                stats.evasion, threat.attacker_accuracy
             )
 
             if evasion_result.evade_chance_percent < 30.0:
                 severity = 3.0
-                gaps.append(DefenseGap(
-                    gap_type="low_evasion_effectiveness",
-                    severity=severity,
-                    description=f"Evasion provides only {evasion_result.evade_chance_percent:.1f}% evade chance vs expected accuracy",
-                    recommendation="Increase evasion rating or consider alternative defenses",
-                    current_value=evasion_result.evade_chance_percent,
-                    recommended_value=50.0
-                ))
+                gaps.append(
+                    DefenseGap(
+                        gap_type="low_evasion_effectiveness",
+                        severity=severity,
+                        description=f"Evasion provides only {evasion_result.evade_chance_percent:.1f}% evade chance vs expected accuracy",
+                        recommendation="Increase evasion rating or consider alternative defenses",
+                        current_value=evasion_result.evade_chance_percent,
+                        recommended_value=50.0,
+                    )
+                )
 
         # Sort by severity (highest first)
         gaps.sort(key=lambda g: g.severity, reverse=True)
@@ -611,10 +626,7 @@ class EHPCalculator:
     # ============================================================================
 
     def compare_upgrade(
-        self,
-        current_stats: DefensiveStats,
-        upgraded_stats: DefensiveStats,
-        threat: ThreatProfile
+        self, current_stats: DefensiveStats, upgraded_stats: DefensiveStats, threat: ThreatProfile
     ) -> Dict[str, Any]:
         """
         Compare EHP before and after a gear/passive upgrade.
@@ -649,26 +661,27 @@ class EHPCalculator:
             if current.effective_hp > 0:
                 percent_gain = (absolute_gain / current.effective_hp) * 100
             else:
-                percent_gain = float('inf') if absolute_gain > 0 else 0
+                percent_gain = float("inf") if absolute_gain > 0 else 0
 
             comparison[damage_type.value] = {
-                'current_ehp': current.effective_hp,
-                'upgraded_ehp': upgraded.effective_hp,
-                'absolute_gain': absolute_gain,
-                'percent_gain': percent_gain,
-                'mitigation_increase': (upgraded.total_mitigation - current.total_mitigation) * 100
+                "current_ehp": current.effective_hp,
+                "upgraded_ehp": upgraded.effective_hp,
+                "absolute_gain": absolute_gain,
+                "percent_gain": percent_gain,
+                "mitigation_increase": (upgraded.total_mitigation - current.total_mitigation) * 100,
             }
 
         # Calculate average improvement
         valid_gains = [
-            data['percent_gain'] for data in comparison.values()
-            if data['percent_gain'] != float('inf')
+            data["percent_gain"]
+            for data in comparison.values()
+            if data["percent_gain"] != float("inf")
         ]
 
-        comparison['summary'] = {
-            'average_percent_gain': sum(valid_gains) / len(valid_gains) if valid_gains else 0,
-            'worst_case_type': min(comparison.keys(), key=lambda k: comparison[k]['upgraded_ehp']),
-            'best_case_type': max(comparison.keys(), key=lambda k: comparison[k]['upgraded_ehp'])
+        comparison["summary"] = {
+            "average_percent_gain": sum(valid_gains) / len(valid_gains) if valid_gains else 0,
+            "worst_case_type": min(comparison.keys(), key=lambda k: comparison[k]["upgraded_ehp"]),
+            "best_case_type": max(comparison.keys(), key=lambda k: comparison[k]["upgraded_ehp"]),
         }
 
         logger.info(
@@ -683,7 +696,7 @@ class EHPCalculator:
         defense_type: str,
         increase_amount: float,
         threat: ThreatProfile,
-        target_damage_type: Optional[DamageType] = None
+        target_damage_type: Optional[DamageType] = None,
     ) -> Dict[str, float]:
         """
         Calculate how much EHP gain you'd get from increasing a specific defense.
@@ -718,27 +731,27 @@ class EHPCalculator:
             fire_res=stats.fire_res,
             cold_res=stats.cold_res,
             lightning_res=stats.lightning_res,
-            chaos_res=stats.chaos_res
+            chaos_res=stats.chaos_res,
         )
 
         # Apply increase
-        if defense_type == 'life':
+        if defense_type == "life":
             upgraded.life += increase_amount
-        elif defense_type == 'energy_shield':
+        elif defense_type == "energy_shield":
             upgraded.energy_shield += increase_amount
-        elif defense_type == 'armor':
+        elif defense_type == "armor":
             upgraded.armor += increase_amount
-        elif defense_type == 'evasion':
+        elif defense_type == "evasion":
             upgraded.evasion += increase_amount
-        elif defense_type == 'block_chance':
+        elif defense_type == "block_chance":
             upgraded.block_chance += increase_amount
-        elif defense_type == 'fire_res':
+        elif defense_type == "fire_res":
             upgraded.fire_res += increase_amount
-        elif defense_type == 'cold_res':
+        elif defense_type == "cold_res":
             upgraded.cold_res += increase_amount
-        elif defense_type == 'lightning_res':
+        elif defense_type == "lightning_res":
             upgraded.lightning_res += increase_amount
-        elif defense_type == 'chaos_res':
+        elif defense_type == "chaos_res":
             upgraded.chaos_res += increase_amount
         else:
             raise ValueError(f"Unknown defense type: {defense_type}")
@@ -748,20 +761,20 @@ class EHPCalculator:
 
         # Format result
         result = {
-            'defense_type': defense_type,
-            'increase_amount': increase_amount,
+            "defense_type": defense_type,
+            "increase_amount": increase_amount,
         }
 
         if target_damage_type:
             key = target_damage_type.value
-            result['ehp_gain'] = comparison[key]['absolute_gain']
-            result['percent_gain'] = comparison[key]['percent_gain']
+            result["ehp_gain"] = comparison[key]["absolute_gain"]
+            result["percent_gain"] = comparison[key]["percent_gain"]
         else:
             # Include all damage types
             for damage_type in DamageType:
                 key = damage_type.value
-                result[f'{key}_ehp_gain'] = comparison[key]['absolute_gain']
-                result[f'{key}_percent_gain'] = comparison[key]['percent_gain']
+                result[f"{key}_ehp_gain"] = comparison[key]["absolute_gain"]
+                result[f"{key}_percent_gain"] = comparison[key]["percent_gain"]
 
         logger.info(
             f"Defense value: +{increase_amount} {defense_type} = "
@@ -774,11 +787,7 @@ class EHPCalculator:
     # HELPER METHODS
     # ============================================================================
 
-    def _calculate_raw_hp(
-        self,
-        stats: DefensiveStats,
-        damage_type: DamageType
-    ) -> float:
+    def _calculate_raw_hp(self, stats: DefensiveStats, damage_type: DamageType) -> float:
         """
         Calculate raw HP pool accounting for PoE2 chaos mechanics.
 
@@ -791,26 +800,18 @@ class EHPCalculator:
         else:
             return stats.life + stats.energy_shield
 
-    def _calculate_evasion_mitigation(
-        self,
-        stats: DefensiveStats,
-        threat: ThreatProfile
-    ) -> float:
+    def _calculate_evasion_mitigation(self, stats: DefensiveStats, threat: ThreatProfile) -> float:
         """Calculate mitigation from evasion (chance to avoid hit)."""
         if stats.evasion == 0:
             return 0.0
 
         evasion_result = self.defense_calc.calculate_evasion_chance(
-            stats.evasion,
-            threat.attacker_accuracy
+            stats.evasion, threat.attacker_accuracy
         )
 
         return evasion_result.evade_chance_percent / 100.0
 
-    def _calculate_block_mitigation(
-        self,
-        stats: DefensiveStats
-    ) -> float:
+    def _calculate_block_mitigation(self, stats: DefensiveStats) -> float:
         """Calculate mitigation from block (chance to avoid hit)."""
         if stats.block_chance == 0:
             return 0.0
@@ -818,45 +819,30 @@ class EHPCalculator:
         block_result = self.defense_calc.calculate_block_chance(stats.block_chance)
         return block_result.block_chance_percent / 100.0
 
-    def _calculate_armor_dr(
-        self,
-        stats: DefensiveStats,
-        threat: ThreatProfile
-    ) -> float:
+    def _calculate_armor_dr(self, stats: DefensiveStats, threat: ThreatProfile) -> float:
         """Calculate damage reduction from armor (physical only)."""
         if stats.armor == 0:
             return 0.0
 
-        armor_result = self.defense_calc.calculate_armor_dr(
-            stats.armor,
-            threat.expected_hit_size
-        )
+        armor_result = self.defense_calc.calculate_armor_dr(stats.armor, threat.expected_hit_size)
 
         return armor_result.damage_reduction_percent / 100.0
 
-    def _calculate_resistance_dr(
-        self,
-        stats: DefensiveStats,
-        damage_type: DamageType
-    ) -> float:
+    def _calculate_resistance_dr(self, stats: DefensiveStats, damage_type: DamageType) -> float:
         """Calculate damage reduction from resistance."""
         resistance_value = self._get_resistance_value(stats, damage_type)
 
         res_result = self.defense_calc.calculate_resistance_dr(resistance_value)
         return res_result.damage_reduction_percent / 100.0
 
-    def _get_resistance_value(
-        self,
-        stats: DefensiveStats,
-        damage_type: DamageType
-    ) -> float:
+    def _get_resistance_value(self, stats: DefensiveStats, damage_type: DamageType) -> float:
         """Get resistance value for a specific damage type."""
         resistance_map = {
             DamageType.PHYSICAL: 0.0,  # No physical resistance
             DamageType.FIRE: stats.fire_res,
             DamageType.COLD: stats.cold_res,
             DamageType.LIGHTNING: stats.lightning_res,
-            DamageType.CHAOS: stats.chaos_res
+            DamageType.CHAOS: stats.chaos_res,
         }
 
         return resistance_map.get(damage_type, 0.0)
@@ -866,11 +852,9 @@ class EHPCalculator:
 # CONVENIENCE FUNCTIONS
 # ============================================================================
 
+
 def quick_physical_ehp(
-    life: float,
-    armor: float,
-    block_chance: float = 0.0,
-    hit_size: float = 1000.0
+    life: float, armor: float, block_chance: float = 0.0, hit_size: float = 1000.0
 ) -> float:
     """
     Quick physical EHP calculation.
@@ -891,11 +875,7 @@ def quick_physical_ehp(
     return result.effective_hp
 
 
-def quick_elemental_ehp(
-    life: float,
-    resistance: float,
-    block_chance: float = 0.0
-) -> float:
+def quick_elemental_ehp(life: float, resistance: float, block_chance: float = 0.0) -> float:
     """
     Quick elemental EHP calculation.
 
@@ -914,11 +894,10 @@ def quick_elemental_ehp(
     return result.effective_hp
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example usage and testing
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     print("=" * 80)
@@ -943,7 +922,7 @@ if __name__ == '__main__':
         fire_res=75,
         cold_res=75,
         lightning_res=75,
-        chaos_res=20
+        chaos_res=20,
     )
 
     threat = ThreatProfile(expected_hit_size=2000, attacker_accuracy=2500)
@@ -964,8 +943,10 @@ if __name__ == '__main__':
 
     print(f"\nEffective Health Pool by Damage Type:")
     for damage_type, result in all_ehp.items():
-        print(f"  {damage_type.value.upper()}: {result.effective_hp:.0f} EHP "
-              f"({result.total_mitigation*100:.1f}% mitigation)")
+        print(
+            f"  {damage_type.value.upper()}: {result.effective_hp:.0f} EHP "
+            f"({result.total_mitigation*100:.1f}% mitigation)"
+        )
 
     print(f"\nPhysical Damage Breakdown:")
     phys_result = all_ehp[DamageType.PHYSICAL]
@@ -985,8 +966,10 @@ if __name__ == '__main__':
     print(f"\nArmor Rating: {balanced_stats.armor:.0f}")
     print(f"\nEffectiveness by Hit Size:")
     for hit_size, data in hit_analysis.items():
-        print(f"  {hit_size:.0f} damage: {data['dr_percent']:.1f}% DR -> "
-              f"{data['physical_ehp']:.0f} Physical EHP")
+        print(
+            f"  {hit_size:.0f} damage: {data['dr_percent']:.1f}% DR -> "
+            f"{data['physical_ehp']:.0f} Physical EHP"
+        )
 
     # Example 3: Defense gap identification
     print("\n" + "-" * 80)
@@ -1003,7 +986,7 @@ if __name__ == '__main__':
         fire_res=60,
         cold_res=75,
         lightning_res=55,
-        chaos_res=-30
+        chaos_res=-30,
     )
 
     gaps = calc.identify_defense_gaps(flawed_stats, threat)
@@ -1027,7 +1010,7 @@ if __name__ == '__main__':
         fire_res=70,
         cold_res=75,
         lightning_res=75,
-        chaos_res=10
+        chaos_res=10,
     )
 
     # Comparing two upgrade options
@@ -1038,7 +1021,7 @@ if __name__ == '__main__':
         fire_res=70,
         cold_res=75,
         lightning_res=75,
-        chaos_res=10
+        chaos_res=10,
     )
 
     option_b = DefensiveStats(
@@ -1048,22 +1031,26 @@ if __name__ == '__main__':
         fire_res=75,  # +5% fire res (capped)
         cold_res=75,
         lightning_res=75,
-        chaos_res=10
+        chaos_res=10,
     )
 
     print("\nOption A: +3000 Armor")
     comparison_a = calc.compare_upgrade(current, option_a, threat)
-    for damage_type in ['physical', 'fire']:
+    for damage_type in ["physical", "fire"]:
         data = comparison_a[damage_type]
-        print(f"  {damage_type.upper()}: {data['current_ehp']:.0f} -> {data['upgraded_ehp']:.0f} "
-              f"(+{data['absolute_gain']:.0f}, +{data['percent_gain']:.1f}%)")
+        print(
+            f"  {damage_type.upper()}: {data['current_ehp']:.0f} -> {data['upgraded_ehp']:.0f} "
+            f"(+{data['absolute_gain']:.0f}, +{data['percent_gain']:.1f}%)"
+        )
 
     print("\nOption B: Fire Res 70% -> 75%")
     comparison_b = calc.compare_upgrade(current, option_b, threat)
-    for damage_type in ['physical', 'fire']:
+    for damage_type in ["physical", "fire"]:
         data = comparison_b[damage_type]
-        print(f"  {damage_type.upper()}: {data['current_ehp']:.0f} -> {data['upgraded_ehp']:.0f} "
-              f"(+{data['absolute_gain']:.0f}, +{data['percent_gain']:.1f}%)")
+        print(
+            f"  {damage_type.upper()}: {data['current_ehp']:.0f} -> {data['upgraded_ehp']:.0f} "
+            f"(+{data['absolute_gain']:.0f}, +{data['percent_gain']:.1f}%)"
+        )
 
     # Example 5: Defense value calculation
     print("\n" + "-" * 80)
@@ -1077,30 +1064,24 @@ if __name__ == '__main__':
         fire_res=75,
         cold_res=75,
         lightning_res=75,
-        chaos_res=0
+        chaos_res=0,
     )
 
     print("\nHow much EHP would various upgrades provide?")
     print("(vs 1000 damage hits)")
 
-    upgrades = [
-        ('life', 500),
-        ('armor', 5000),
-        ('block_chance', 10),
-        ('fire_res', 5)
-    ]
+    upgrades = [("life", 500), ("armor", 5000), ("block_chance", 10), ("fire_res", 5)]
 
     for defense_type, amount in upgrades:
         value = calc.calculate_defense_value(
-            base_stats,
-            defense_type,
-            amount,
-            ThreatProfile(expected_hit_size=1000)
+            base_stats, defense_type, amount, ThreatProfile(expected_hit_size=1000)
         )
 
         print(f"\n+{amount} {defense_type}:")
-        if 'physical_ehp_gain' in value:
-            print(f"  Physical: +{value['physical_ehp_gain']:.0f} EHP ({value['physical_percent_gain']:.1f}%)")
+        if "physical_ehp_gain" in value:
+            print(
+                f"  Physical: +{value['physical_ehp_gain']:.0f} EHP ({value['physical_percent_gain']:.1f}%)"
+            )
             print(f"  Fire: +{value['fire_ehp_gain']:.0f} EHP ({value['fire_percent_gain']:.1f}%)")
         else:
             print(f"  EHP Gain: +{value['ehp_gain']:.0f} ({value['percent_gain']:.1f}%)")
@@ -1114,7 +1095,7 @@ if __name__ == '__main__':
 
     print(f"\nArmor needed for target DR (vs {ThreatProfile().expected_hit_size:.0f} damage hits):")
     for dr, armor_needed in breakpoints.items():
-        if armor_needed == float('inf'):
+        if armor_needed == float("inf"):
             print(f"  {dr:.0f}% DR: Cannot reach (exceeds 90% cap)")
         else:
             print(f"  {dr:.0f}% DR: {armor_needed:.0f} armor")

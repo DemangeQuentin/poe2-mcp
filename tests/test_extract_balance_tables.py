@@ -15,6 +15,7 @@ The subprocess paths (``run_extraction``, ``count_index_balance_tables``)
 are smoke-tested by ``--check`` mode in the field; not pinned here to keep
 the test suite hermetic (no Steam install / no bun binary required).
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -28,9 +29,7 @@ SCRIPT_PATH = PROJECT_ROOT / "scripts" / "extract_balance_tables_v1.py"
 
 def _load_script_module():
     """Load the script as a module without running its __main__."""
-    spec = importlib.util.spec_from_file_location(
-        "extract_balance_tables_v1", SCRIPT_PATH
-    )
+    spec = importlib.util.spec_from_file_location("extract_balance_tables_v1", SCRIPT_PATH)
     mod = importlib.util.module_from_spec(spec)
     sys.modules["extract_balance_tables_v1"] = mod
     spec.loader.exec_module(mod)

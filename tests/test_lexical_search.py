@@ -4,6 +4,7 @@ Tests for the BM25 lexical retrieval tier (#177, amended no-model design).
 Locks the morphological-recall property that motivated the issue:
 substring search misses wither->Withered; stemmed BM25 catches it.
 """
+
 from __future__ import annotations
 
 import sys
@@ -29,14 +30,14 @@ def test_stem_handles_inflection():
     assert stem("slows") == "slow"
     assert stem("igniting") == "ignit" and stem("ignited") == "ignit"
     assert stem("hits") == "hit" and stem("stacks") == "stack"
-    assert stem("dps") == "dps"          # short tokens untouched
-    assert stem("chaos") == "chaos"     # vowel-before-s is not a plural
+    assert stem("dps") == "dps"  # short tokens untouched
+    assert stem("chaos") == "chaos"  # vowel-before-s is not a plural
     assert stem("status") == "status"
 
 
 def test_tokenize_strips_markup():
     toks = tokenize("[Withered|Wither] increased [Chaos] Damage")
-    assert "wither" in toks            # both markup halves stem together
+    assert "wither" in toks  # both markup halves stem together
     assert "chao" in toks or "chaos" in toks
     assert "damag" in toks or "damage" in toks
 
@@ -48,7 +49,7 @@ def test_bm25_ranks_relevant_doc_first():
     idx.add("c", "increased fire damage")
     idx.finalize()
     hits = idx.search("chaos damage", k=3)
-    assert hits[0][1]["id"] in ("a", "b")   # a chaos doc, not fire
+    assert hits[0][1]["id"] in ("a", "b")  # a chaos doc, not fire
     assert hits[0][1]["id"] != "c"
 
 

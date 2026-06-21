@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from pydantic import BaseModel, Field, field_validator
 
 from .models import Base, Item, PassiveNode, SkillGem, SavedBuild, ItemMod
+
 try:
     from ..config import settings, DATA_DIR
 except ImportError:
@@ -22,37 +23,39 @@ logger = logging.getLogger(__name__)
 
 class ItemSearchInput(BaseModel):
     """Input validation for item search queries"""
+
     query: str = Field(..., min_length=1, max_length=100)
     item_class: Optional[str] = Field(None, max_length=50)
     rarity: Optional[str] = Field(None, max_length=20)
 
-    @field_validator('query', 'item_class', 'rarity')
+    @field_validator("query", "item_class", "rarity")
     @classmethod
     def sanitize_input(cls, v):
         """Sanitize input to prevent injection attacks"""
         if v is None:
             return v
         # Remove null bytes and control characters
-        v = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', v)
+        v = re.sub(r"[\x00-\x1f\x7f-\x9f]", "", v)
         # Limit to alphanumeric, spaces, and common punctuation
-        v = re.sub(r'[^a-zA-Z0-9\s\-_\',.]', '', v)
+        v = re.sub(r"[^a-zA-Z0-9\s\-_\',.]", "", v)
         return v.strip()
 
 
 class SaveBuildInput(BaseModel):
     """Input validation for saving builds"""
+
     name: str = Field(..., min_length=1, max_length=100)
     user_id: Optional[str] = Field(None, max_length=50)
     character_data: Dict[str, Any]
 
-    @field_validator('name', 'user_id')
+    @field_validator("name", "user_id")
     @classmethod
     def sanitize_string(cls, v):
         """Sanitize string inputs"""
         if v is None:
             return v
         # Remove null bytes and control characters
-        v = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', v)
+        v = re.sub(r"[\x00-\x1f\x7f-\x9f]", "", v)
         return v.strip()
 
 
@@ -68,16 +71,10 @@ class DatabaseManager:
         else:
             async_url = self.db_url
 
-        self.engine = create_async_engine(
-            async_url,
-            echo=settings.DB_ECHO,
-            future=True
-        )
+        self.engine = create_async_engine(async_url, echo=settings.DB_ECHO, future=True)
 
         self.async_session = async_sessionmaker(
-            self.engine,
-            class_=AsyncSession,
-            expire_on_commit=False
+            self.engine, class_=AsyncSession, expire_on_commit=False
         )
 
     @staticmethod
@@ -95,10 +92,10 @@ class DatabaseManager:
             Escaped pattern safe for use in LIKE queries
         """
         # Escape backslash first (the escape character itself)
-        pattern = pattern.replace('\\', '\\\\')
+        pattern = pattern.replace("\\", "\\\\")
         # Escape LIKE wildcards
-        pattern = pattern.replace('%', '\\%')
-        pattern = pattern.replace('_', '\\_')
+        pattern = pattern.replace("%", "\\%")
+        pattern = pattern.replace("_", "\\_")
         return pattern
 
     async def initialize(self):
@@ -112,9 +109,7 @@ class DatabaseManager:
             raise
 
     async def search_items(
-        self,
-        query: str,
-        filters: Optional[Dict[str, Any]] = None
+        self, query: str, filters: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """
         Search for items in the .datc64 game database with input validation.
@@ -134,7 +129,7 @@ class DatabaseManager:
             search_input = ItemSearchInput(
                 query=query,
                 item_class=filters.get("item_class") if filters else None,
-                rarity=None  # Not applicable for .datc64 base items
+                rarity=None,  # Not applicable for .datc64 base items
             )
         except Exception as e:
             logger.warning(f"Invalid search input: {e}")
@@ -151,7 +146,8 @@ class DatabaseManager:
             try:
                 # Query baseitemtypes with join to itemclasses
                 # Extract name from Id if Name is empty (known .datc64 issue)
-                sql_query = text("""
+                sql_query = text(
+                    """
                     SELECT
                         b.data,
                         i.data as class_data
@@ -164,7 +160,8 @@ class DatabaseManager:
                         OR json_extract(b.data, '$.Id') LIKE :term
                     )
                     LIMIT 50
-                """)
+                """
+                )
 
                 result = await session.execute(sql_query, {"term": f"%{safe_query}%"})
                 rows = result.fetchall()
@@ -189,36 +186,49 @@ class DatabaseManager:
                     # Convert camelCase to Title Case (e.g., "SkillGemIceNova" -> "Ice Nova")
                     if item_name and not " " in item_name:
                         # Remove common prefixes
-                        for prefix in ["SkillGem", "SupportGem", "CurrencyAdd", "Currency", "OneHand", "TwoHand"]:
+                        for prefix in [
+                            "SkillGem",
+                            "SupportGem",
+                            "CurrencyAdd",
+                            "Currency",
+                            "OneHand",
+                            "TwoHand",
+                        ]:
                             if item_name.startswith(prefix):
-                                item_name = item_name[len(prefix):]
+                                item_name = item_name[len(prefix) :]
                                 break
 
                         # Add spaces before capital letters
                         import re
-                        item_name = re.sub(r'([A-Z])', r' \1', item_name).strip()
+
+                        item_name = re.sub(r"([A-Z])", r" \1", item_name).strip()
 
                     # Get item class name
                     item_class = class_data.get("Name", "Unknown")
 
                     # Apply item_class filter if specified
-                    if search_input.item_class and item_class.lower() != search_input.item_class.lower():
+                    if (
+                        search_input.item_class
+                        and item_class.lower() != search_input.item_class.lower()
+                    ):
                         continue
 
-                    items.append({
-                        "id": base_data.get("Id", ""),
-                        "name": item_name,
-                        "base_type": base_data.get("InheritsFrom", ""),
-                        "item_class": item_class,
-                        "width": base_data.get("Width", 1),
-                        "height": base_data.get("Height", 1),
-                        "drop_level": base_data.get("DropLevel", 0),
-                        "row_index": base_data.get("row_index", 0),
-                        "properties": {
-                            "tags": base_data.get("TagsKeys", []),
-                            "implicit_mods": base_data.get("Implicit_ModsKeys", [])
+                    items.append(
+                        {
+                            "id": base_data.get("Id", ""),
+                            "name": item_name,
+                            "base_type": base_data.get("InheritsFrom", ""),
+                            "item_class": item_class,
+                            "width": base_data.get("Width", 1),
+                            "height": base_data.get("Height", 1),
+                            "drop_level": base_data.get("DropLevel", 0),
+                            "row_index": base_data.get("row_index", 0),
+                            "properties": {
+                                "tags": base_data.get("TagsKeys", []),
+                                "implicit_mods": base_data.get("Implicit_ModsKeys", []),
+                            },
                         }
-                    })
+                    )
 
                 return items
 
@@ -245,7 +255,7 @@ class DatabaseManager:
                         "id": node.node_id,
                         "name": node.name,
                         "isKeystone": node.is_keystone,
-                        "stats": node.stats
+                        "stats": node.stats,
                     }
                     for node in nodes
                 ]
@@ -276,7 +286,7 @@ class DatabaseManager:
             build_input = SaveBuildInput(
                 name=build_data.get("name", "Unnamed Build"),
                 user_id=build_data.get("user_id"),
-                character_data=build_data
+                character_data=build_data,
             )
         except Exception as e:
             logger.warning(f"Invalid build data: {e}")
@@ -286,7 +296,7 @@ class DatabaseManager:
             build = SavedBuild(
                 build_name=build_input.name,
                 character_data=build_input.character_data,
-                user_id=build_input.user_id
+                user_id=build_input.user_id,
             )
             session.add(build)
             await session.commit()

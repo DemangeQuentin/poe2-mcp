@@ -72,6 +72,7 @@ class StatDelta:
         tolerance_pct: Tolerance band applied to this stat.
         within_tolerance: ``pct_delta <= tolerance_pct``.
     """
+
     stat: str
     our_value: float
     oracle_value: float
@@ -92,6 +93,7 @@ class ReconciliationReport:
         all_within_tolerance: True iff every delta is within its band.
         skipped: List of stat names not present in the oracle.
     """
+
     char_name: Optional[str]
     deltas: List[StatDelta] = field(default_factory=list)
     all_within_tolerance: bool = True
@@ -173,15 +175,17 @@ def reconcile_defensive_stats(
         pct = abs_d / denom * 100.0
         tol = tolerances.get(stat, 15.0)
         within = pct <= tol
-        report.deltas.append(StatDelta(
-            stat=stat,
-            our_value=ours,
-            oracle_value=oracle_val,
-            abs_delta=abs_d,
-            pct_delta=pct,
-            tolerance_pct=tol,
-            within_tolerance=within,
-        ))
+        report.deltas.append(
+            StatDelta(
+                stat=stat,
+                our_value=ours,
+                oracle_value=oracle_val,
+                abs_delta=abs_d,
+                pct_delta=pct,
+                tolerance_pct=tol,
+                within_tolerance=within,
+            )
+        )
         if not within:
             report.all_within_tolerance = False
 
@@ -221,8 +225,7 @@ def format_report(report: ReconciliationReport) -> str:
     if report.char_name:
         lines.append(f"Reconciliation report for: {report.char_name}")
     lines.append(
-        f"{'Stat':<24}{'Ours':>12}{'Oracle':>12}{'AbsDelta':>12}"
-        f"{'Pct%':>10}{'Tol%':>8} OK?"
+        f"{'Stat':<24}{'Ours':>12}{'Oracle':>12}{'AbsDelta':>12}" f"{'Pct%':>10}{'Tol%':>8} OK?"
     )
     lines.append("-" * 84)
     for d in report.deltas:

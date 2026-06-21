@@ -68,7 +68,7 @@ class TinyMT32:
         self._initialize(seeds)
 
     @classmethod
-    def from_poe_seed(cls, node_id: int, jewel_seed: int) -> 'TinyMT32':
+    def from_poe_seed(cls, node_id: int, jewel_seed: int) -> "TinyMT32":
         """
         Create a TinyMT32 instance using PoE's seed format.
 
@@ -134,7 +134,7 @@ class TinyMT32:
             self.INITIAL_STATE_0,
             self.INITIAL_STATE_1,
             self.INITIAL_STATE_2,
-            self.INITIAL_STATE_3
+            self.INITIAL_STATE_3,
         ]
 
         index = 1
@@ -145,9 +145,9 @@ class TinyMT32:
 
             # XOR three state positions and apply alpha manipulation
             round_state = self._manipulate_alpha(
-                self._state[(index % 4) + 1] ^
-                self._state[((index + 1) % 4) + 1] ^
-                self._state[(((index + 4) - 1) % 4) + 1]
+                self._state[(index % 4) + 1]
+                ^ self._state[((index + 1) % 4) + 1]
+                ^ self._state[(((index + 4) - 1) % 4) + 1]
             )
 
             self._state[((index + 1) % 4) + 1] = (
@@ -166,9 +166,9 @@ class TinyMT32:
         # Phase 3: Additional alpha mixing (5 rounds)
         for i in range(5):
             round_state = self._manipulate_alpha(
-                self._state[(index % 4) + 1] ^
-                self._state[((index + 1) % 4) + 1] ^
-                self._state[(((index + 4) - 1) % 4) + 1]
+                self._state[(index % 4) + 1]
+                ^ self._state[((index + 1) % 4) + 1]
+                ^ self._state[(((index + 4) - 1) % 4) + 1]
             )
 
             self._state[((index + 1) % 4) + 1] = (
@@ -187,9 +187,12 @@ class TinyMT32:
         # Phase 4: Bravo mixing with XOR operations (4 rounds)
         for i in range(4):
             round_state = self._manipulate_bravo(
-                (self._state[(index % 4) + 1] +
-                 self._state[((index + 1) % 4) + 1] +
-                 self._state[(((index + 4) - 1) % 4) + 1]) & 0xFFFFFFFF
+                (
+                    self._state[(index % 4) + 1]
+                    + self._state[((index + 1) % 4) + 1]
+                    + self._state[(((index + 4) - 1) % 4) + 1]
+                )
+                & 0xFFFFFFFF
             )
 
             self._state[((index + 1) % 4) + 1] ^= round_state
@@ -321,8 +324,10 @@ class TinyMT32:
                     break
 
             # Check if we need to reject this sample
-            if not ((value // exclusive_max >= round_state) and
-                    (round_state % exclusive_max != max_value)):
+            if not (
+                (value // exclusive_max >= round_state)
+                and (round_state % exclusive_max != max_value)
+            ):
                 break
 
         return value % exclusive_max
@@ -352,7 +357,7 @@ class TinyMT32:
 
         roll = self.generate_range(((b - a) & 0xFFFFFFFF) + 1)
 
-        return ((roll + a + 0x80000000) & 0xFFFFFFFF)
+        return (roll + a + 0x80000000) & 0xFFFFFFFF
 
     def get_state(self) -> Tuple[int, int, int, int, int]:
         """

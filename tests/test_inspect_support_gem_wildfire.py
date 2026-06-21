@@ -64,6 +64,7 @@ async def _call_inspect(mcp_instance, name):
 # Tier 1 — gem in the .datc64 support_gems table
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_tier1_known_support_returns_existing_record(mcp):
     """Rage is in the .datc64 support_gems extract. Tier-1 path takes over;
@@ -86,6 +87,7 @@ async def test_tier1_known_support_returns_existing_record(mcp):
 # exist only in skill_gems — so these tests probe with Fire Attunement,
 # one of those Tier-2-only gems.
 # ---------------------------------------------------------------------------
+
 
 @needs_pr107
 @pytest.mark.asyncio
@@ -116,9 +118,7 @@ async def test_tier2_carries_v1_schema_gap_note(mcp):
     # The note should mention the gap explicitly
     assert "v1" in text.lower()
     # And should reference at least one of the missing field categories
-    assert any(field in text.lower() for field in (
-        "spirit_cost", "effects", "compatibility"
-    ))
+    assert any(field in text.lower() for field in ("spirit_cost", "effects", "compatibility"))
 
 
 @needs_pr107
@@ -140,6 +140,7 @@ async def test_tier2_surfaces_locked_metadata(mcp):
 # ---------------------------------------------------------------------------
 # Both miss
 # ---------------------------------------------------------------------------
+
 
 @needs_pr107
 @pytest.mark.asyncio

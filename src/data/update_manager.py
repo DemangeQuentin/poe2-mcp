@@ -88,7 +88,10 @@ def _git(*args: str, timeout: int = 10) -> Optional[str]:
     try:
         out = subprocess.run(
             [git, "-C", str(_BASE_DIR), *args],
-            capture_output=True, text=True, timeout=timeout, check=True,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=True,
         )
         return out.stdout.strip()
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
@@ -129,8 +132,10 @@ def _latest_code_release() -> Optional[Dict[str, Any]]:
     try:
         req = urllib.request.Request(
             RELEASES_API,
-            headers={"User-Agent": "poe2-mcp-update-manager",
-                     "Accept": "application/vnd.github+json"},
+            headers={
+                "User-Agent": "poe2-mcp-update-manager",
+                "Accept": "application/vnd.github+json",
+            },
         )
         with urllib.request.urlopen(req, timeout=10) as r:
             releases = json.loads(r.read())
@@ -211,9 +216,8 @@ def get_code_status(allow_network: bool = True) -> Dict[str, Any]:
             status["update_available"] = True
             status["latest"] = remote_head[:7] if remote_head else None
             status["can_self_apply"] = not dirty
-            status["reason"] = (
-                f"{behind} commit(s) behind origin/main"
-                + ("; working tree dirty (manual pull needed)" if dirty else "")
+            status["reason"] = f"{behind} commit(s) behind origin/main" + (
+                "; working tree dirty (manual pull needed)" if dirty else ""
             )
         else:
             status["reason"] = "up to date with origin/main"

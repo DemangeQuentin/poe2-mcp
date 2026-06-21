@@ -10,6 +10,7 @@ Imports src.launcher_helpers directly (light-module pattern) to avoid
 launch.py's import-time sys.stdout wrap, which interacts badly with
 pytest capture across tests.
 """
+
 from __future__ import annotations
 
 import shutil as _shutil
@@ -37,48 +38,48 @@ def test_env_var_skip_short_circuits_before_git(monkeypatch):
     """
     from src.launcher_helpers import check_code_freshness
 
-    monkeypatch.setenv('POE2_MCP_NO_CODE_CHECK', '1')
+    monkeypatch.setenv("POE2_MCP_NO_CODE_CHECK", "1")
     which_calls: list[str] = []
-    monkeypatch.setattr(
-        _shutil, 'which', lambda name: which_calls.append(name) or None
-    )
+    monkeypatch.setattr(_shutil, "which", lambda name: which_calls.append(name) or None)
 
     info, info_msgs = _capture_sink()
     check_code_freshness(print_info=info)  # must not raise
 
-    assert which_calls == [], (
-        f'shutil.which should not be called when env-skip is active; got {which_calls}'
-    )
-    assert any('POE2_MCP_NO_CODE_CHECK=1' in m for m in info_msgs), info_msgs
+    assert (
+        which_calls == []
+    ), f"shutil.which should not be called when env-skip is active; got {which_calls}"
+    assert any("POE2_MCP_NO_CODE_CHECK=1" in m for m in info_msgs), info_msgs
 
 
 def test_git_missing_bails_with_warning(monkeypatch, tmp_path):
     """If git is not on PATH, the function must warn and return — never crash."""
     from src.launcher_helpers import check_code_freshness
 
-    monkeypatch.delenv('POE2_MCP_NO_CODE_CHECK', raising=False)
-    monkeypatch.delenv('POE2_MCP_AUTO_UPDATE', raising=False)
+    monkeypatch.delenv("POE2_MCP_NO_CODE_CHECK", raising=False)
+    monkeypatch.delenv("POE2_MCP_AUTO_UPDATE", raising=False)
 
     which_calls: list[str] = []
+
     def _no_git(name):
         which_calls.append(name)
         return None
-    monkeypatch.setattr(_shutil, 'which', _no_git)
+
+    monkeypatch.setattr(_shutil, "which", _no_git)
     monkeypatch.chdir(tmp_path)
 
     warn, warn_msgs = _capture_sink()
     check_code_freshness(print_warning=warn)  # must not raise
 
-    assert 'git' in which_calls, 'should have looked up git on PATH'
-    assert any('git not in PATH' in m for m in warn_msgs), warn_msgs
+    assert "git" in which_calls, "should have looked up git on PATH"
+    assert any("git not in PATH" in m for m in warn_msgs), warn_msgs
 
 
 def test_no_git_repo_bails_gracefully(monkeypatch, tmp_path):
     """In a directory that's not a git checkout, function returns cleanly."""
     from src.launcher_helpers import check_code_freshness
 
-    monkeypatch.delenv('POE2_MCP_NO_CODE_CHECK', raising=False)
-    monkeypatch.delenv('POE2_MCP_AUTO_UPDATE', raising=False)
+    monkeypatch.delenv("POE2_MCP_NO_CODE_CHECK", raising=False)
+    monkeypatch.delenv("POE2_MCP_AUTO_UPDATE", raising=False)
     monkeypatch.chdir(tmp_path)
 
     info, info_msgs = _capture_sink()
@@ -89,9 +90,7 @@ def test_no_git_repo_bails_gracefully(monkeypatch, tmp_path):
     # in PATH" (depending on CI environment). Both are acceptable graceful
     # exits — what matters is that the function returned without raising.
     all_msgs = info_msgs + warn_msgs
-    assert any(
-        'git checkout' in m or 'git not in PATH' in m for m in all_msgs
-    ), all_msgs
+    assert any("git checkout" in m or "git not in PATH" in m for m in all_msgs), all_msgs
 
 
 def test_runs_to_completion_in_this_repo(monkeypatch):
@@ -102,7 +101,7 @@ def test_runs_to_completion_in_this_repo(monkeypatch):
     """
     from src.launcher_helpers import check_code_freshness
 
-    monkeypatch.delenv('POE2_MCP_NO_CODE_CHECK', raising=False)
-    monkeypatch.delenv('POE2_MCP_AUTO_UPDATE', raising=False)
+    monkeypatch.delenv("POE2_MCP_NO_CODE_CHECK", raising=False)
+    monkeypatch.delenv("POE2_MCP_AUTO_UPDATE", raising=False)
 
     check_code_freshness()  # default no-op sinks; just verify no raise

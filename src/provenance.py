@@ -24,10 +24,10 @@ from __future__ import annotations
 from typing import Optional
 
 # Tier vocabulary — keep stable; downstream tooling reads these.
-CANONICAL = "canonical"       # Extracted directly from .datc64 / .csd game files.
-COMPUTED = "computed"         # Derived via a documented formula from canonical inputs.
-INTERPRETED = "interpreted"   # Hand-authored / wiki-derived summary.
-EXTERNAL = "external"         # Live data from poe.ninja / trade API / similar.
+CANONICAL = "canonical"  # Extracted directly from .datc64 / .csd game files.
+COMPUTED = "computed"  # Derived via a documented formula from canonical inputs.
+INTERPRETED = "interpreted"  # Hand-authored / wiki-derived summary.
+EXTERNAL = "external"  # Live data from poe.ninja / trade API / similar.
 
 _TIER_NOTES = {
     INTERPRETED: (

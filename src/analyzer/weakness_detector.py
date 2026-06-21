@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 class WeaknessSeverity(Enum):
     """Severity levels for weaknesses."""
+
     CRITICAL = "critical"  # Immediate danger (negative res, no life)
     HIGH = "high"  # Serious problem (very low EHP, overcapped)
     MEDIUM = "medium"  # Room for improvement
@@ -39,6 +40,7 @@ class WeaknessSeverity(Enum):
 
 class WeaknessCategory(Enum):
     """Categories of weaknesses."""
+
     RESISTANCE = "resistance"
     LIFE_POOL = "life_pool"
     ENERGY_SHIELD = "energy_shield"
@@ -66,6 +68,7 @@ class Weakness:
         recommendations: List of specific recommendations to fix
         priority: Priority score (0-100, higher = more urgent)
     """
+
     category: WeaknessCategory
     severity: WeaknessSeverity
     title: str
@@ -85,6 +88,7 @@ class CharacterData:
     This is a convenience wrapper that extracts the necessary data
     from the full character JSON.
     """
+
     level: int
     character_class: str
 
@@ -147,9 +151,7 @@ class WeaknessDetector:
     # ============================================================================
 
     def detect_all_weaknesses(
-        self,
-        char_data: CharacterData,
-        threat_profile: Optional[ThreatProfile] = None
+        self, char_data: CharacterData, threat_profile: Optional[ThreatProfile] = None
     ) -> List[Weakness]:
         """
         Detect all weaknesses in a character build.
@@ -182,10 +184,7 @@ class WeaknessDetector:
         logger.info(f"Detected {len(weaknesses)} weaknesses")
         return weaknesses
 
-    def get_critical_weaknesses(
-        self,
-        char_data: CharacterData
-    ) -> List[Weakness]:
+    def get_critical_weaknesses(self, char_data: CharacterData) -> List[Weakness]:
         """
         Get only CRITICAL severity weaknesses.
 
@@ -196,10 +195,7 @@ class WeaknessDetector:
         logger.info(f"Found {len(critical)} critical weaknesses")
         return critical
 
-    def get_weakness_summary(
-        self,
-        char_data: CharacterData
-    ) -> Dict[str, Any]:
+    def get_weakness_summary(self, char_data: CharacterData) -> Dict[str, Any]:
         """
         Get a summary of all weaknesses by category and severity.
 
@@ -224,19 +220,19 @@ class WeaknessDetector:
         top_5 = weaknesses[:5]
 
         summary = {
-            'total_weaknesses': len(weaknesses),
-            'by_severity': {k.value: v for k, v in by_severity.items()},
-            'by_category': {k.value: v for k, v in by_category.items()},
-            'top_priorities': [
+            "total_weaknesses": len(weaknesses),
+            "by_severity": {k.value: v for k, v in by_severity.items()},
+            "by_category": {k.value: v for k, v in by_category.items()},
+            "top_priorities": [
                 {
-                    'title': w.title,
-                    'severity': w.severity.value,
-                    'category': w.category.value,
-                    'priority': w.priority
+                    "title": w.title,
+                    "severity": w.severity.value,
+                    "category": w.category.value,
+                    "priority": w.priority,
                 }
                 for w in top_5
             ],
-            'needs_immediate_attention': by_severity[WeaknessSeverity.CRITICAL] > 0
+            "needs_immediate_attention": by_severity[WeaknessSeverity.CRITICAL] > 0,
         }
 
         return summary
@@ -251,58 +247,64 @@ class WeaknessDetector:
         cap = DefenseConstants.RESISTANCE_DEFAULT_CAP
 
         resistances = {
-            'Fire': char_data.fire_res,
-            'Cold': char_data.cold_res,
-            'Lightning': char_data.lightning_res,
-            'Chaos': char_data.chaos_res
+            "Fire": char_data.fire_res,
+            "Cold": char_data.cold_res,
+            "Lightning": char_data.lightning_res,
+            "Chaos": char_data.chaos_res,
         }
 
         for res_name, res_value in resistances.items():
             # Negative resistances (CRITICAL)
             if res_value < 0:
                 deficit = abs(res_value)
-                weaknesses.append(Weakness(
-                    category=WeaknessCategory.RESISTANCE,
-                    severity=WeaknessSeverity.CRITICAL,
-                    title=f"Negative {res_name} Resistance",
-                    description=f"{res_name} resistance is {res_value:.0f}%, amplifying damage taken",
-                    current_value=res_value,
-                    recommended_value=cap,
-                    impact=f"Taking {deficit:.0f}% MORE {res_name.lower()} damage",
-                    recommendations=[
-                        f"Add +{deficit:.0f}% {res_name} resistance to reach 0%",
-                        f"Ideally reach {cap}% cap for maximum mitigation",
-                        "Check gear, passive tree, and charms for resistance mods"
-                    ],
-                    priority=95 + int(deficit / 10)  # More negative = higher priority
-                ))
+                weaknesses.append(
+                    Weakness(
+                        category=WeaknessCategory.RESISTANCE,
+                        severity=WeaknessSeverity.CRITICAL,
+                        title=f"Negative {res_name} Resistance",
+                        description=f"{res_name} resistance is {res_value:.0f}%, amplifying damage taken",
+                        current_value=res_value,
+                        recommended_value=cap,
+                        impact=f"Taking {deficit:.0f}% MORE {res_name.lower()} damage",
+                        recommendations=[
+                            f"Add +{deficit:.0f}% {res_name} resistance to reach 0%",
+                            f"Ideally reach {cap}% cap for maximum mitigation",
+                            "Check gear, passive tree, and charms for resistance mods",
+                        ],
+                        priority=95 + int(deficit / 10),  # More negative = higher priority
+                    )
+                )
 
             # Below cap (HIGH/MEDIUM)
             elif res_value < cap:
                 deficit = cap - res_value
 
                 # Chaos res is less critical
-                if res_name == 'Chaos':
-                    severity = WeaknessSeverity.MEDIUM if res_value < cap * 0.5 else WeaknessSeverity.LOW
+                if res_name == "Chaos":
+                    severity = (
+                        WeaknessSeverity.MEDIUM if res_value < cap * 0.5 else WeaknessSeverity.LOW
+                    )
                     priority = 40 + int(deficit / 5)
                 else:
                     severity = WeaknessSeverity.HIGH if deficit > 20 else WeaknessSeverity.MEDIUM
                     priority = 70 + int(deficit / 5)
 
-                weaknesses.append(Weakness(
-                    category=WeaknessCategory.RESISTANCE,
-                    severity=severity,
-                    title=f"Uncapped {res_name} Resistance",
-                    description=f"{res_name} resistance is {res_value:.0f}%, {deficit:.0f}% below cap",
-                    current_value=res_value,
-                    recommended_value=cap,
-                    impact=f"Taking extra {res_name.lower()} damage",
-                    recommendations=[
-                        f"Add +{deficit:.0f}% {res_name} resistance to reach {cap}% cap",
-                        "Prioritize this before increasing damage"
-                    ],
-                    priority=priority
-                ))
+                weaknesses.append(
+                    Weakness(
+                        category=WeaknessCategory.RESISTANCE,
+                        severity=severity,
+                        title=f"Uncapped {res_name} Resistance",
+                        description=f"{res_name} resistance is {res_value:.0f}%, {deficit:.0f}% below cap",
+                        current_value=res_value,
+                        recommended_value=cap,
+                        impact=f"Taking extra {res_name.lower()} damage",
+                        recommendations=[
+                            f"Add +{deficit:.0f}% {res_name} resistance to reach {cap}% cap",
+                            "Prioritize this before increasing damage",
+                        ],
+                        priority=priority,
+                    )
+                )
 
         return weaknesses
 
@@ -320,43 +322,51 @@ class WeaknessDetector:
         # Very low life (CRITICAL)
         if char_data.life < expected_life * 0.5:
             deficit = expected_life - char_data.life
-            weaknesses.append(Weakness(
-                category=WeaknessCategory.LIFE_POOL,
-                severity=WeaknessSeverity.CRITICAL,
-                title="Critically Low Life Pool",
-                description=f"Life pool ({char_data.life:.0f}) is dangerously low for level {char_data.level}",
-                current_value=char_data.life,
-                recommended_value=expected_life,
-                impact="Extremely vulnerable to one-shots",
-                recommendations=[
-                    f"Increase life by {deficit:.0f} (current: {char_data.life:.0f}, recommended: {expected_life:.0f})",
-                    "Focus on % increased maximum life from tree",
-                    "Look for flat +life on all gear pieces",
-                    "Consider using life flasks more actively"
-                ],
-                priority=90
-            ))
+            weaknesses.append(
+                Weakness(
+                    category=WeaknessCategory.LIFE_POOL,
+                    severity=WeaknessSeverity.CRITICAL,
+                    title="Critically Low Life Pool",
+                    description=f"Life pool ({char_data.life:.0f}) is dangerously low for level {char_data.level}",
+                    current_value=char_data.life,
+                    recommended_value=expected_life,
+                    impact="Extremely vulnerable to one-shots",
+                    recommendations=[
+                        f"Increase life by {deficit:.0f} (current: {char_data.life:.0f}, recommended: {expected_life:.0f})",
+                        "Focus on % increased maximum life from tree",
+                        "Look for flat +life on all gear pieces",
+                        "Consider using life flasks more actively",
+                    ],
+                    priority=90,
+                )
+            )
 
         # Low life (HIGH/MEDIUM)
         elif char_data.life < expected_life * 0.75:
             deficit = expected_life - char_data.life
-            severity = WeaknessSeverity.HIGH if char_data.life < expected_life * 0.6 else WeaknessSeverity.MEDIUM
+            severity = (
+                WeaknessSeverity.HIGH
+                if char_data.life < expected_life * 0.6
+                else WeaknessSeverity.MEDIUM
+            )
 
-            weaknesses.append(Weakness(
-                category=WeaknessCategory.LIFE_POOL,
-                severity=severity,
-                title="Low Life Pool",
-                description=f"Life pool ({char_data.life:.0f}) is below recommended for level {char_data.level}",
-                current_value=char_data.life,
-                recommended_value=expected_life,
-                impact="Vulnerable to burst damage",
-                recommendations=[
-                    f"Increase life by {deficit:.0f}",
-                    "Allocate life nodes on passive tree",
-                    "Upgrade gear with higher life rolls"
-                ],
-                priority=65
-            ))
+            weaknesses.append(
+                Weakness(
+                    category=WeaknessCategory.LIFE_POOL,
+                    severity=severity,
+                    title="Low Life Pool",
+                    description=f"Life pool ({char_data.life:.0f}) is below recommended for level {char_data.level}",
+                    current_value=char_data.life,
+                    recommended_value=expected_life,
+                    impact="Vulnerable to burst damage",
+                    recommendations=[
+                        f"Increase life by {deficit:.0f}",
+                        "Allocate life nodes on passive tree",
+                        "Upgrade gear with higher life rolls",
+                    ],
+                    priority=65,
+                )
+            )
 
         return weaknesses
 
@@ -374,21 +384,23 @@ class WeaknessDetector:
             expected_es = char_data.level * 150  # ES builds need more
 
             if char_data.energy_shield < expected_es * 0.6:
-                weaknesses.append(Weakness(
-                    category=WeaknessCategory.ENERGY_SHIELD,
-                    severity=WeaknessSeverity.HIGH,
-                    title="Low Energy Shield for ES Build",
-                    description=f"ES ({char_data.energy_shield:.0f}) is low for an ES-focused build at level {char_data.level}",
-                    current_value=char_data.energy_shield,
-                    recommended_value=expected_es,
-                    impact="Insufficient effective HP pool",
-                    recommendations=[
-                        f"Increase ES by {expected_es - char_data.energy_shield:.0f}",
-                        "Focus on % increased ES and flat +ES on gear",
-                        "Consider ES recharge rate improvements"
-                    ],
-                    priority=70
-                ))
+                weaknesses.append(
+                    Weakness(
+                        category=WeaknessCategory.ENERGY_SHIELD,
+                        severity=WeaknessSeverity.HIGH,
+                        title="Low Energy Shield for ES Build",
+                        description=f"ES ({char_data.energy_shield:.0f}) is low for an ES-focused build at level {char_data.level}",
+                        current_value=char_data.energy_shield,
+                        recommended_value=expected_es,
+                        impact="Insufficient effective HP pool",
+                        recommendations=[
+                            f"Increase ES by {expected_es - char_data.energy_shield:.0f}",
+                            "Focus on % increased ES and flat +ES on gear",
+                            "Consider ES recharge rate improvements",
+                        ],
+                        priority=70,
+                    )
+                )
 
         return weaknesses
 
@@ -407,41 +419,45 @@ class WeaknessDetector:
         # Spirit overflow (CRITICAL)
         if char_data.spirit_reserved > char_data.spirit_max:
             overflow = char_data.spirit_reserved - char_data.spirit_max
-            weaknesses.append(Weakness(
-                category=WeaknessCategory.SPIRIT,
-                severity=WeaknessSeverity.CRITICAL,
-                title="Spirit Overflow",
-                description=f"Spirit reserved ({char_data.spirit_reserved}) exceeds maximum ({char_data.spirit_max})",
-                current_value=char_data.spirit_reserved,
-                recommended_value=char_data.spirit_max,
-                impact="Cannot activate all Spirit gems",
-                recommendations=[
-                    f"Reduce Spirit reservation by {overflow}",
-                    "Disable lowest priority Spirit gems",
-                    "Remove support gems with high multipliers",
-                    "Get more maximum Spirit from gear or passives"
-                ],
-                priority=95
-            ))
+            weaknesses.append(
+                Weakness(
+                    category=WeaknessCategory.SPIRIT,
+                    severity=WeaknessSeverity.CRITICAL,
+                    title="Spirit Overflow",
+                    description=f"Spirit reserved ({char_data.spirit_reserved}) exceeds maximum ({char_data.spirit_max})",
+                    current_value=char_data.spirit_reserved,
+                    recommended_value=char_data.spirit_max,
+                    impact="Cannot activate all Spirit gems",
+                    recommendations=[
+                        f"Reduce Spirit reservation by {overflow}",
+                        "Disable lowest priority Spirit gems",
+                        "Remove support gems with high multipliers",
+                        "Get more maximum Spirit from gear or passives",
+                    ],
+                    priority=95,
+                )
+            )
 
         # Very high Spirit usage (MEDIUM)
         elif char_data.spirit_reserved > char_data.spirit_max * 0.95:
             available = char_data.spirit_max - char_data.spirit_reserved
-            weaknesses.append(Weakness(
-                category=WeaknessCategory.SPIRIT,
-                severity=WeaknessSeverity.MEDIUM,
-                title="Near Spirit Cap",
-                description=f"Using {char_data.spirit_reserved}/{char_data.spirit_max} Spirit ({available} available)",
-                current_value=char_data.spirit_reserved,
-                recommended_value=char_data.spirit_max * 0.85,
-                impact="No room for additional Spirit gems",
-                recommendations=[
-                    "Consider getting more maximum Spirit",
-                    "Optimize support gems to reduce costs",
-                    "Leave some Spirit headroom for flexibility"
-                ],
-                priority=45
-            ))
+            weaknesses.append(
+                Weakness(
+                    category=WeaknessCategory.SPIRIT,
+                    severity=WeaknessSeverity.MEDIUM,
+                    title="Near Spirit Cap",
+                    description=f"Using {char_data.spirit_reserved}/{char_data.spirit_max} Spirit ({available} available)",
+                    current_value=char_data.spirit_reserved,
+                    recommended_value=char_data.spirit_max * 0.85,
+                    impact="No room for additional Spirit gems",
+                    recommendations=[
+                        "Consider getting more maximum Spirit",
+                        "Optimize support gems to reduce costs",
+                        "Leave some Spirit headroom for flexibility",
+                    ],
+                    priority=45,
+                )
+            )
 
         return weaknesses
 
@@ -456,43 +472,47 @@ class WeaknessDetector:
         # Block overcap (PoE2: 50% max)
         if char_data.block_chance > DefenseConstants.BLOCK_MAX_CHANCE:
             waste = char_data.block_chance - DefenseConstants.BLOCK_MAX_CHANCE
-            weaknesses.append(Weakness(
-                category=WeaknessCategory.OVERCAPPED_STAT,
-                severity=WeaknessSeverity.MEDIUM if waste > 10 else WeaknessSeverity.LOW,
-                title="Overcapped Block Chance",
-                description=f"Block chance ({char_data.block_chance:.0f}%) exceeds cap ({DefenseConstants.BLOCK_MAX_CHANCE}%)",
-                current_value=char_data.block_chance,
-                recommended_value=DefenseConstants.BLOCK_MAX_CHANCE,
-                impact=f"Wasting {waste:.0f}% block chance investment",
-                recommendations=[
-                    f"Remove {waste:.0f}% block chance from tree/gear",
-                    "Reallocate to other defenses (armor, evasion, ES)",
-                    "Block cap in PoE2 is 50%, not 75% like PoE1"
-                ],
-                priority=50 if waste > 10 else 35
-            ))
+            weaknesses.append(
+                Weakness(
+                    category=WeaknessCategory.OVERCAPPED_STAT,
+                    severity=WeaknessSeverity.MEDIUM if waste > 10 else WeaknessSeverity.LOW,
+                    title="Overcapped Block Chance",
+                    description=f"Block chance ({char_data.block_chance:.0f}%) exceeds cap ({DefenseConstants.BLOCK_MAX_CHANCE}%)",
+                    current_value=char_data.block_chance,
+                    recommended_value=DefenseConstants.BLOCK_MAX_CHANCE,
+                    impact=f"Wasting {waste:.0f}% block chance investment",
+                    recommendations=[
+                        f"Remove {waste:.0f}% block chance from tree/gear",
+                        "Reallocate to other defenses (armor, evasion, ES)",
+                        "Block cap in PoE2 is 50%, not 75% like PoE1",
+                    ],
+                    priority=50 if waste > 10 else 35,
+                )
+            )
 
         # Resistance overcap (90% hard cap in PoE2)
-        for res_name in ['Fire', 'Cold', 'Lightning', 'Chaos']:
+        for res_name in ["Fire", "Cold", "Lightning", "Chaos"]:
             res_value = getattr(char_data, f"{res_name.lower()}_res")
 
             if res_value > DefenseConstants.RESISTANCE_HARD_CAP:
                 waste = res_value - DefenseConstants.RESISTANCE_HARD_CAP
-                weaknesses.append(Weakness(
-                    category=WeaknessCategory.OVERCAPPED_STAT,
-                    severity=WeaknessSeverity.LOW,
-                    title=f"Overcapped {res_name} Resistance",
-                    description=f"{res_name} resistance ({res_value:.0f}%) exceeds hard cap ({DefenseConstants.RESISTANCE_HARD_CAP}%)",
-                    current_value=res_value,
-                    recommended_value=DefenseConstants.RESISTANCE_HARD_CAP,
-                    impact=f"Wasting {waste:.0f}% resistance",
-                    recommendations=[
-                        f"Remove {waste:.0f}% {res_name} resistance",
-                        "Reallocate to other uncapped resistances or stats",
-                        "Note: PoE2 has 90% hard cap, cannot be exceeded"
-                    ],
-                    priority=30
-                ))
+                weaknesses.append(
+                    Weakness(
+                        category=WeaknessCategory.OVERCAPPED_STAT,
+                        severity=WeaknessSeverity.LOW,
+                        title=f"Overcapped {res_name} Resistance",
+                        description=f"{res_name} resistance ({res_value:.0f}%) exceeds hard cap ({DefenseConstants.RESISTANCE_HARD_CAP}%)",
+                        current_value=res_value,
+                        recommended_value=DefenseConstants.RESISTANCE_HARD_CAP,
+                        impact=f"Wasting {waste:.0f}% resistance",
+                        recommendations=[
+                            f"Remove {waste:.0f}% {res_name} resistance",
+                            "Reallocate to other uncapped resistances or stats",
+                            "Note: PoE2 has 90% hard cap, cannot be exceeded",
+                        ],
+                        priority=30,
+                    )
+                )
 
         return weaknesses
 
@@ -501,9 +521,7 @@ class WeaknessDetector:
     # ============================================================================
 
     def _detect_defense_layer_issues(
-        self,
-        char_data: CharacterData,
-        threat_profile: ThreatProfile
+        self, char_data: CharacterData, threat_profile: ThreatProfile
     ) -> List[Weakness]:
         """Detect defense layer weaknesses using EHP calculator."""
         weaknesses = []
@@ -518,7 +536,7 @@ class WeaknessDetector:
             fire_res=char_data.fire_res,
             cold_res=char_data.cold_res,
             lightning_res=char_data.lightning_res,
-            chaos_res=char_data.chaos_res
+            chaos_res=char_data.chaos_res,
         )
 
         # Use EHP calculator's built-in gap detection
@@ -536,17 +554,19 @@ class WeaknessDetector:
             else:
                 severity = WeaknessSeverity.LOW
 
-            weaknesses.append(Weakness(
-                category=WeaknessCategory.DEFENSE_LAYERS,
-                severity=severity,
-                title=gap.gap_type.replace('_', ' ').title(),
-                description=gap.description,
-                current_value=gap.current_value,
-                recommended_value=gap.recommended_value,
-                impact="Reduced survivability",
-                recommendations=[gap.recommendation],
-                priority=int(gap.severity * 10)
-            ))
+            weaknesses.append(
+                Weakness(
+                    category=WeaknessCategory.DEFENSE_LAYERS,
+                    severity=severity,
+                    title=gap.gap_type.replace("_", " ").title(),
+                    description=gap.description,
+                    current_value=gap.current_value,
+                    recommended_value=gap.recommended_value,
+                    impact="Reduced survivability",
+                    recommendations=[gap.recommendation],
+                    priority=int(gap.severity * 10),
+                )
+            )
 
         return weaknesses
 
@@ -563,21 +583,23 @@ class WeaknessDetector:
         # If life is very low, even small hits can stun
 
         if char_data.life < 2000:
-            weaknesses.append(Weakness(
-                category=WeaknessCategory.STUN_VULNERABILITY,
-                severity=WeaknessSeverity.HIGH,
-                title="High Stun Vulnerability",
-                description=f"Very low life ({char_data.life:.0f}) makes you vulnerable to stuns",
-                current_value=char_data.life,
-                recommended_value=3000,
-                impact="Frequently interrupted by Light Stuns, rapid Heavy Stun buildup",
-                recommendations=[
-                    "Increase life pool to reduce stun chance",
-                    "Consider stun avoidance/threshold modifiers",
-                    "Look for 'reduced stun threshold' on gear"
-                ],
-                priority=60
-            ))
+            weaknesses.append(
+                Weakness(
+                    category=WeaknessCategory.STUN_VULNERABILITY,
+                    severity=WeaknessSeverity.HIGH,
+                    title="High Stun Vulnerability",
+                    description=f"Very low life ({char_data.life:.0f}) makes you vulnerable to stuns",
+                    current_value=char_data.life,
+                    recommended_value=3000,
+                    impact="Frequently interrupted by Light Stuns, rapid Heavy Stun buildup",
+                    recommendations=[
+                        "Increase life pool to reduce stun chance",
+                        "Consider stun avoidance/threshold modifiers",
+                        "Look for 'reduced stun threshold' on gear",
+                    ],
+                    priority=60,
+                )
+            )
 
         return weaknesses
 
@@ -594,21 +616,23 @@ class WeaknessDetector:
             expected_mana = char_data.level * 50
 
             if char_data.mana < expected_mana * 0.5:
-                weaknesses.append(Weakness(
-                    category=WeaknessCategory.RESOURCE_MANAGEMENT,
-                    severity=WeaknessSeverity.MEDIUM,
-                    title="Low Mana Pool",
-                    description=f"Mana pool ({char_data.mana:.0f}) is low for level {char_data.level}",
-                    current_value=char_data.mana,
-                    recommended_value=expected_mana,
-                    impact="May run out of mana during combat",
-                    recommendations=[
-                        f"Increase mana by {expected_mana - char_data.mana:.0f}",
-                        "Add mana nodes from passive tree",
-                        "Consider mana regeneration improvements"
-                    ],
-                    priority=45
-                ))
+                weaknesses.append(
+                    Weakness(
+                        category=WeaknessCategory.RESOURCE_MANAGEMENT,
+                        severity=WeaknessSeverity.MEDIUM,
+                        title="Low Mana Pool",
+                        description=f"Mana pool ({char_data.mana:.0f}) is low for level {char_data.level}",
+                        current_value=char_data.mana,
+                        recommended_value=expected_mana,
+                        impact="May run out of mana during combat",
+                        recommendations=[
+                            f"Increase mana by {expected_mana - char_data.mana:.0f}",
+                            "Add mana nodes from passive tree",
+                            "Consider mana regeneration improvements",
+                        ],
+                        priority=45,
+                    )
+                )
 
         return weaknesses
 
@@ -617,9 +641,7 @@ class WeaknessDetector:
     # ============================================================================
 
     def format_weakness_report(
-        self,
-        weaknesses: List[Weakness],
-        include_low_severity: bool = True
+        self, weaknesses: List[Weakness], include_low_severity: bool = True
     ) -> str:
         """
         Format weaknesses into a human-readable report.
@@ -637,7 +659,8 @@ class WeaknessDetector:
         # Filter by severity if requested
         if not include_low_severity:
             weaknesses = [
-                w for w in weaknesses
+                w
+                for w in weaknesses
                 if w.severity not in [WeaknessSeverity.LOW, WeaknessSeverity.INFO]
             ]
 
@@ -660,7 +683,7 @@ class WeaknessDetector:
             WeaknessSeverity.HIGH,
             WeaknessSeverity.MEDIUM,
             WeaknessSeverity.LOW,
-            WeaknessSeverity.INFO
+            WeaknessSeverity.INFO,
         ]
 
         for severity in severity_order:
@@ -675,10 +698,12 @@ class WeaknessDetector:
                 WeaknessSeverity.HIGH: "⚠️",
                 WeaknessSeverity.MEDIUM: "⚡",
                 WeaknessSeverity.LOW: "ℹ️",
-                WeaknessSeverity.INFO: "💡"
+                WeaknessSeverity.INFO: "💡",
             }
 
-            lines.append(f"{severity_emoji[severity]} {severity.value.upper()} PRIORITY ({len(severity_weaknesses)})")
+            lines.append(
+                f"{severity_emoji[severity]} {severity.value.upper()} PRIORITY ({len(severity_weaknesses)})"
+            )
             lines.append("-" * 80)
             lines.append("")
 
@@ -686,7 +711,9 @@ class WeaknessDetector:
                 lines.append(f"[{weakness.category.value.upper()}] {weakness.title}")
                 lines.append(f"  {weakness.description}")
                 lines.append(f"  Impact: {weakness.impact}")
-                lines.append(f"  Current: {weakness.current_value} → Recommended: {weakness.recommended_value}")
+                lines.append(
+                    f"  Current: {weakness.current_value} → Recommended: {weakness.recommended_value}"
+                )
 
                 if weakness.recommendations:
                     lines.append("  Recommendations:")
@@ -703,6 +730,7 @@ class WeaknessDetector:
 # ============================================================================
 # CONVENIENCE FUNCTIONS
 # ============================================================================
+
 
 def quick_weakness_check(char_data: CharacterData) -> List[str]:
     """
@@ -737,8 +765,7 @@ def get_critical_issues(char_data: CharacterData) -> List[str]:
 if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     print("=" * 80)
@@ -764,7 +791,7 @@ if __name__ == "__main__":
         fire_res=-2,  # CRITICAL: negative
         cold_res=-8,  # CRITICAL: negative
         lightning_res=75,
-        chaos_res=-60
+        chaos_res=-60,
     )
 
     # Run detection

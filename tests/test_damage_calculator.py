@@ -15,7 +15,7 @@ import sys
 import os
 
 # Add src to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 from calculator.damage_calculator import (
     DamageCalculator,
@@ -24,7 +24,7 @@ from calculator.damage_calculator import (
     DamageType,
     Modifier,
     ModifierType,
-    CriticalStrikeConfig
+    CriticalStrikeConfig,
 )
 
 
@@ -128,8 +128,8 @@ class TestDamageComponents(unittest.TestCase):
         """Test components with multiple damage types."""
         comp = DamageComponents()
         comp.add_damage(DamageType.PHYSICAL, DamageRange(50, 100))  # avg: 75
-        comp.add_damage(DamageType.FIRE, DamageRange(20, 40))      # avg: 30
-        comp.add_damage(DamageType.COLD, DamageRange(10, 20))      # avg: 15
+        comp.add_damage(DamageType.FIRE, DamageRange(20, 40))  # avg: 30
+        comp.add_damage(DamageType.COLD, DamageRange(10, 20))  # avg: 15
         self.assertEqual(comp.total_average_damage(), 120.0)
 
     def test_get_damage_by_type(self):
@@ -181,13 +181,12 @@ class TestBaseDamageCalculation(unittest.TestCase):
         """Test weapon with added flat elemental damage."""
         weapon = DamageRange(50, 100)  # avg: 75
         added_damage = [
-            (DamageType.FIRE, DamageRange(20, 40)),      # avg: 30
-            (DamageType.LIGHTNING, DamageRange(10, 20))  # avg: 15
+            (DamageType.FIRE, DamageRange(20, 40)),  # avg: 30
+            (DamageType.LIGHTNING, DamageRange(10, 20)),  # avg: 15
         ]
 
         result = self.calc.calculate_base_damage(
-            weapon_damage=weapon,
-            added_flat_damage=added_damage
+            weapon_damage=weapon, added_flat_damage=added_damage
         )
 
         # Total = 75 + 30 + 15 = 120
@@ -222,7 +221,7 @@ class TestIncreasedModifiers(unittest.TestCase):
         mods = [
             Modifier(value=50, modifier_type=ModifierType.INCREASED),
             Modifier(value=30, modifier_type=ModifierType.INCREASED),
-            Modifier(value=20, modifier_type=ModifierType.INCREASED)
+            Modifier(value=20, modifier_type=ModifierType.INCREASED),
         ]
         result = self.calc.apply_increased_modifiers(base, mods)
 
@@ -243,7 +242,7 @@ class TestIncreasedModifiers(unittest.TestCase):
         base = 100
         mods = [
             Modifier(value=100, modifier_type=ModifierType.INCREASED),  # +100%
-            Modifier(value=50, modifier_type=ModifierType.REDUCED)      # -50%
+            Modifier(value=50, modifier_type=ModifierType.REDUCED),  # -50%
         ]
         result = self.calc.apply_increased_modifiers(base, mods)
 
@@ -279,7 +278,7 @@ class TestMoreModifiers(unittest.TestCase):
         mods = [
             Modifier(value=50, modifier_type=ModifierType.MORE),  # 1.5x
             Modifier(value=30, modifier_type=ModifierType.MORE),  # 1.3x
-            Modifier(value=20, modifier_type=ModifierType.MORE)   # 1.2x
+            Modifier(value=20, modifier_type=ModifierType.MORE),  # 1.2x
         ]
         result = self.calc.apply_more_modifiers(base, mods)
 
@@ -300,7 +299,7 @@ class TestMoreModifiers(unittest.TestCase):
         base = 100
         mods = [
             Modifier(value=100, modifier_type=ModifierType.MORE),  # 2.0x
-            Modifier(value=50, modifier_type=ModifierType.LESS)    # 0.5x
+            Modifier(value=50, modifier_type=ModifierType.LESS),  # 0.5x
         ]
         result = self.calc.apply_more_modifiers(base, mods)
 
@@ -326,7 +325,7 @@ class TestMoreVsIncreased(unittest.TestCase):
         base = 100
         mods = [
             Modifier(value=50, modifier_type=ModifierType.INCREASED),
-            Modifier(value=50, modifier_type=ModifierType.INCREASED)
+            Modifier(value=50, modifier_type=ModifierType.INCREASED),
         ]
         result = self.calc.apply_increased_modifiers(base, mods)
 
@@ -338,7 +337,7 @@ class TestMoreVsIncreased(unittest.TestCase):
         base = 100
         mods = [
             Modifier(value=50, modifier_type=ModifierType.MORE),
-            Modifier(value=50, modifier_type=ModifierType.MORE)
+            Modifier(value=50, modifier_type=ModifierType.MORE),
         ]
         result = self.calc.apply_more_modifiers(base, mods)
 
@@ -356,8 +355,7 @@ class TestCriticalStrike(unittest.TestCase):
     def test_poe2_base_crit_multiplier(self):
         """Test that PoE2 uses +100% base crit damage (not +150% like PoE1)."""
         config = CriticalStrikeConfig(
-            crit_chance=100.0,  # Always crit
-            crit_multiplier=100  # Base PoE2 crit
+            crit_chance=100.0, crit_multiplier=100  # Always crit  # Base PoE2 crit
         )
 
         # With 100% crit chance and 100% multiplier, effective is 2.0x
@@ -369,7 +367,7 @@ class TestCriticalStrike(unittest.TestCase):
         base_damage = DamageRange(100, 100)
         config = CriticalStrikeConfig(
             crit_chance=100.0,  # Always crit
-            crit_multiplier=150  # 100% base + 50% increased = 250% total
+            crit_multiplier=150,  # 100% base + 50% increased = 250% total
         )
 
         result = self.calc.calculate_critical_damage(base_damage, config)
@@ -379,10 +377,7 @@ class TestCriticalStrike(unittest.TestCase):
 
     def test_no_crit_with_effective_multiplier(self):
         """Test that 0% crit chance has 1.0x effective multiplier."""
-        config = CriticalStrikeConfig(
-            crit_chance=0.0,
-            crit_multiplier=150
-        )
+        config = CriticalStrikeConfig(crit_chance=0.0, crit_multiplier=150)
 
         # With 0% crit, effective multiplier is 1.0 (no bonus)
         self.assertEqual(config.effective_damage_multiplier(), 1.0)
@@ -390,8 +385,7 @@ class TestCriticalStrike(unittest.TestCase):
     def test_partial_crit_chance(self):
         """Test average damage with partial crit chance."""
         config = CriticalStrikeConfig(
-            crit_chance=50.0,  # 50% crit chance
-            crit_multiplier=100  # 2.0x damage on crit
+            crit_chance=50.0, crit_multiplier=100  # 50% crit chance  # 2.0x damage on crit
         )
 
         # Effective multiplier: (0.5 * 1.0) + (0.5 * 2.0) = 0.5 + 1.0 = 1.5
@@ -455,8 +449,8 @@ class TestDamageConversion(unittest.TestCase):
 
         conversion = {
             DamageType.PHYSICAL: {
-                DamageType.FIRE: 40,      # 40% to fire (as percentage)
-                DamageType.LIGHTNING: 30  # 30% to lightning (as percentage)
+                DamageType.FIRE: 40,  # 40% to fire (as percentage)
+                DamageType.LIGHTNING: 30,  # 30% to lightning (as percentage)
             }
         }
 
@@ -544,5 +538,5 @@ class TestCastSpeed(unittest.TestCase):
         self.assertEqual(result, 2.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

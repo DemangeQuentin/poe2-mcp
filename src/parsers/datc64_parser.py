@@ -16,22 +16,23 @@ logger = logging.getLogger(__name__)
 
 
 # Magic number that separates table data from variable-length data section
-DAT_MAGIC_NUMBER = b'\xBB\xbb\xBB\xbb\xBB\xbb\xBB\xbb'
+DAT_MAGIC_NUMBER = b"\xbb\xbb\xbb\xbb\xbb\xbb\xbb\xbb"
 
 
 # Special null value patterns in PoE dat files
 NULL_VALUES_64BIT = {
     0xFEFEFEFEFEFEFEFE,  # 64-bit FEFE pattern
-    0xFEFEFEFE,          # 32-bit FEFE pattern (in 64-bit field)
-    0xFFFFFFFF,          # 32-bit all F's
+    0xFEFEFEFE,  # 32-bit FEFE pattern (in 64-bit field)
+    0xFFFFFFFF,  # 32-bit all F's
     0xFFFFFFFFFFFFFFFF,  # 64-bit all F's
-    0xA6,                # Seen in achievements.datc64
+    0xA6,  # Seen in achievements.datc64
     0xA600000000000000,  # Extended A6 pattern
 }
 
 
 class DataType(IntEnum):
     """Data type identifiers for .datc64 columns."""
+
     # Primitive value types (stored in table section)
     BOOL = 1
     BYTE = 2
@@ -46,9 +47,9 @@ class DataType(IntEnum):
     DOUBLE = 11
 
     # Pointer types (point to data section)
-    STRING = 20          # ref|string - pointer to UTF-16 string in data section
-    POINTER = 21         # ref|X - pointer to single value in data section
-    POINTER_LIST = 22    # ref|list|X - pointer to list (count, offset)
+    STRING = 20  # ref|string - pointer to UTF-16 string in data section
+    POINTER = 21  # ref|X - pointer to single value in data section
+    POINTER_LIST = 22  # ref|list|X - pointer to list (count, offset)
 
 
 @dataclass
@@ -59,6 +60,7 @@ class ColumnSpec:
     This is required because .datc64 files don't contain column type information
     in their headers - types must be known in advance or reverse-engineered.
     """
+
     name: str
     data_type: DataType
     # For POINTER_LIST, specifies the type of list elements
@@ -72,6 +74,7 @@ class ParsedValue:
 
     Tracks both the value and metadata about where it came from.
     """
+
     value: Any
     offset: int
     size: int
@@ -117,29 +120,29 @@ class Datc64Parser:
         DataType.ULONG: 8,
         DataType.FLOAT: 4,
         DataType.DOUBLE: 8,
-        DataType.STRING: 8,      # Pointer (64-bit offset)
-        DataType.POINTER: 8,     # Pointer (64-bit offset)
+        DataType.STRING: 8,  # Pointer (64-bit offset)
+        DataType.POINTER: 8,  # Pointer (64-bit offset)
         DataType.POINTER_LIST: 16,  # Count (64-bit) + Offset (64-bit)
     }
 
     # Struct format strings for unpacking
     TYPE_FORMATS = {
-        DataType.BOOL: '?',
-        DataType.BYTE: 'b',
-        DataType.UBYTE: 'B',
-        DataType.SHORT: 'h',
-        DataType.USHORT: 'H',
-        DataType.INT: 'i',
-        DataType.UINT: 'I',
-        DataType.LONG: 'q',
-        DataType.ULONG: 'Q',
-        DataType.FLOAT: 'f',
-        DataType.DOUBLE: 'd',
+        DataType.BOOL: "?",
+        DataType.BYTE: "b",
+        DataType.UBYTE: "B",
+        DataType.SHORT: "h",
+        DataType.USHORT: "H",
+        DataType.INT: "i",
+        DataType.UINT: "I",
+        DataType.LONG: "q",
+        DataType.ULONG: "Q",
+        DataType.FLOAT: "f",
+        DataType.DOUBLE: "d",
     }
 
     def __init__(self):
         """Initialize the parser."""
-        self._data: bytes = b''
+        self._data: bytes = b""
         self._data_section_offset: int = 0
 
     def parse_header(self, file_path: Union[str, Path]) -> dict:
@@ -160,11 +163,11 @@ class Datc64Parser:
             - data_section_offset: Offset where variable data starts
             - data_section_size: Size of variable data section
         """
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             data = f.read()
 
         file_size = len(data)
-        row_count = struct.unpack('<I', data[0:4])[0]
+        row_count = struct.unpack("<I", data[0:4])[0]
         magic_offset = data.find(DAT_MAGIC_NUMBER)
 
         if magic_offset == -1:
@@ -177,14 +180,14 @@ class Datc64Parser:
         data_section_size = file_size - data_section_offset
 
         return {
-            'file_size': file_size,
-            'row_count': row_count,
-            'magic_offset': magic_offset,
-            'table_offset': table_offset,
-            'table_length': table_length,
-            'record_length': record_length,
-            'data_section_offset': data_section_offset,
-            'data_section_size': data_section_size,
+            "file_size": file_size,
+            "row_count": row_count,
+            "magic_offset": magic_offset,
+            "table_offset": table_offset,
+            "table_length": table_length,
+            "record_length": record_length,
+            "data_section_offset": data_section_offset,
+            "data_section_size": data_section_size,
         }
 
     def read_int32(self, data: bytes, offset: int) -> Tuple[int, int]:
@@ -198,7 +201,7 @@ class Datc64Parser:
         Returns:
             Tuple of (value, new_offset)
         """
-        value = struct.unpack('<i', data[offset:offset+4])[0]
+        value = struct.unpack("<i", data[offset : offset + 4])[0]
         return value, offset + 4
 
     def read_uint32(self, data: bytes, offset: int) -> Tuple[int, int]:
@@ -212,7 +215,7 @@ class Datc64Parser:
         Returns:
             Tuple of (value, new_offset)
         """
-        value = struct.unpack('<I', data[offset:offset+4])[0]
+        value = struct.unpack("<I", data[offset : offset + 4])[0]
         return value, offset + 4
 
     def read_int64(self, data: bytes, offset: int) -> Tuple[int, int]:
@@ -226,7 +229,7 @@ class Datc64Parser:
         Returns:
             Tuple of (value, new_offset)
         """
-        value = struct.unpack('<q', data[offset:offset+8])[0]
+        value = struct.unpack("<q", data[offset : offset + 8])[0]
         return value, offset + 8
 
     def read_uint64(self, data: bytes, offset: int) -> Tuple[int, int]:
@@ -240,7 +243,7 @@ class Datc64Parser:
         Returns:
             Tuple of (value, new_offset)
         """
-        value = struct.unpack('<Q', data[offset:offset+8])[0]
+        value = struct.unpack("<Q", data[offset : offset + 8])[0]
         return value, offset + 8
 
     def read_bool(self, data: bytes, offset: int) -> Tuple[bool, int]:
@@ -254,7 +257,7 @@ class Datc64Parser:
         Returns:
             Tuple of (value, new_offset)
         """
-        value = struct.unpack('<?', data[offset:offset+1])[0]
+        value = struct.unpack("<?", data[offset : offset + 1])[0]
         return value, offset + 1
 
     def read_float(self, data: bytes, offset: int) -> Tuple[float, int]:
@@ -268,7 +271,7 @@ class Datc64Parser:
         Returns:
             Tuple of (value, new_offset)
         """
-        value = struct.unpack('<f', data[offset:offset+4])[0]
+        value = struct.unpack("<f", data[offset : offset + 4])[0]
         return value, offset + 4
 
     def read_double(self, data: bytes, offset: int) -> Tuple[float, int]:
@@ -282,7 +285,7 @@ class Datc64Parser:
         Returns:
             Tuple of (value, new_offset)
         """
-        value = struct.unpack('<d', data[offset:offset+8])[0]
+        value = struct.unpack("<d", data[offset : offset + 8])[0]
         return value, offset + 8
 
     def read_string(self, data: bytes, offset: int) -> Tuple[str, int]:
@@ -300,7 +303,7 @@ class Datc64Parser:
             Tuple of (decoded_string, bytes_consumed)
         """
         # Find the null terminator (\x00\x00\x00\x00)
-        end_offset = data.find(b'\x00\x00\x00\x00', offset)
+        end_offset = data.find(b"\x00\x00\x00\x00", offset)
 
         if end_offset == -1:
             # No null terminator found - read to end
@@ -308,12 +311,12 @@ class Datc64Parser:
 
         # Handle case where string starts at the null terminator (empty string)
         if offset == end_offset:
-            return '', 4
+            return "", 4
 
         # UTF-16 strings must be multiples of 2 bytes
         # Adjust end_offset if needed
         while (end_offset - offset) % 2:
-            end_offset = data.find(b'\x00\x00\x00\x00', end_offset + 1)
+            end_offset = data.find(b"\x00\x00\x00\x00", end_offset + 1)
             if end_offset == -1:
                 end_offset = len(data)
                 break
@@ -321,7 +324,7 @@ class Datc64Parser:
         string_data = data[offset:end_offset]
 
         try:
-            decoded = string_data.decode('utf-16-le')
+            decoded = string_data.decode("utf-16-le")
         except UnicodeDecodeError as e:
             # If decoding fails, return hex representation
             decoded = f"<DECODE ERROR: {string_data.hex()}>"
@@ -330,8 +333,9 @@ class Datc64Parser:
         size = end_offset - offset + 4
         return decoded, size
 
-    def read_value(self, data: bytes, offset: int, data_type: DataType,
-                   data_section: Optional[bytes] = None) -> Tuple[Any, int]:
+    def read_value(
+        self, data: bytes, offset: int, data_type: DataType, data_section: Optional[bytes] = None
+    ) -> Tuple[Any, int]:
         """
         Read a value of the specified type.
 
@@ -347,16 +351,16 @@ class Datc64Parser:
         if data_type == DataType.BOOL:
             return self.read_bool(data, offset)
         elif data_type == DataType.BYTE:
-            value = struct.unpack('<b', data[offset:offset+1])[0]
+            value = struct.unpack("<b", data[offset : offset + 1])[0]
             return value, offset + 1
         elif data_type == DataType.UBYTE:
-            value = struct.unpack('<B', data[offset:offset+1])[0]
+            value = struct.unpack("<B", data[offset : offset + 1])[0]
             return value, offset + 1
         elif data_type == DataType.SHORT:
-            value = struct.unpack('<h', data[offset:offset+2])[0]
+            value = struct.unpack("<h", data[offset : offset + 2])[0]
             return value, offset + 2
         elif data_type == DataType.USHORT:
-            value = struct.unpack('<H', data[offset:offset+2])[0]
+            value = struct.unpack("<H", data[offset : offset + 2])[0]
             return value, offset + 2
         elif data_type == DataType.INT:
             return self.read_int32(data, offset)
@@ -398,8 +402,7 @@ class Datc64Parser:
         else:
             raise ValueError(f"Unsupported data type: {data_type}")
 
-    def parse_file(self, file_path: Union[str, Path],
-                   columns: List[ColumnSpec]) -> List[dict]:
+    def parse_file(self, file_path: Union[str, Path], columns: List[ColumnSpec]) -> List[dict]:
         """
         Parse a .datc64 file with known column specifications.
 
@@ -421,7 +424,7 @@ class Datc64Parser:
                 print(row['id'], row['name'], row['value'])
         """
         # Read file
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             self._data = f.read()
 
         # Parse header
@@ -429,33 +432,28 @@ class Datc64Parser:
 
         # Calculate expected record length
         expected_length = sum(self.TYPE_SIZES[col.data_type] for col in columns)
-        if expected_length != header['record_length']:
+        if expected_length != header["record_length"]:
             raise ValueError(
                 f"Column specifications don't match record length: "
                 f"expected {expected_length}, got {header['record_length']}"
             )
 
         # Extract sections
-        table_data = self._data[4:header['magic_offset']]
+        table_data = self._data[4 : header["magic_offset"]]
         # IMPORTANT: String pointers are relative to magic_offset, not data_section_offset
         # So we include the magic number (8 bytes) in the data section extraction
-        data_section = self._data[header['magic_offset']:]
-        self._data_section_offset = header['magic_offset']
+        data_section = self._data[header["magic_offset"] :]
+        self._data_section_offset = header["magic_offset"]
 
         # Parse rows
         rows = []
-        for row_num in range(header['row_count']):
-            row_offset = row_num * header['record_length']
+        for row_num in range(header["row_count"]):
+            row_offset = row_num * header["record_length"]
             row_dict = {}
 
             offset = row_offset
             for col in columns:
-                value, offset = self.read_value(
-                    table_data,
-                    offset,
-                    col.data_type,
-                    data_section
-                )
+                value, offset = self.read_value(table_data, offset, col.data_type, data_section)
                 row_dict[col.name] = value
 
             rows.append(row_dict)
@@ -502,7 +500,7 @@ class Datc64Parser:
                 val = row.get(col_name, "")
                 if val:
                     # Normalize: strip leading NULL bytes
-                    val_norm = val.lstrip('\x00')
+                    val_norm = val.lstrip("\x00")
                     values_with_indices.append((i, val, val_norm))
 
             # For each value, check if it's a suffix of any longer value (corruption pattern)

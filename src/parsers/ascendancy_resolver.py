@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AscendancyNode:
     """A resolved ascendancy node."""
+
     id: str
     name: str
     ascendancy: str
@@ -130,7 +131,7 @@ class AscendancyResolver:
         loaded_fresh = False
         if fresh_path.exists():
             try:
-                with open(fresh_path, 'r', encoding='utf-8') as f:
+                with open(fresh_path, "r", encoding="utf-8") as f:
                     fresh = json.load(f)
                 self._all_ascendancies = self._adapt_fresh_schema(fresh)
                 loaded_fresh = True
@@ -151,7 +152,7 @@ class AscendancyResolver:
         nodes_path = self.data_dir / "game" / "ascendancies" / "nodes.json"
         if loaded_fresh and nodes_path.exists():
             try:
-                with open(nodes_path, 'r', encoding='utf-8') as f:
+                with open(nodes_path, "r", encoding="utf-8") as f:
                     node_data = json.load(f)
                 merged = 0
                 ascs = self._all_ascendancies.get("ascendancies", {})
@@ -176,7 +177,7 @@ class AscendancyResolver:
             legacy_path = self.data_dir / "complete_models" / "all_ascendancies.json"
             if legacy_path.exists():
                 try:
-                    with open(legacy_path, 'r', encoding='utf-8') as f:
+                    with open(legacy_path, "r", encoding="utf-8") as f:
                         self._all_ascendancies = json.load(f)
                     logger.warning(
                         "Loaded legacy data/complete_models/all_ascendancies.json "
@@ -192,7 +193,7 @@ class AscendancyResolver:
         druid_path = self.data_dir / "complete_models" / "druid_ascendancies.json"
         if druid_path.exists():
             try:
-                with open(druid_path, 'r', encoding='utf-8') as f:
+                with open(druid_path, "r", encoding="utf-8") as f:
                     self._druid_detailed = json.load(f)
                 logger.info("Loaded detailed Druid ascendancy data")
             except Exception as e:
@@ -427,6 +428,7 @@ class AscendancyResolver:
 # Singleton instance for convenience
 _resolver: Optional[AscendancyResolver] = None
 
+
 def get_ascendancy_resolver() -> AscendancyResolver:
     """Get the singleton AscendancyResolver instance."""
     global _resolver
@@ -435,7 +437,7 @@ def get_ascendancy_resolver() -> AscendancyResolver:
     return _resolver
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Demo usage
     resolver = AscendancyResolver()
 

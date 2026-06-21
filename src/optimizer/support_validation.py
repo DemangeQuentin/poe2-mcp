@@ -95,7 +95,10 @@ def _skill_gems_path() -> Path:
     # src/optimizer/support_validation.py  ->  <repo root>
     return (
         Path(__file__).resolve().parent.parent.parent
-        / "data" / "game" / "skill_gems" / "skill_gems.json"
+        / "data"
+        / "game"
+        / "skill_gems"
+        / "skill_gems.json"
     )
 
 
@@ -160,16 +163,18 @@ def check_semantic_conflicts(
     for support in support_names:
         needed = support_required_tags(support)
         if needed and not any(tag in spell_tags for tag in needed):
-            warnings.append({
-                "support": support,
-                "spell": spell_name,
-                "required_any_of": needed,
-                "spell_tags": spell_tags,
-                "message": (
-                    f"{support} requires the spell to have at least one of "
-                    f"{needed}; {spell_name} has tags {spell_tags}. No "
-                    f"overlap - support effect is likely wasted unless "
-                    f"you're converting damage types via another mechanic."
-                ),
-            })
+            warnings.append(
+                {
+                    "support": support,
+                    "spell": spell_name,
+                    "required_any_of": needed,
+                    "spell_tags": spell_tags,
+                    "message": (
+                        f"{support} requires the spell to have at least one of "
+                        f"{needed}; {spell_name} has tags {spell_tags}. No "
+                        f"overlap - support effect is likely wasted unless "
+                        f"you're converting damage types via another mechanic."
+                    ),
+                }
+            )
     return {"warnings": warnings, "spell_tags": spell_tags}

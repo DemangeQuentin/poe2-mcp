@@ -8,6 +8,7 @@ real URLs, then hardcoded league="Vaal" on the ones it did accept. The parse
 logic now lives in ``src.api.poe_ninja_api.parse_poe_ninja_url`` so it's unit
 testable without booting the MCP server.
 """
+
 from __future__ import annotations
 
 import sys
@@ -23,6 +24,7 @@ from src.api.poe_ninja_api import league_slug_to_display, parse_poe_ninja_url
 # ---------------------------------------------------------------------------
 # URL shapes
 # ---------------------------------------------------------------------------
+
 
 def test_profile_url_with_league_segment():
     """The real 0.5 format — the exact shape the old parser rejected."""
@@ -59,9 +61,7 @@ def test_builds_url_with_league_segment():
 
 
 def test_builds_url_legacy_no_league():
-    parsed = parse_poe_ninja_url(
-        "https://poe.ninja/poe2/builds/character/SomeAcct/SomeChar"
-    )
+    parsed = parse_poe_ninja_url("https://poe.ninja/poe2/builds/character/SomeAcct/SomeChar")
     assert parsed is not None
     assert parsed["account"] == "SomeAcct"
     assert parsed["character"] == "SomeChar"
@@ -69,9 +69,7 @@ def test_builds_url_legacy_no_league():
 
 
 def test_poe1_style_builds_url():
-    parsed = parse_poe_ninja_url(
-        "https://poe.ninja/builds/character/SomeAcct/SomeChar"
-    )
+    parsed = parse_poe_ninja_url("https://poe.ninja/builds/character/SomeAcct/SomeChar")
     assert parsed is not None
     assert parsed["account"] == "SomeAcct"
     assert parsed["character"] == "SomeChar"
@@ -98,9 +96,7 @@ def test_percent_encoded_account():
 
 def test_unknown_league_slug_passes_through():
     """Future leagues we haven't mapped yet keep the raw slug available."""
-    parsed = parse_poe_ninja_url(
-        "https://poe.ninja/poe2/profile/Acct/futureleague/character/Char"
-    )
+    parsed = parse_poe_ninja_url("https://poe.ninja/poe2/profile/Acct/futureleague/character/Char")
     assert parsed is not None
     assert parsed["league_slug"] == "futureleague"
     assert parsed["league"] is None
@@ -114,6 +110,7 @@ def test_garbage_url_returns_none():
 # ---------------------------------------------------------------------------
 # Slug reverse-mapping
 # ---------------------------------------------------------------------------
+
 
 def test_slug_reverse_mapping_prefers_canonical_name():
     """First LEAGUE_MAPPINGS entry per slug is the canonical display name."""

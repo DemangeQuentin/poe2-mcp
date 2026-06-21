@@ -43,16 +43,20 @@ try:
     from .ai.recommendation_engine import RecommendationEngine
     from .pob.importer import PoBImporter
     from .pob.exporter import PoBExporter
+
     # New enhancement features
     from .optimizer.gem_synergy_calculator import GemSynergyCalculator
     from .knowledge.poe2_mechanics import PoE2MechanicsKnowledgeBase
     from .analyzer.gear_comparator import GearComparator
     from .analyzer.damage_scaling_analyzer import DamageScalingAnalyzer
     from .analyzer.content_readiness_checker import ContentReadinessChecker
+
     # Passive tree resolver for poe.ninja node ID resolution
     from .parsers.passive_tree_resolver import PassiveTreeResolver
+
     # Fresh data provider - Single Source of Truth
     from .data.fresh_data_provider import get_fresh_data_provider
+
     # Local live-game readers (Client.txt log + client config INI)
     from .api.client_log_reader import ClientLogReader
     from .api.game_config_reader import GameConfigReader
@@ -80,16 +84,20 @@ except ImportError:
     from src.ai.recommendation_engine import RecommendationEngine
     from src.pob.importer import PoBImporter
     from src.pob.exporter import PoBExporter
+
     # New enhancement features
     from src.optimizer.gem_synergy_calculator import GemSynergyCalculator
     from src.knowledge.poe2_mechanics import PoE2MechanicsKnowledgeBase
     from src.analyzer.gear_comparator import GearComparator
     from src.analyzer.damage_scaling_analyzer import DamageScalingAnalyzer
     from src.analyzer.content_readiness_checker import ContentReadinessChecker
+
     # Passive tree resolver for poe.ninja node ID resolution
     from src.parsers.passive_tree_resolver import PassiveTreeResolver
+
     # Fresh data provider - Single Source of Truth
     from src.data.fresh_data_provider import get_fresh_data_provider
+
     # Local live-game readers (Client.txt log + client config INI)
     from src.api.client_log_reader import ClientLogReader
     from src.api.game_config_reader import GameConfigReader
@@ -100,12 +108,13 @@ import sys
 # Configure logging to stderr for Claude Desktop
 logging.basicConfig(
     level=logging.DEBUG,  # Use DEBUG for detailed logs
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stderr),  # Log to stderr for Claude Desktop
-    ]
+    ],
 )
 logger = logging.getLogger(__name__)
+
 
 # Also log to stderr directly for immediate visibility
 def debug_log(message):
@@ -123,9 +132,21 @@ except ImportError:
 # Provenance banner helper (P3 / #116). Lightweight module — safe to import
 # at module top.
 try:
-    from .provenance import format_banner as format_provenance, CANONICAL, COMPUTED, INTERPRETED, EXTERNAL
+    from .provenance import (
+        format_banner as format_provenance,
+        CANONICAL,
+        COMPUTED,
+        INTERPRETED,
+        EXTERNAL,
+    )
 except ImportError:
-    from src.provenance import format_banner as format_provenance, CANONICAL, COMPUTED, INTERPRETED, EXTERNAL
+    from src.provenance import (
+        format_banner as format_provenance,
+        CANONICAL,
+        COMPUTED,
+        INTERPRETED,
+        EXTERNAL,
+    )
 
 # Mod-data helpers (#118). Inline-stat_id-aware extraction from mods.json.
 try:
@@ -247,23 +268,20 @@ class PoE2BuildOptimizerMCP:
 
             # Initialize API client
             self.poe_api = PoEAPIClient(
-                cache_manager=self.cache_manager,
-                rate_limiter=self.rate_limiter
+                cache_manager=self.cache_manager, rate_limiter=self.rate_limiter
             )
             logger.info("PoE API client initialized")
 
             # Initialize character fetcher
             self.char_fetcher = CharacterFetcher(
-                cache_manager=self.cache_manager,
-                rate_limiter=self.rate_limiter
+                cache_manager=self.cache_manager, rate_limiter=self.rate_limiter
             )
             logger.info("Character fetcher initialized")
 
             # Initialize trade API
             if settings.ENABLE_TRADE_INTEGRATION:
                 self.trade_api = TradeAPI(
-                    cache_manager=self.cache_manager,
-                    rate_limiter=self.rate_limiter
+                    cache_manager=self.cache_manager, rate_limiter=self.rate_limiter
                 )
                 logger.info("Trade API initialized")
 
@@ -276,8 +294,7 @@ class PoE2BuildOptimizerMCP:
 
             # Initialize comparison system
             self.top_player_fetcher = TopPlayerFetcher(
-                cache_manager=self.cache_manager,
-                rate_limiter=self.rate_limiter
+                cache_manager=self.cache_manager, rate_limiter=self.rate_limiter
             )
             self.comparator = CharacterComparator()
             logger.info("Comparison system initialized")
@@ -293,22 +310,28 @@ class PoE2BuildOptimizerMCP:
             # Initialize new enhancement features
             self.gem_synergy_calculator = GemSynergyCalculator()
             # Load support gems from SQLite database (authoritative source with display names)
-            support_gem_count = await self.gem_synergy_calculator.load_support_gems_from_database(self.db_manager)
+            support_gem_count = await self.gem_synergy_calculator.load_support_gems_from_database(
+                self.db_manager
+            )
             if support_gem_count > 0:
-                logger.info(f"GemSynergyCalculator: Loaded {support_gem_count} support gems from database")
-            self.mechanics_kb = PoE2MechanicsKnowledgeBase(db_manager=self.db_manager)  # Pass db_manager for .datc64 access
+                logger.info(
+                    f"GemSynergyCalculator: Loaded {support_gem_count} support gems from database"
+                )
+            self.mechanics_kb = PoE2MechanicsKnowledgeBase(
+                db_manager=self.db_manager
+            )  # Pass db_manager for .datc64 access
             self.gear_comparator = GearComparator()
             self.damage_scaling_analyzer = DamageScalingAnalyzer()
             self.content_readiness_checker = ContentReadinessChecker()
             logger.info("Enhancement features initialized (gem synergy, mechanics KB, etc.)")
-            debug_log("Enhancement features ready: gem synergy calculator, mechanics knowledge base, gear comparator, damage scaling analyzer, content readiness checker")
+            debug_log(
+                "Enhancement features ready: gem synergy calculator, mechanics knowledge base, gear comparator, damage scaling analyzer, content readiness checker"
+            )
 
             # Initialize AI components
             if settings.ENABLE_AI_INSIGHTS:
                 self.query_handler = QueryHandler()
-                self.recommendation_engine = RecommendationEngine(
-                    db_manager=self.db_manager
-                )
+                self.recommendation_engine = RecommendationEngine(db_manager=self.db_manager)
                 logger.info("AI components initialized")
 
             # Initialize PoB components
@@ -348,6 +371,7 @@ class PoE2BuildOptimizerMCP:
             debug_log(f"INITIALIZATION ERROR: {e}")
             logger.error(f"Failed to initialize server: {e}")
             import traceback
+
             debug_log(f"Traceback:\n{traceback.format_exc()}")
             raise
 
@@ -490,11 +514,9 @@ class PoE2BuildOptimizerMCP:
             debug_log(f"TOOL ERROR in {name}: {e}")
             logger.error(f"Error in tool {name}: {e}")
             import traceback
+
             debug_log(f"Traceback:\n{traceback.format_exc()}")
-            return [types.TextContent(
-                type="text",
-                text=f"Error: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     def _register_tools(self):
         """Register MCP tools"""
@@ -511,7 +533,6 @@ class PoE2BuildOptimizerMCP:
                 # ============================================
                 # DATA ACCESS TOOLS (14 tools)
                 # ============================================
-
                 # Character Data Access
                 types.Tool(
                     name="analyze_character",
@@ -527,20 +548,20 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "account": {
                                 "type": "string",
-                                "description": "Path of Exile account name"
+                                "description": "Path of Exile account name",
                             },
                             "character": {
                                 "type": "string",
-                                "description": "Character name to fetch"
+                                "description": "Character name to fetch",
                             },
                             "league": {
                                 "type": "string",
                                 "description": "League name (e.g., 'Abyss', 'Standard')",
-                                "default": "Abyss"
-                            }
+                                "default": "Abyss",
+                            },
                         },
-                        "required": ["account", "character"]
-                    }
+                        "required": ["account", "character"],
+                    },
                 ),
                 # Compare to top players
                 types.Tool(
@@ -549,29 +570,25 @@ class PoE2BuildOptimizerMCP:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "account_name": {
-                                "type": "string",
-                                "description": "PoE account name"
-                            },
+                            "account_name": {"type": "string", "description": "PoE account name"},
                             "character_name": {
                                 "type": "string",
-                                "description": "Character name to compare"
+                                "description": "Character name to compare",
                             },
                             "league": {
                                 "type": "string",
                                 "description": "League name",
-                                "default": "Standard"
+                                "default": "Standard",
                             },
                             "top_player_limit": {
                                 "type": "integer",
                                 "description": "Number of top players to fetch",
-                                "default": 10
-                            }
+                                "default": 10,
+                            },
                         },
-                        "required": ["account_name", "character_name"]
-                    }
+                        "required": ["account_name", "character_name"],
+                    },
                 ),
-
                 # Database Searches
                 types.Tool(
                     name="search_items",
@@ -581,15 +598,15 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "query": {
                                 "type": "string",
-                                "description": "Item name or type to search"
+                                "description": "Item name or type to search",
                             },
                             "filters": {
                                 "type": "object",
-                                "description": "Additional filters (rarity, item_class, etc.)"
-                            }
+                                "description": "Additional filters (rarity, item_class, etc.)",
+                            },
                         },
-                        "required": ["query"]
-                    }
+                        "required": ["query"],
+                    },
                 ),
                 types.Tool(
                     name="search_trade_items",
@@ -600,21 +617,20 @@ class PoE2BuildOptimizerMCP:
                             "league": {
                                 "type": "string",
                                 "description": "League name",
-                                "default": "Standard"
+                                "default": "Standard",
                             },
                             "character_needs": {
                                 "type": "object",
-                                "description": "What the character needs (resistances, life, ES, item_slots)"
+                                "description": "What the character needs (resistances, life, ES, item_slots)",
                             },
                             "max_price_chaos": {
                                 "type": "integer",
-                                "description": "Maximum price in chaos orbs"
-                            }
+                                "description": "Maximum price in chaos orbs",
+                            },
                         },
-                        "required": ["league", "character_needs"]
-                    }
+                        "required": ["league", "character_needs"],
+                    },
                 ),
-
                 # Gem Inspection
                 types.Tool(
                     name="inspect_support_gem",
@@ -624,11 +640,11 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "support_name": {
                                 "type": "string",
-                                "description": "Name of the support gem"
+                                "description": "Name of the support gem",
                             }
                         },
-                        "required": ["support_name"]
-                    }
+                        "required": ["support_name"],
+                    },
                 ),
                 types.Tool(
                     name="inspect_spell_gem",
@@ -638,23 +654,17 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "spell_name": {
                                 "type": "string",
-                                "description": "Name of the spell gem (e.g. 'Shred', 'Fireball')"
+                                "description": "Name of the spell gem (e.g. 'Shred', 'Fireball')",
                             },
-                            "name": {
-                                "type": "string",
-                                "description": "Alias for spell_name"
-                            },
-                            "gem_name": {
-                                "type": "string",
-                                "description": "Alias for spell_name"
-                            }
+                            "name": {"type": "string", "description": "Alias for spell_name"},
+                            "gem_name": {"type": "string", "description": "Alias for spell_name"},
                         },
                         "oneOf": [
                             {"required": ["spell_name"]},
                             {"required": ["name"]},
-                            {"required": ["gem_name"]}
-                        ]
-                    }
+                            {"required": ["gem_name"]},
+                        ],
+                    },
                 ),
                 types.Tool(
                     name="list_all_supports",
@@ -665,23 +675,17 @@ class PoE2BuildOptimizerMCP:
                             "filter_tags": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Filter by tags"
+                                "description": "Filter by tags",
                             },
-                            "max_spirit": {
-                                "type": "integer",
-                                "description": "Maximum spirit cost"
-                            },
+                            "max_spirit": {"type": "integer", "description": "Maximum spirit cost"},
                             "sort_by": {
                                 "type": "string",
                                 "enum": ["name", "spirit_cost", "damage_multiplier"],
-                                "default": "name"
+                                "default": "name",
                             },
-                            "limit": {
-                                "type": "integer",
-                                "default": 50
-                            }
-                        }
-                    }
+                            "limit": {"type": "integer", "default": 50},
+                        },
+                    },
                 ),
                 types.Tool(
                     name="list_all_spells",
@@ -691,28 +695,19 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "filter_element": {
                                 "type": "string",
-                                "enum": ["fire", "cold", "lightning", "physical", "chaos"]
+                                "enum": ["fire", "cold", "lightning", "physical", "chaos"],
                             },
-                            "filter_tags": {
-                                "type": "array",
-                                "items": {"type": "string"}
-                            },
-                            "min_damage": {
-                                "type": "number"
-                            },
+                            "filter_tags": {"type": "array", "items": {"type": "string"}},
+                            "min_damage": {"type": "number"},
                             "sort_by": {
                                 "type": "string",
                                 "enum": ["name", "base_damage", "cast_time", "dps"],
-                                "default": "name"
+                                "default": "name",
                             },
-                            "limit": {
-                                "type": "integer",
-                                "default": 50
-                            }
-                        }
-                    }
+                            "limit": {"type": "integer", "default": 50},
+                        },
+                    },
                 ),
-
                 # Path of Building Integration
                 types.Tool(
                     name="import_pob",
@@ -722,19 +717,19 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "pob_file_path": {
                                 "type": "string",
-                                "description": "Path to a local file containing the PoB build — either raw XML or a base64 share code (auto-detected). Preferred over pob_code: long codes corrupt easily when passed inline."
+                                "description": "Path to a local file containing the PoB build — either raw XML or a base64 share code (auto-detected). Preferred over pob_code: long codes corrupt easily when passed inline.",
                             },
                             "pob_xml": {
                                 "type": "string",
-                                "description": "Raw uncompressed Path of Building XML"
+                                "description": "Raw uncompressed Path of Building XML",
                             },
                             "pob_code": {
                                 "type": "string",
-                                "description": "Path of Building share code (base64 + zlib). Whitespace/newlines and URL-safe base64 are tolerated."
-                            }
+                                "description": "Path of Building share code (base64 + zlib). Whitespace/newlines and URL-safe base64 are tolerated.",
+                            },
                         },
-                        "required": []
-                    }
+                        "required": [],
+                    },
                 ),
                 types.Tool(
                     name="export_pob",
@@ -744,11 +739,11 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "character_data": {
                                 "type": "object",
-                                "description": "Character data to export"
+                                "description": "Character data to export",
                             }
                         },
-                        "required": ["character_data"]
-                    }
+                        "required": ["character_data"],
+                    },
                 ),
                 types.Tool(
                     name="get_pob_code",
@@ -756,19 +751,12 @@ class PoE2BuildOptimizerMCP:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "account": {
-                                "type": "string",
-                                "description": "Account name"
-                            },
-                            "character": {
-                                "type": "string",
-                                "description": "Character name"
-                            }
+                            "account": {"type": "string", "description": "Account name"},
+                            "character": {"type": "string", "description": "Character name"},
                         },
-                        "required": ["account", "character"]
-                    }
+                        "required": ["account", "character"],
+                    },
                 ),
-
                 # Live Path of Building Bridge (TCP to a running PoB instance)
                 types.Tool(
                     name="pob_status",
@@ -779,11 +767,11 @@ class PoE2BuildOptimizerMCP:
                             "port": {
                                 "type": "integer",
                                 "description": "Bridge port (default 49085)",
-                                "default": 49085
+                                "default": 49085,
                             }
                         },
-                        "required": []
-                    }
+                        "required": [],
+                    },
                 ),
                 types.Tool(
                     name="pob_install_addon",
@@ -793,20 +781,16 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "pob_path": {
                                 "type": "string",
-                                "description": "Path to the PoB install root (folder containing src/Launch.lua). Auto-detected if omitted."
+                                "description": "Path to the PoB install root (folder containing src/Launch.lua). Auto-detected if omitted.",
                             }
                         },
-                        "required": []
-                    }
+                        "required": [],
+                    },
                 ),
                 types.Tool(
                     name="pob_get_passive_tree",
                     description="Pull the allocated passive tree from the build currently open in a running Path of Building: class, ascendancy, every allocated node (id, name, keystone/notable flags, stats) and total points. Requires PoB running with the bridge addon and a build loaded.",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {},
-                        "required": []
-                    }
+                    inputSchema={"type": "object", "properties": {}, "required": []},
                 ),
                 types.Tool(
                     name="pob_get_build",
@@ -818,11 +802,11 @@ class PoE2BuildOptimizerMCP:
                                 "type": "string",
                                 "enum": ["code", "xml"],
                                 "description": "'code' for a PoB share code, 'xml' for raw build XML",
-                                "default": "code"
+                                "default": "code",
                             }
                         },
-                        "required": []
-                    }
+                        "required": [],
+                    },
                 ),
                 types.Tool(
                     name="pob_load_build",
@@ -832,52 +816,39 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "code": {
                                 "type": "string",
-                                "description": "PoB share code (base64+zlib) to load"
+                                "description": "PoB share code (base64+zlib) to load",
                             },
                             "xml": {
                                 "type": "string",
-                                "description": "Raw PoB build XML (alternative to code)"
+                                "description": "Raw PoB build XML (alternative to code)",
                             },
                             "name": {
                                 "type": "string",
                                 "description": "Display name for the loaded build",
-                                "default": "MCP Build"
-                            }
+                                "default": "MCP Build",
+                            },
                         },
-                        "required": []
-                    }
+                        "required": [],
+                    },
                 ),
                 types.Tool(
                     name="pob_get_calcs",
                     description="Pull computed stats (DPS, Life/ES, resistances, attributes, max hit taken) from PoB's own calculation engine for the build currently open in a running Path of Building.",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {},
-                        "required": []
-                    }
+                    inputSchema={"type": "object", "properties": {}, "required": []},
                 ),
-
                 # System Tools
                 types.Tool(
                     name="health_check",
                     description="Run diagnostic checks on the MCP server (database, API, config).",
                     inputSchema={
                         "type": "object",
-                        "properties": {
-                            "verbose": {
-                                "type": "boolean",
-                                "default": False
-                            }
-                        }
-                    }
+                        "properties": {"verbose": {"type": "boolean", "default": False}},
+                    },
                 ),
                 types.Tool(
                     name="clear_cache",
                     description="Clear all cached data (memory, SQLite, Redis).",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {}
-                    }
+                    inputSchema={"type": "object", "properties": {}},
                 ),
                 types.Tool(
                     name="check_tree_freshness",
@@ -888,10 +859,10 @@ class PoE2BuildOptimizerMCP:
                             "verbose": {
                                 "type": "boolean",
                                 "default": False,
-                                "description": "Include full index-state snapshot list and per-dataset breakdown"
+                                "description": "Include full index-state snapshot list and per-dataset breakdown",
                             }
-                        }
-                    }
+                        },
+                    },
                 ),
                 types.Tool(
                     name="check_for_updates",
@@ -911,35 +882,28 @@ class PoE2BuildOptimizerMCP:
                             "apply": {
                                 "type": "boolean",
                                 "default": False,
-                                "description": "Apply pending updates now (explicit consent). Default false = report only."
+                                "description": "Apply pending updates now (explicit consent). Default false = report only.",
                             },
                             "layer": {
                                 "type": "string",
                                 "enum": ["all", "data", "code"],
                                 "default": "all",
-                                "description": "Which layer to check/apply. Default 'all'."
-                            }
-                        }
-                    }
+                                "description": "Which layer to check/apply. Default 'all'.",
+                            },
+                        },
+                    },
                 ),
                 types.Tool(
                     name="setup_trade_auth",
                     description="Set up trade API authentication by extracting POESESSID via browser login.",
                     inputSchema={
                         "type": "object",
-                        "properties": {
-                            "headless": {
-                                "type": "boolean",
-                                "default": False
-                            }
-                        }
-                    }
+                        "properties": {"headless": {"type": "boolean", "default": False}},
+                    },
                 ),
-
                 # ============================================
                 # KNOWLEDGE TOOLS (4 tools)
                 # ============================================
-
                 # Formulas - Claude does the math
                 types.Tool(
                     name="get_formula",
@@ -949,12 +913,11 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "formula_type": {
                                 "type": "string",
-                                "description": "Formula type: dps, ehp, armor, resistance, spirit, stun, crit, conversion, dot, block. Leave empty to list all."
+                                "description": "Formula type: dps, ehp, armor, resistance, spirit, stun, crit, conversion, dot, block. Leave empty to list all.",
                             }
-                        }
-                    }
+                        },
+                    },
                 ),
-
                 # Mechanic Explanations
                 types.Tool(
                     name="explain_mechanic",
@@ -976,7 +939,7 @@ class PoE2BuildOptimizerMCP:
                                     "or a stat_id (e.g. 'support_ignite_proliferation_radius'), "
                                     "or a substring to search (e.g. 'proliferation'). "
                                     "Omit entirely to see overview + sample suggestions."
-                                )
+                                ),
                             },
                             "cluster": {
                                 "type": "boolean",
@@ -986,11 +949,11 @@ class PoE2BuildOptimizerMCP:
                                     "passives/mods that grant each, in one call — "
                                     "instead of chaining substring searches. "
                                     "Default false."
-                                )
-                            }
+                                ),
+                            },
                         },
-                        "required": []
-                    }
+                        "required": [],
+                    },
                 ),
                 types.Tool(
                     name="find_stat_sources",
@@ -1008,17 +971,16 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "query": {
                                 "type": "string",
-                                "description": "stat_id, stat_id substring, or stat text fragment"
+                                "description": "stat_id, stat_id substring, or stat text fragment",
                             },
                             "limit": {
                                 "type": "integer",
-                                "description": "Max results per source category (default 15)"
-                            }
+                                "description": "Max results per source category (default 15)",
+                            },
                         },
-                        "required": ["query"]
-                    }
+                        "required": ["query"],
+                    },
                 ),
-
                 # Server-side DPS calculation (P5)
                 types.Tool(
                     name="calculate_character_dps",
@@ -1044,7 +1006,7 @@ class PoE2BuildOptimizerMCP:
                                     "(arc/spark/fireball), then in data/game/skill_gems/"
                                     "skill_gems_v2.json (~1,249 spells, post-#119). "
                                     "If neither resolves, supply spell_stats."
-                                )
+                                ),
                             },
                             "gem_level": {
                                 "type": "integer",
@@ -1053,7 +1015,7 @@ class PoE2BuildOptimizerMCP:
                                     "Defaults to 20, PoB's natural-max for most "
                                     "player skills. Ignored when using SPELL_DATABASE "
                                     "or spell_stats."
-                                )
+                                ),
                             },
                             "spell_stats": {
                                 "type": "object",
@@ -1062,11 +1024,11 @@ class PoE2BuildOptimizerMCP:
                                     "{base_damage_min, base_damage_max, "
                                     "damage_effectiveness, base_crit_chance, "
                                     "base_cast_time, damage_types (list)}."
-                                )
+                                ),
                             },
                             "increased_spell_damage": {
                                 "type": "number",
-                                "description": "Sum of all %increased spell damage (additive). Default 0."
+                                "description": "Sum of all %increased spell damage (additive). Default 0.",
                             },
                             "more_multipliers": {
                                 "type": "array",
@@ -1075,7 +1037,7 @@ class PoE2BuildOptimizerMCP:
                                     "List of %more damage multipliers (each applied "
                                     "multiplicatively). E.g. [25, 30, 20] for three "
                                     "support gems giving +25/+30/+20%."
-                                )
+                                ),
                             },
                             "added_damage": {
                                 "type": "object",
@@ -1083,34 +1045,34 @@ class PoE2BuildOptimizerMCP:
                                     "Flat added damage by type. Shape: "
                                     "{fire, cold, lightning, chaos, physical}. "
                                     "All default to 0."
-                                )
+                                ),
                             },
                             "increased_cast_speed": {
                                 "type": "number",
-                                "description": "Sum of all %increased cast speed. Default 0."
+                                "description": "Sum of all %increased cast speed. Default 0.",
                             },
                             "increased_crit_chance": {
                                 "type": "number",
-                                "description": "Sum of all %increased crit chance. Default 0."
+                                "description": "Sum of all %increased crit chance. Default 0.",
                             },
                             "added_crit_bonus": {
                                 "type": "number",
                                 "description": (
                                     "Crit damage bonus. PoE2 base is 100 (= 2x on crit). "
                                     "Default 100."
-                                )
+                                ),
                             },
                             "increased_crit_damage": {
                                 "type": "number",
-                                "description": "Sum of all %increased crit damage. Default 0."
+                                "description": "Sum of all %increased crit damage. Default 0.",
                             },
                             "max_mana": {
                                 "type": "number",
-                                "description": "Maximum mana pool (for Archmage). Default 0."
+                                "description": "Maximum mana pool (for Archmage). Default 0.",
                             },
                             "has_archmage": {
                                 "type": "boolean",
-                                "description": "Whether Archmage support is active. Default false."
+                                "description": "Whether Archmage support is active. Default false.",
                             },
                             "enemy": {
                                 "type": "object",
@@ -1123,7 +1085,7 @@ class PoE2BuildOptimizerMCP:
                                     "fire_penetration, cold_penetration, "
                                     "lightning_penetration, is_shocked}. "
                                     "Defaults to a target dummy (all zeros)."
-                                )
+                                ),
                             },
                             "dot": {
                                 "type": "object",
@@ -1148,13 +1110,12 @@ class PoE2BuildOptimizerMCP:
                                     "for 4s; poison 20%/s of phys+chaos for 2s (stack limit "
                                     "applies); bleed 15%/s of phys for 5s, x2 while moving/"
                                     "aggravated. Non-stacking ailments cap at 1 active."
-                                )
-                            }
+                                ),
+                            },
                         },
-                        "required": []
-                    }
+                        "required": [],
+                    },
                 ),
-
                 # Validation
                 types.Tool(
                     name="validate_support_combination",
@@ -1173,17 +1134,17 @@ class PoE2BuildOptimizerMCP:
                             "support_gems": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Support gem names to validate (e.g. ['Rage', 'Brutality'])"
+                                "description": "Support gem names to validate (e.g. ['Rage', 'Brutality'])",
                             },
                             "support_gem_names": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Alias for support_gems"
+                                "description": "Alias for support_gems",
                             },
                             "names": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Alias for support_gems"
+                                "description": "Alias for support_gems",
                             },
                             "spell_name": {
                                 "type": "string",
@@ -1194,15 +1155,15 @@ class PoE2BuildOptimizerMCP:
                                     "checked against each support's name-pattern "
                                     "damage-type requirements. Catches recommendations "
                                     "like 'Added Fire Damage' on a cold-tagged spell."
-                                )
-                            }
+                                ),
+                            },
                         },
                         "oneOf": [
                             {"required": ["support_gems"]},
                             {"required": ["support_gem_names"]},
-                            {"required": ["names"]}
-                        ]
-                    }
+                            {"required": ["names"]},
+                        ],
+                    },
                 ),
                 types.Tool(
                     name="validate_build_constraints",
@@ -1227,11 +1188,11 @@ class PoE2BuildOptimizerMCP:
                                     "or combined {life_plus_es}; plus {spirit, "
                                     "spirit_reserved, level}. All numeric; null = "
                                     "not provided."
-                                )
+                                ),
                             }
                         },
-                        "required": ["character_data"]
-                    }
+                        "required": ["character_data"],
+                    },
                 ),
                 types.Tool(
                     name="reconcile_defensive_stats",
@@ -1253,20 +1214,19 @@ class PoE2BuildOptimizerMCP:
                                     "A poe.ninja charModel dict (or just its "
                                     "defensiveStats sub-dict). Obtain via "
                                     "analyze_character's raw data or the profile API."
-                                )
+                                ),
                             },
                             "tolerance_pct": {
                                 "type": "object",
                                 "description": (
                                     "Optional per-stat tolerance overrides in percent, "
-                                    "e.g. {\"effective_hp\": 10}. Default 15% per stat."
-                                )
-                            }
+                                    'e.g. {"effective_hp": 10}. Default 15% per stat.'
+                                ),
+                            },
                         },
-                        "required": ["char_model"]
-                    }
+                        "required": ["char_model"],
+                    },
                 ),
-
                 # Passive Tree Analysis Tool
                 types.Tool(
                     name="analyze_passive_tree",
@@ -1277,22 +1237,21 @@ class PoE2BuildOptimizerMCP:
                             "node_ids": {
                                 "type": "array",
                                 "items": {"type": "integer"},
-                                "description": "List of allocated passive node IDs from poe.ninja"
+                                "description": "List of allocated passive node IDs from poe.ninja",
                             },
                             "target_notable": {
                                 "type": "string",
-                                "description": "Optional: Name of a notable to find path to"
+                                "description": "Optional: Name of a notable to find path to",
                             },
                             "find_recommendations": {
                                 "type": "boolean",
                                 "description": "Whether to find nearest unallocated notables",
-                                "default": True
-                            }
+                                "default": True,
+                            },
                         },
-                        "required": ["node_ids"]
-                    }
+                        "required": ["node_ids"],
+                    },
                 ),
-
                 # URL Import Tool
                 types.Tool(
                     name="import_poe_ninja_url",
@@ -1302,13 +1261,12 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "url": {
                                 "type": "string",
-                                "description": "poe.ninja profile URL (e.g., https://poe.ninja/poe2/profile/AccountName/character/CharacterName)"
+                                "description": "poe.ninja profile URL (e.g., https://poe.ninja/poe2/profile/AccountName/character/CharacterName)",
                             }
                         },
-                        "required": ["url"]
-                    }
+                        "required": ["url"],
+                    },
                 ),
-
                 # ============================================
                 # PASSIVE TREE DATA TOOLS (4 new tools)
                 # ============================================
@@ -1320,15 +1278,15 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "filter_stat": {
                                 "type": "string",
-                                "description": "Filter keystones by stat text (e.g., 'life', 'crit', 'leech')"
+                                "description": "Filter keystones by stat text (e.g., 'life', 'crit', 'leech')",
                             },
                             "sort_by": {
                                 "type": "string",
                                 "enum": ["name", "stat_count"],
-                                "default": "name"
-                            }
-                        }
-                    }
+                                "default": "name",
+                            },
+                        },
+                    },
                 ),
                 types.Tool(
                     name="inspect_keystone",
@@ -1338,18 +1296,12 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "keystone_name": {
                                 "type": "string",
-                                "description": "Name of the keystone (e.g., 'Chaos Inoculation', 'Vaal Pact', 'Resolute Technique')"
+                                "description": "Name of the keystone (e.g., 'Chaos Inoculation', 'Vaal Pact', 'Resolute Technique')",
                             },
-                            "name": {
-                                "type": "string",
-                                "description": "Alias for keystone_name"
-                            }
+                            "name": {"type": "string", "description": "Alias for keystone_name"},
                         },
-                        "oneOf": [
-                            {"required": ["keystone_name"]},
-                            {"required": ["name"]}
-                        ]
-                    }
+                        "oneOf": [{"required": ["keystone_name"]}, {"required": ["name"]}],
+                    },
                 ),
                 types.Tool(
                     name="list_all_notables",
@@ -1359,20 +1311,20 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "filter_stat": {
                                 "type": "string",
-                                "description": "Filter notables by stat text (e.g., 'projectile', 'fire', 'attack')"
+                                "description": "Filter notables by stat text (e.g., 'projectile', 'fire', 'attack')",
                             },
                             "limit": {
                                 "type": "integer",
                                 "description": "Maximum number to return",
-                                "default": 100
+                                "default": 100,
                             },
                             "sort_by": {
                                 "type": "string",
                                 "enum": ["name", "stat_count"],
-                                "default": "name"
-                            }
-                        }
-                    }
+                                "default": "name",
+                            },
+                        },
+                    },
                 ),
                 types.Tool(
                     name="inspect_passive_node",
@@ -1382,16 +1334,15 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "node_name": {
                                 "type": "string",
-                                "description": "Name of the passive node"
+                                "description": "Name of the passive node",
                             },
                             "node_id": {
                                 "type": "integer",
-                                "description": "Numeric ID of the passive node (alternative to name)"
-                            }
-                        }
-                    }
+                                "description": "Numeric ID of the passive node (alternative to name)",
+                            },
+                        },
+                    },
                 ),
-
                 # ============================================
                 # BASE ITEM DATA TOOLS (2 new tools)
                 # ============================================
@@ -1403,18 +1354,15 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "filter_type": {
                                 "type": "string",
-                                "description": "Filter by item type (e.g., 'Sword', 'Helmet', 'Ring')"
+                                "description": "Filter by item type (e.g., 'Sword', 'Helmet', 'Ring')",
                             },
                             "filter_name": {
                                 "type": "string",
-                                "description": "Filter by name substring"
+                                "description": "Filter by name substring",
                             },
-                            "limit": {
-                                "type": "integer",
-                                "default": 100
-                            }
-                        }
-                    }
+                            "limit": {"type": "integer", "default": 100},
+                        },
+                    },
                 ),
                 types.Tool(
                     name="inspect_base_item",
@@ -1422,13 +1370,10 @@ class PoE2BuildOptimizerMCP:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "item_name": {
-                                "type": "string",
-                                "description": "Name of the base item"
-                            }
+                            "item_name": {"type": "string", "description": "Name of the base item"}
                         },
-                        "required": ["item_name"]
-                    }
+                        "required": ["item_name"],
+                    },
                 ),
                 # MOD DATA TOOLS (4 new tools)
                 types.Tool(
@@ -1439,11 +1384,11 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "mod_id": {
                                 "type": "string",
-                                "description": "Mod ID (e.g., 'IncreasedLife5', 'FireResist3')"
+                                "description": "Mod ID (e.g., 'IncreasedLife5', 'FireResist3')",
                             }
                         },
-                        "required": ["mod_id"]
-                    }
+                        "required": ["mod_id"],
+                    },
                 ),
                 types.Tool(
                     name="list_all_mods",
@@ -1454,19 +1399,19 @@ class PoE2BuildOptimizerMCP:
                             "generation_type": {
                                 "type": "string",
                                 "description": "Filter by generation type: PREFIX, SUFFIX, IMPLICIT, or CORRUPTED",
-                                "enum": ["PREFIX", "SUFFIX", "IMPLICIT", "CORRUPTED"]
+                                "enum": ["PREFIX", "SUFFIX", "IMPLICIT", "CORRUPTED"],
                             },
                             "filter_stat": {
                                 "type": "string",
-                                "description": "Filter by stat keyword (e.g., 'life', 'fire', 'resistance')"
+                                "description": "Filter by stat keyword (e.g., 'life', 'fire', 'resistance')",
                             },
                             "limit": {
                                 "type": "integer",
                                 "description": "Maximum number of mods to return",
-                                "default": 50
-                            }
-                        }
-                    }
+                                "default": 50,
+                            },
+                        },
+                    },
                 ),
                 types.Tool(
                     name="search_mods_by_stat",
@@ -1476,21 +1421,21 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "stat_keyword": {
                                 "type": "string",
-                                "description": "Stat keyword to search for (e.g., 'fire resistance', 'increased life', 'physical damage')"
+                                "description": "Stat keyword to search for (e.g., 'fire resistance', 'increased life', 'physical damage')",
                             },
                             "generation_type": {
                                 "type": "string",
                                 "description": "Optional: Filter by generation type (PREFIX, SUFFIX, IMPLICIT, CORRUPTED)",
-                                "enum": ["PREFIX", "SUFFIX", "IMPLICIT", "CORRUPTED"]
+                                "enum": ["PREFIX", "SUFFIX", "IMPLICIT", "CORRUPTED"],
                             },
                             "limit": {
                                 "type": "integer",
                                 "description": "Maximum number of results",
-                                "default": 50
-                            }
+                                "default": 50,
+                            },
                         },
-                        "required": ["stat_keyword"]
-                    }
+                        "required": ["stat_keyword"],
+                    },
                 ),
                 types.Tool(
                     name="get_mod_tiers",
@@ -1500,11 +1445,11 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "mod_base": {
                                 "type": "string",
-                                "description": "Base mod name without tier number (e.g., 'IncreasedLife', 'FireResist')"
+                                "description": "Base mod name without tier number (e.g., 'IncreasedLife', 'FireResist')",
                             }
                         },
-                        "required": ["mod_base"]
-                    }
+                        "required": ["mod_base"],
+                    },
                 ),
                 # TIER 2 MOD VALIDATION TOOLS
                 types.Tool(
@@ -1516,16 +1461,16 @@ class PoE2BuildOptimizerMCP:
                             "mod_ids": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "List of mod IDs to validate (e.g., ['Strength1', 'FireResist3', 'AddedLightningDamage5'])"
+                                "description": "List of mod IDs to validate (e.g., ['Strength1', 'FireResist3', 'AddedLightningDamage5'])",
                             },
                             "item_level": {
                                 "type": "integer",
                                 "description": "Item level to check mod requirements against",
-                                "default": 83
-                            }
+                                "default": 83,
+                            },
                         },
-                        "required": ["mod_ids"]
-                    }
+                        "required": ["mod_ids"],
+                    },
                 ),
                 types.Tool(
                     name="get_available_mods",
@@ -1536,7 +1481,7 @@ class PoE2BuildOptimizerMCP:
                             "generation_type": {
                                 "type": "string",
                                 "description": "Filter by generation type: PREFIX or SUFFIX",
-                                "enum": ["PREFIX", "SUFFIX"]
+                                "enum": ["PREFIX", "SUFFIX"],
                             },
                             "item_class": {
                                 "type": "string",
@@ -1546,23 +1491,22 @@ class PoE2BuildOptimizerMCP:
                                     "'Belt', 'Helmet', 'Gloves', 'Boots', "
                                     "'Body Armour', 'Shield', 'Quiver', 'Focus'). "
                                     "Matches the mod's SpawnTags. Omit for all item types."
-                                )
+                                ),
                             },
                             "max_level": {
                                 "type": "integer",
                                 "description": "Maximum level requirement (filters mods you can't roll yet)",
-                                "default": 100
+                                "default": 100,
                             },
                             "limit": {
                                 "type": "integer",
                                 "description": "Maximum number of mods to return",
-                                "default": 100
-                            }
+                                "default": 100,
+                            },
                         },
-                        "required": ["generation_type"]
-                    }
+                        "required": ["generation_type"],
+                    },
                 ),
-
                 # ============================================
                 # LOCAL LIVE-GAME TOOLS (read the running client's local files)
                 # ============================================
@@ -1585,19 +1529,19 @@ class PoE2BuildOptimizerMCP:
                             "include_recent_events": {
                                 "type": "boolean",
                                 "description": "Also return the recent parsed event stream (level-ups, zone changes, deaths, whispers).",
-                                "default": False
+                                "default": False,
                             },
                             "event_limit": {
                                 "type": "integer",
                                 "description": "Max recent events to return when include_recent_events is true.",
-                                "default": 25
+                                "default": 25,
                             },
                             "log_path": {
                                 "type": "string",
-                                "description": "Optional explicit path to Client.txt (overrides auto-discovery)."
-                            }
-                        }
-                    }
+                                "description": "Optional explicit path to Client.txt (overrides auto-discovery).",
+                            },
+                        },
+                    },
                 ),
                 types.Tool(
                     name="get_game_config",
@@ -1616,15 +1560,15 @@ class PoE2BuildOptimizerMCP:
                             "full": {
                                 "type": "boolean",
                                 "description": "Return the complete raw config (all sections) instead of the build-relevant summary.",
-                                "default": False
+                                "default": False,
                             },
                             "config_path": {
                                 "type": "string",
-                                "description": "Optional explicit path to poe2_production_Config.ini (overrides auto-discovery)."
-                            }
-                        }
-                    }
-                )
+                                "description": "Optional explicit path to poe2_production_Config.ini (overrides auto-discovery).",
+                            },
+                        },
+                    },
+                ),
             ]
 
         @self.server.call_tool()
@@ -1643,20 +1587,20 @@ class PoE2BuildOptimizerMCP:
                     uri="poe2://game-data/items",
                     name="Item Database",
                     description="Complete PoE2 item database",
-                    mimeType="application/json"
+                    mimeType="application/json",
                 ),
                 types.Resource(
                     uri="poe2://game-data/passives",
                     name="Passive Tree",
                     description="Complete passive skill tree data",
-                    mimeType="application/json"
+                    mimeType="application/json",
                 ),
                 types.Resource(
                     uri="poe2://game-data/skills",
                     name="Skill Gems",
                     description="All skill gem data",
-                    mimeType="application/json"
-                )
+                    mimeType="application/json",
+                ),
             ]
 
         @self.server.read_resource()
@@ -1688,9 +1632,9 @@ class PoE2BuildOptimizerMCP:
                         types.PromptArgument(
                             name="character_data",
                             description="Character data to analyze",
-                            required=True
+                            required=True,
                         )
-                    ]
+                    ],
                 ),
                 types.Prompt(
                     name="optimize_for_goal",
@@ -1699,10 +1643,10 @@ class PoE2BuildOptimizerMCP:
                         types.PromptArgument(
                             name="goal",
                             description="Optimization goal (dps, defense, etc.)",
-                            required=True
+                            required=True,
                         )
-                    ]
-                )
+                    ],
+                ),
             ]
 
     # Tool Implementation Methods
@@ -1716,9 +1660,7 @@ class PoE2BuildOptimizerMCP:
         try:
             # Fetch character data using the new API-based fetcher
             character_data = await self.char_fetcher.get_character(
-                account_name=account,
-                character_name=character,
-                league=args.get("league", "Abyss")
+                account_name=account, character_name=character, league=args.get("league", "Abyss")
             )
 
             if not character_data:
@@ -1728,7 +1670,9 @@ class PoE2BuildOptimizerMCP:
                 # the fetcher actually tried.
                 league_arg = args.get("league", "Standard")
                 league_slug = league_arg.lower().replace(" ", "")
-                profile_url = f"https://poe.ninja/poe2/builds/{league_slug}/character/{account}/{character}"
+                profile_url = (
+                    f"https://poe.ninja/poe2/builds/{league_slug}/character/{account}/{character}"
+                )
 
                 # CRITICAL #4 context — see issue #61. poe.ninja migrated to a
                 # client-side rendered Astro SPA at/around Patch 0.5 (2026-05-29).
@@ -1768,10 +1712,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
 - `compare_to_top_players` — same SPA migration breaks ladder enumeration
 - `import_poe_ninja_url` — wraps `analyze_character`; same failure
 """
-                return [types.TextContent(
-                    type="text",
-                    text=error_msg
-                )]
+                return [types.TextContent(type="text", text=error_msg)]
 
             # Calculate actual stats instead of using stub build_scorer
             analysis = {
@@ -1781,7 +1722,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
                 "weaknesses": [],
                 "dps": character_data.get("dps", 0),
                 "ehp": 0,
-                "defense_rating": 0.0
+                "defense_rating": 0.0,
             }
 
             # Calculate EHP if calculator is available
@@ -1789,9 +1730,17 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
                 try:
                     # Import with fallback for both direct and module execution
                     try:
-                        from .calculator.ehp_calculator import DefensiveStats, ThreatProfile, DamageType
+                        from .calculator.ehp_calculator import (
+                            DefensiveStats,
+                            ThreatProfile,
+                            DamageType,
+                        )
                     except ImportError:
-                        from src.calculator.ehp_calculator import DefensiveStats, ThreatProfile, DamageType
+                        from src.calculator.ehp_calculator import (
+                            DefensiveStats,
+                            ThreatProfile,
+                            DamageType,
+                        )
 
                     # Get stats from the nested stats object (poe.ninja format uses camelCase)
                     stats = character_data.get("stats", {})
@@ -1805,7 +1754,9 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
                     lightning_res = stats.get("lightningResistance", 0) or 0
                     chaos_res = stats.get("chaosResistance", 0) or 0
 
-                    logger.info(f"[ANALYZE_CHAR] Calculating EHP with Life: {life}, ES: {energy_shield}")
+                    logger.info(
+                        f"[ANALYZE_CHAR] Calculating EHP with Life: {life}, ES: {energy_shield}"
+                    )
 
                     defensive_stats = DefensiveStats(
                         life=life,
@@ -1816,19 +1767,31 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
                         fire_res=fire_res,
                         cold_res=cold_res,
                         lightning_res=lightning_res,
-                        chaos_res=chaos_res
+                        chaos_res=chaos_res,
                     )
 
                     # Calculate average EHP across damage types
                     threat = ThreatProfile(expected_hit_size=1000.0)
-                    phys_result = self.ehp_calculator.calculate_ehp(defensive_stats, DamageType.PHYSICAL, threat)
-                    fire_result = self.ehp_calculator.calculate_ehp(defensive_stats, DamageType.FIRE, threat)
-                    cold_result = self.ehp_calculator.calculate_ehp(defensive_stats, DamageType.COLD, threat)
-                    lightning_result = self.ehp_calculator.calculate_ehp(defensive_stats, DamageType.LIGHTNING, threat)
+                    phys_result = self.ehp_calculator.calculate_ehp(
+                        defensive_stats, DamageType.PHYSICAL, threat
+                    )
+                    fire_result = self.ehp_calculator.calculate_ehp(
+                        defensive_stats, DamageType.FIRE, threat
+                    )
+                    cold_result = self.ehp_calculator.calculate_ehp(
+                        defensive_stats, DamageType.COLD, threat
+                    )
+                    lightning_result = self.ehp_calculator.calculate_ehp(
+                        defensive_stats, DamageType.LIGHTNING, threat
+                    )
 
                     # Use average EHP from results
-                    avg_ehp = (phys_result.effective_hp + fire_result.effective_hp +
-                               cold_result.effective_hp + lightning_result.effective_hp) / 4
+                    avg_ehp = (
+                        phys_result.effective_hp
+                        + fire_result.effective_hp
+                        + cold_result.effective_hp
+                        + lightning_result.effective_hp
+                    ) / 4
                     analysis["ehp"] = int(avg_ehp)
                     logger.info(f"[ANALYZE_CHAR] Calculated EHP: {analysis['ehp']}")
 
@@ -1855,9 +1818,13 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             total_pool = life + es
 
             if total_pool > 6000:
-                analysis["strengths"].append(f"Good defensive pool ({total_pool:,.0f} combined life+ES)")
+                analysis["strengths"].append(
+                    f"Good defensive pool ({total_pool:,.0f} combined life+ES)"
+                )
             elif total_pool < 4000:
-                analysis["weaknesses"].append(f"Low defensive pool ({total_pool:,.0f} combined life+ES)")
+                analysis["weaknesses"].append(
+                    f"Low defensive pool ({total_pool:,.0f} combined life+ES)"
+                )
 
             # Check resistances (poe.ninja format uses camelCase)
             fire_res = stats.get("fireResistance", 0) or 0
@@ -1870,7 +1837,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
                 "fire": fire_res,
                 "cold": cold_res,
                 "lightning": lightning_res,
-                "chaos": chaos_res
+                "chaos": chaos_res,
             }
 
             if fire_res >= 75 and cold_res >= 75 and lightning_res >= 75:
@@ -1917,32 +1884,32 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             recommendations = ""
             if include_recommendations and self.recommendation_engine:
                 recommendations = await self.recommendation_engine.generate_recommendations(
-                    character_data,
-                    analysis
+                    character_data, analysis
                 )
 
             # Resolve passive tree node IDs to full data
             passive_analysis = None
             if self.passive_tree_resolver:
                 try:
-                    passive_ids = character_data.get('passive_tree', [])
+                    passive_ids = character_data.get("passive_tree", [])
                     if passive_ids:
                         passive_analysis = self.passive_tree_resolver.analyze_build(passive_ids)
-                        logger.info(f"[ANALYZE_CHAR] Resolved {passive_analysis.total_nodes} passive nodes")
+                        logger.info(
+                            f"[ANALYZE_CHAR] Resolved {passive_analysis.total_nodes} passive nodes"
+                        )
                 except Exception as e:
                     logger.warning(f"[ANALYZE_CHAR] Passive tree resolution failed: {e}")
 
             # Format response
-            response = self._format_character_analysis(character_data, analysis, recommendations, passive_analysis)
+            response = self._format_character_analysis(
+                character_data, analysis, recommendations, passive_analysis
+            )
 
             return [types.TextContent(type="text", text=response)]
 
         except Exception as e:
             logger.error(f"Character analysis failed: {e}")
-            return [types.TextContent(
-                type="text",
-                text=f"Analysis failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Analysis failed: {str(e)}")]
 
     async def _handle_nl_query(self, args: dict) -> List[types.TextContent]:
         """Handle natural language query"""
@@ -1950,25 +1917,21 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
         character_context = args.get("character_context")
 
         if not self.query_handler:
-            return [types.TextContent(
-                type="text",
-                text="AI insights are not enabled. Please set ENABLE_AI_INSIGHTS=true and provide an API key."
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text="AI insights are not enabled. Please set ENABLE_AI_INSIGHTS=true and provide an API key.",
+                )
+            ]
 
         try:
-            response = await self.query_handler.handle_query(
-                query,
-                character_context
-            )
+            response = await self.query_handler.handle_query(query, character_context)
 
             return [types.TextContent(type="text", text=response)]
 
         except Exception as e:
             logger.error(f"NL query failed: {e}")
-            return [types.TextContent(
-                type="text",
-                text=f"Query failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Query failed: {str(e)}")]
 
     async def _handle_optimize_gear(self, args: dict) -> List[types.TextContent]:
         """Handle gear optimization"""
@@ -1978,9 +1941,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
 
         try:
             recommendations = await self.gear_optimizer.optimize(
-                character_data,
-                budget=budget,
-                goal=goal
+                character_data, budget=budget, goal=goal
             )
 
             response = self._format_gear_recommendations(recommendations)
@@ -1988,10 +1949,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             return [types.TextContent(type="text", text=response)]
 
         except Exception as e:
-            return [types.TextContent(
-                type="text",
-                text=f"Gear optimization failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Gear optimization failed: {str(e)}")]
 
     async def _handle_optimize_passives(self, args: dict) -> List[types.TextContent]:
         """Handle passive tree optimization"""
@@ -2005,7 +1963,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
                 character_data,
                 available_points=available_points,
                 allow_respec=allow_respec,
-                goal=goal
+                goal=goal,
             )
 
             response = self._format_passive_recommendations(recommendations)
@@ -2013,10 +1971,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             return [types.TextContent(type="text", text=response)]
 
         except Exception as e:
-            return [types.TextContent(
-                type="text",
-                text=f"Passive optimization failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Passive optimization failed: {str(e)}")]
 
     async def _handle_optimize_skills(self, args: dict) -> List[types.TextContent]:
         """Handle skill optimization"""
@@ -2024,20 +1979,14 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
         goal = args.get("goal", "balanced")
 
         try:
-            recommendations = await self.skill_optimizer.optimize(
-                character_data,
-                goal=goal
-            )
+            recommendations = await self.skill_optimizer.optimize(character_data, goal=goal)
 
             response = self._format_skill_recommendations(recommendations)
 
             return [types.TextContent(type="text", text=response)]
 
         except Exception as e:
-            return [types.TextContent(
-                type="text",
-                text=f"Skill optimization failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Skill optimization failed: {str(e)}")]
 
     async def _handle_compare_builds(self, args: dict) -> List[types.TextContent]:
         """Handle build comparison"""
@@ -2051,10 +2000,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             return [types.TextContent(type="text", text=response)]
 
         except Exception as e:
-            return [types.TextContent(
-                type="text",
-                text=f"Build comparison failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Build comparison failed: {str(e)}")]
 
     async def _handle_import_pob(self, args: dict) -> List[types.TextContent]:
         """Handle PoB import — from a local file, raw XML, or an inline share code"""
@@ -2063,31 +2009,31 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
         pob_code = args.get("pob_code")
 
         if not self.pob_importer:
-            return [types.TextContent(
-                type="text",
-                text="Path of Building import is not enabled."
-            )]
+            return [types.TextContent(type="text", text="Path of Building import is not enabled.")]
 
         if not (pob_file_path or pob_xml or pob_code):
-            return [types.TextContent(
-                type="text",
-                text=(
-                    "No build input provided. Pass one of:\n"
-                    "- `pob_file_path` — path to a local file with the build "
-                    "(raw XML or share code; most reliable)\n"
-                    "- `pob_xml` — raw uncompressed PoB XML\n"
-                    "- `pob_code` — inline base64 share code"
+            return [
+                types.TextContent(
+                    type="text",
+                    text=(
+                        "No build input provided. Pass one of:\n"
+                        "- `pob_file_path` — path to a local file with the build "
+                        "(raw XML or share code; most reliable)\n"
+                        "- `pob_xml` — raw uncompressed PoB XML\n"
+                        "- `pob_code` — inline base64 share code"
+                    ),
                 )
-            )]
+            ]
 
         try:
             if pob_file_path:
                 path = Path(pob_file_path).expanduser()
                 if not path.is_file():
-                    return [types.TextContent(
-                        type="text",
-                        text=f"PoB import failed: file not found: {path}"
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text", text=f"PoB import failed: file not found: {path}"
+                        )
+                    ]
                 build_data = await self.pob_importer.import_from_file(str(path))
                 source = f"file `{path}`"
             elif pob_xml:
@@ -2097,39 +2043,34 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
                 build_data = await self.pob_importer.import_build(pob_code)
                 source = "share code"
 
-            return [types.TextContent(
-                type="text",
-                text=f"Successfully imported build from {source}:\n{json.dumps(build_data, indent=2)}"
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Successfully imported build from {source}:\n{json.dumps(build_data, indent=2)}",
+                )
+            ]
 
         except Exception as e:
-            return [types.TextContent(
-                type="text",
-                text=f"PoB import failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"PoB import failed: {str(e)}")]
 
     async def _handle_export_pob(self, args: dict) -> List[types.TextContent]:
         """Handle PoB export"""
         character_data = args["character_data"]
 
         if not self.pob_exporter:
-            return [types.TextContent(
-                type="text",
-                text="Path of Building export is not enabled."
-            )]
+            return [types.TextContent(type="text", text="Path of Building export is not enabled.")]
 
         try:
             pob_code = await self.pob_exporter.export_build(character_data)
-            return [types.TextContent(
-                type="text",
-                text=f"Path of Building Code:\n{pob_code}\n\nCopy this code and import it in Path of Building."
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Path of Building Code:\n{pob_code}\n\nCopy this code and import it in Path of Building.",
+                )
+            ]
 
         except Exception as e:
-            return [types.TextContent(
-                type="text",
-                text=f"PoB export failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"PoB export failed: {str(e)}")]
 
     async def _handle_get_pob_code(self, args: dict) -> List[types.TextContent]:
         """Get PoB code from poe.ninja"""
@@ -2143,32 +2084,37 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             if pob_code:
                 # If it's a dict (full API response), try to extract the code
                 if isinstance(pob_code, dict):
-                    actual_code = pob_code.get("pob") or pob_code.get("code") or pob_code.get("build")
+                    actual_code = (
+                        pob_code.get("pob") or pob_code.get("code") or pob_code.get("build")
+                    )
                     if actual_code:
                         pob_code = actual_code
                     else:
                         # Return the structure so user can see what was returned
-                        return [types.TextContent(
-                            type="text",
-                            text=f"PoB API returned unexpected format:\n{json.dumps(pob_code, indent=2)}"
-                        )]
+                        return [
+                            types.TextContent(
+                                type="text",
+                                text=f"PoB API returned unexpected format:\n{json.dumps(pob_code, indent=2)}",
+                            )
+                        ]
 
-                return [types.TextContent(
-                    type="text",
-                    text=f"Path of Building Code for {character}:\n\n{pob_code}\n\nCopy this code and import it in Path of Building."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"Path of Building Code for {character}:\n\n{pob_code}\n\nCopy this code and import it in Path of Building.",
+                    )
+                ]
             else:
-                return [types.TextContent(
-                    type="text",
-                    text=f"Could not fetch PoB code for {character}. Character may not exist on poe.ninja or the PoB API may not have data for this character."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"Could not fetch PoB code for {character}. Character may not exist on poe.ninja or the PoB API may not have data for this character.",
+                    )
+                ]
 
         except Exception as e:
             logger.error(f"Error fetching PoB code: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Failed to fetch PoB code: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Failed to fetch PoB code: {str(e)}")]
 
     # =========================================================================
     # Live Path of Building Bridge handlers (TCP to a running PoB instance)
@@ -2203,38 +2149,52 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             status = await asyncio.to_thread(installer.get_bridge_status, "127.0.0.1", port)
 
             lines = ["Path of Building bridge status:"]
-            lines.append(f"  PoB installed: {status['pob_installed']}"
-                         + (f" ({status['pob_path']})" if status.get('pob_path') else ""))
+            lines.append(
+                f"  PoB installed: {status['pob_installed']}"
+                + (f" ({status['pob_path']})" if status.get("pob_path") else "")
+            )
             lines.append(f"  Addon deployed: {status['addon_installed']}")
             lines.append(f"  Launch.lua patched: {status['launch_patched']}")
             _bport = status.get("bridge_port") or port
             lines.append(f"  Bridge reachable (port {_bport}): {status['bridge_reachable']}")
             if status.get("ping"):
                 ping = status["ping"]
-                lines.append(f"  PoB version: {ping.get('pob_version')}, "
-                             f"build loaded: {ping.get('build_loaded')}"
-                             + (f" ('{ping.get('build_name')}')" if ping.get('build_name') else ""))
+                lines.append(
+                    f"  PoB version: {ping.get('pob_version')}, "
+                    f"build loaded: {ping.get('build_loaded')}"
+                    + (f" ('{ping.get('build_name')}')" if ping.get("build_name") else "")
+                )
             if not status["bridge_reachable"]:
                 if status["addon_installed"]:
-                    lines.append("  -> Addon installed but PoB isn't running (or not reachable). Start PoB.")
+                    lines.append(
+                        "  -> Addon installed but PoB isn't running (or not reachable). Start PoB."
+                    )
                 elif status["pob_installed"] and not status["launch_patched"]:
                     # Distinguish "never installed" from "PoB updated and wiped the
                     # Launch.lua hook". In the latter the addon files still exist;
                     # auto-repair so the addon survives PoB updates.
                     deploy = await asyncio.to_thread(
-                        installer.is_addon_installed, Path(status["pob_path"]))
+                        installer.is_addon_installed, Path(status["pob_path"])
+                    )
                     if deploy.get("files_present"):
                         repair = await asyncio.to_thread(
-                            installer.ensure_installed, Path(status["pob_path"]))
+                            installer.ensure_installed, Path(status["pob_path"])
+                        )
                         if repair.get("action") == "repatched":
-                            lines.append("  -> PoB updated and removed the addon hook; "
-                                         "I re-applied it automatically. Restart PoB.")
+                            lines.append(
+                                "  -> PoB updated and removed the addon hook; "
+                                "I re-applied it automatically. Restart PoB."
+                            )
                         else:
                             lines.append(f"  -> Auto-repair: {repair.get('message')}")
                     else:
-                        lines.append("  -> Addon not installed. Use pob_install_addon, then restart PoB.")
+                        lines.append(
+                            "  -> Addon not installed. Use pob_install_addon, then restart PoB."
+                        )
                 else:
-                    lines.append("  -> Addon not installed. Use pob_install_addon, then restart PoB.")
+                    lines.append(
+                        "  -> Addon not installed. Use pob_install_addon, then restart PoB."
+                    )
             return [types.TextContent(type="text", text="\n".join(lines))]
         except Exception as e:
             logger.error(f"pob_status error: {e}", exc_info=True)
@@ -2269,20 +2229,21 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             client = self._get_pob_client()
             tree = await asyncio.to_thread(client.get_passive_tree)
             nodes = tree.get("nodes", [])
-            header = (f"Passive tree from PoB - class {tree.get('class')}, "
-                      f"ascendancy {tree.get('ascendancy')}, "
-                      f"{tree.get('totalPoints')} points, {len(nodes)} allocated nodes:")
-            return [types.TextContent(
-                type="text",
-                text=header + "\n" + json.dumps(tree, indent=2)
-            )]
+            header = (
+                f"Passive tree from PoB - class {tree.get('class')}, "
+                f"ascendancy {tree.get('ascendancy')}, "
+                f"{tree.get('totalPoints')} points, {len(nodes)} allocated nodes:"
+            )
+            return [types.TextContent(type="text", text=header + "\n" + json.dumps(tree, indent=2))]
         except Exception as e:
             logger.error(f"pob_get_passive_tree error: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error pulling passive tree (is PoB running with a build loaded? "
-                     f"Try pob_status): {str(e)}"
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Error pulling passive tree (is PoB running with a build loaded? "
+                    f"Try pob_status): {str(e)}",
+                )
+            ]
 
     async def _handle_pob_get_build(self, args: dict) -> List[types.TextContent]:
         """Pull the current build from a running PoB as code or xml."""
@@ -2291,20 +2252,26 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             client = self._get_pob_client()
             result = await asyncio.to_thread(client.get_build, fmt)
             if fmt == "code":
-                return [types.TextContent(
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"PoB share code for '{result.get('name', 'build')}':\n\n{result.get('code', '')}",
+                    )
+                ]
+            return [
+                types.TextContent(
                     type="text",
-                    text=f"PoB share code for '{result.get('name', 'build')}':\n\n{result.get('code', '')}"
-                )]
-            return [types.TextContent(
-                type="text",
-                text=f"PoB build XML for '{result.get('name', 'build')}':\n\n{result.get('xml', '')}"
-            )]
+                    text=f"PoB build XML for '{result.get('name', 'build')}':\n\n{result.get('xml', '')}",
+                )
+            ]
         except Exception as e:
             logger.error(f"pob_get_build error: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error pulling build (is PoB running? Try pob_status): {str(e)}"
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Error pulling build (is PoB running? Try pob_status): {str(e)}",
+                )
+            ]
 
     async def _handle_pob_load_build(self, args: dict) -> List[types.TextContent]:
         """Load a build (code or xml) into a running PoB."""
@@ -2313,41 +2280,47 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             xml = args.get("xml")
             name = args.get("name", "MCP Build")
             if not code and not xml:
-                return [types.TextContent(
-                    type="text",
-                    text="Provide a PoB 'code' (share code) or 'xml' to load."
-                )]
+                return [
+                    types.TextContent(
+                        type="text", text="Provide a PoB 'code' (share code) or 'xml' to load."
+                    )
+                ]
             client = self._get_pob_client()
-            result = await asyncio.to_thread(
-                client.load_build, xml, code, name
-            )
-            return [types.TextContent(
-                type="text",
-                text=f"Loaded build '{name}' into Path of Building. {result.get('note', '')}".strip()
-            )]
+            result = await asyncio.to_thread(client.load_build, xml, code, name)
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Loaded build '{name}' into Path of Building. {result.get('note', '')}".strip(),
+                )
+            ]
         except Exception as e:
             logger.error(f"pob_load_build error: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error loading build (is PoB running? Try pob_status): {str(e)}"
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Error loading build (is PoB running? Try pob_status): {str(e)}",
+                )
+            ]
 
     async def _handle_pob_get_calcs(self, args: dict) -> List[types.TextContent]:
         """Pull computed stats from PoB's calc engine."""
         try:
             client = self._get_pob_client()
             calcs = await asyncio.to_thread(client.get_calcs)
-            return [types.TextContent(
-                type="text",
-                text="PoB calculation output:\n" + json.dumps(calcs, indent=2)
-            )]
+            return [
+                types.TextContent(
+                    type="text", text="PoB calculation output:\n" + json.dumps(calcs, indent=2)
+                )
+            ]
         except Exception as e:
             logger.error(f"pob_get_calcs error: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error pulling calcs (is PoB running with a build loaded? "
-                     f"Try pob_status): {str(e)}"
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Error pulling calcs (is PoB running with a build loaded? "
+                    f"Try pob_status): {str(e)}",
+                )
+            ]
 
     async def _handle_search_items(self, args: dict) -> List[types.TextContent]:
         """Handle item search using .datc64 game database"""
@@ -2358,20 +2331,17 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             items = await self.db_manager.search_items(query, filters)
 
             if not items:
-                return [types.TextContent(
-                    type="text",
-                    text=f"No items found matching '{query}'"
-                )]
+                return [types.TextContent(type="text", text=f"No items found matching '{query}'")]
 
             response = f"Found {len(items)} items matching '{query}':\n\n"
 
             for item in items[:10]:  # Limit to 10 results
-                name = item.get('name', 'Unknown')
-                item_class = item.get('item_class', 'Unknown')
-                base_type = item.get('base_type', '')
-                width = item.get('width', 1)
-                height = item.get('height', 1)
-                drop_level = item.get('drop_level', 0)
+                name = item.get("name", "Unknown")
+                item_class = item.get("item_class", "Unknown")
+                base_type = item.get("base_type", "")
+                width = item.get("width", 1)
+                height = item.get("height", 1)
+                drop_level = item.get("drop_level", 0)
 
                 response += f"- {name}\n"
                 response += f"  Class: {item_class}\n"
@@ -2389,10 +2359,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
 
         except Exception as e:
             logger.error(f"search_items error: {e}")
-            return [types.TextContent(
-                type="text",
-                text=f"Item search failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Item search failed: {str(e)}")]
 
     async def _handle_calculate_dps(self, args: dict) -> List[types.TextContent]:
         """Handle DPS calculation"""
@@ -2401,22 +2368,17 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
 
         try:
             from calculator.damage_calc import DamageCalculator
+
             calc = DamageCalculator(self.db_manager)
 
-            dps_breakdown = await calc.calculate_dps(
-                character_data,
-                include_buffs=include_buffs
-            )
+            dps_breakdown = await calc.calculate_dps(character_data, include_buffs=include_buffs)
 
             response = self._format_dps_breakdown(dps_breakdown)
 
             return [types.TextContent(type="text", text=response)]
 
         except Exception as e:
-            return [types.TextContent(
-                type="text",
-                text=f"DPS calculation failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"DPS calculation failed: {str(e)}")]
 
     async def _handle_compare_to_top_players(self, args: dict) -> List[types.TextContent]:
         """Handle comparison to top players"""
@@ -2430,9 +2392,7 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
             # Fetch user's character
             logger.info(f"Fetching character {character_name} for comparison...")
             user_character = await self.char_fetcher.get_character(
-                account_name,
-                character_name,
-                league
+                account_name, character_name, league
             )
 
             if not user_character:
@@ -2464,10 +2424,7 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
 - **League name** — make sure it matches the league your character is on (current: **{league}**)
 - **poe.ninja indexing delay** — new characters take 1-2 hours; very low-level characters may never index
 """
-                return [types.TextContent(
-                    type="text",
-                    text=error_msg
-                )]
+                return [types.TextContent(type="text", text=error_msg)]
 
             # Perform comparison via the recovered protobuf ladder API (#61).
             # The old snapshot-based top_player_fetcher path died in the 0.5
@@ -2493,18 +2450,24 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
                 await ladder.close()
 
             if not rows:
-                return [types.TextContent(
-                    type="text",
-                    text=(
-                        f"# Comparison Unavailable\n\nThe ladder search returned no rows "
-                        f"for league '{league}' (slug '{league_slug}'). The league may "
-                        f"not be indexed, or poe.ninja changed the endpoint again — "
-                        f"check https://github.com/HivemindOverlord/poe2-mcp/issues/61."
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=(
+                            f"# Comparison Unavailable\n\nThe ladder search returned no rows "
+                            f"for league '{league}' (slug '{league_slug}'). The league may "
+                            f"not be indexed, or poe.ninja changed the endpoint again — "
+                            f"check https://github.com/HivemindOverlord/poe2-mcp/issues/61."
+                        ),
                     )
-                )]
+                ]
 
             if min_level:
-                rows = [r for r in rows if isinstance(r.get("level"), int) and r["level"] >= int(min_level)]
+                rows = [
+                    r
+                    for r in rows
+                    if isinstance(r.get("level"), int) and r["level"] >= int(min_level)
+                ]
             top = rows[: int(top_player_limit) if top_player_limit else 10]
 
             def _median(key):
@@ -2524,9 +2487,15 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
             response += f"(of the full ladder page, sorted by level)\n\n"
             response += "## You vs the cohort median\n"
             response += f"| Stat | You | Median | Delta |\n|---|---|---|---|\n"
-            for key, label in (("level", "Level"), ("life", "Life"), ("energyshield", "Energy Shield")):
+            for key, label in (
+                ("level", "Level"),
+                ("life", "Life"),
+                ("energyshield", "Energy Shield"),
+            ):
                 m, c = mine.get(key), med.get(key)
-                delta = (m - c) if isinstance(m, (int, float)) and isinstance(c, (int, float)) else None
+                delta = (
+                    (m - c) if isinstance(m, (int, float)) and isinstance(c, (int, float)) else None
+                )
                 delta_s = f"{delta:+}" if delta is not None else "—"
                 response += f"| {label} | {m if m is not None else '—'} | {c if c is not None else '—'} | {delta_s} |\n"
 
@@ -2546,10 +2515,7 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
 
         except Exception as e:
             logger.error(f"Comparison failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Comparison failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Comparison failed: {str(e)}")]
 
     async def _handle_search_trade_items(self, args: dict) -> List[types.TextContent]:
         """Handle trade item search"""
@@ -2558,49 +2524,53 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
         max_price_chaos = args.get("max_price_chaos")
 
         if not self.trade_api:
-            return [types.TextContent(
-                type="text",
-                text="Trade integration is not enabled. Please set ENABLE_TRADE_INTEGRATION=true in your config."
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text="Trade integration is not enabled. Please set ENABLE_TRADE_INTEGRATION=true in your config.",
+                )
+            ]
 
         if not settings.POESESSID:
-            return [types.TextContent(
-                type="text",
-                text="Trade search requires POESESSID cookie. Please set it up:\n\n"
-                     "**AUTOMATED SETUP (Recommended - 2 minutes):**\n\n"
-                     "Use the `setup_trade_auth` tool to automatically configure authentication.\n"
-                     "Just run it and log in when the browser opens - the tool will handle the rest!\n\n"
-                     "Example: \"Set up trade authentication\" or \"Use the setup_trade_auth tool\"\n\n"
-                     "**Requirements:**\n"
-                     "- Playwright must be installed: `pip install playwright`\n"
-                     "- Chromium must be downloaded: `playwright install chromium`\n\n"
-                     "**Manual Setup (Fallback):**\n"
-                     "1. Visit https://www.pathofexile.com/trade in your browser\n"
-                     "2. Log in to your account\n"
-                     "3. Open DevTools (F12) → Application → Cookies\n"
-                     "4. Find 'POESESSID' cookie and copy its value\n"
-                     "5. Add to .env: POESESSID=your_cookie_value\n"
-                     "6. Restart MCP server"
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text="Trade search requires POESESSID cookie. Please set it up:\n\n"
+                    "**AUTOMATED SETUP (Recommended - 2 minutes):**\n\n"
+                    "Use the `setup_trade_auth` tool to automatically configure authentication.\n"
+                    "Just run it and log in when the browser opens - the tool will handle the rest!\n\n"
+                    'Example: "Set up trade authentication" or "Use the setup_trade_auth tool"\n\n'
+                    "**Requirements:**\n"
+                    "- Playwright must be installed: `pip install playwright`\n"
+                    "- Chromium must be downloaded: `playwright install chromium`\n\n"
+                    "**Manual Setup (Fallback):**\n"
+                    "1. Visit https://www.pathofexile.com/trade in your browser\n"
+                    "2. Log in to your account\n"
+                    "3. Open DevTools (F12) → Application → Cookies\n"
+                    "4. Find 'POESESSID' cookie and copy its value\n"
+                    "5. Add to .env: POESESSID=your_cookie_value\n"
+                    "6. Restart MCP server",
+                )
+            ]
 
         try:
             logger.info(f"Searching trade market for upgrades in {league}...")
 
             # Perform search
             results = await self.trade_api.search_for_upgrades(
-                league=league,
-                character_needs=character_needs,
-                max_price_chaos=max_price_chaos
+                league=league, character_needs=character_needs, max_price_chaos=max_price_chaos
             )
 
             if not results:
-                return [types.TextContent(
-                    type="text",
-                    text=f"No items found matching your criteria in {league}. Try:\n"
-                         "- Increasing your budget\n"
-                         "- Broadening search criteria\n"
-                         "- Checking if the league name is correct"
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"No items found matching your criteria in {league}. Try:\n"
+                        "- Increasing your budget\n"
+                        "- Broadening search criteria\n"
+                        "- Checking if the league name is correct",
+                    )
+                ]
 
             # Format response
             response = self._format_trade_search_results(results, character_needs, max_price_chaos)
@@ -2609,22 +2579,21 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
 
         except Exception as e:
             logger.error(f"Trade search failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Trade search failed: {str(e)}\n\n"
-                     "If you see authentication errors, your POESESSID cookie may have expired.\n\n"
-                     "**To refresh:** Use the `setup_trade_auth` tool to get a new cookie.\n"
-                     "Or manually update POESESSID in your .env file and restart the server."
-            )]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Trade search failed: {str(e)}\n\n"
+                    "If you see authentication errors, your POESESSID cookie may have expired.\n\n"
+                    "**To refresh:** Use the `setup_trade_auth` tool to get a new cookie.\n"
+                    "Or manually update POESESSID in your .env file and restart the server.",
+                )
+            ]
 
     async def _handle_detect_weaknesses(self, args: dict) -> List[types.TextContent]:
         """Handle character weakness detection"""
         try:
             if not self.weakness_detector:
-                return [types.TextContent(
-                    type="text",
-                    text="Weakness detector not initialized"
-                )]
+                return [types.TextContent(type="text", text="Weakness detector not initialized")]
 
             # Support two modes: fetch from API or use provided data
             if "account" in args and "character" in args:
@@ -2635,29 +2604,37 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
                 character_data = await self.char_fetcher.get_character(
                     account_name=account,
                     character_name=character,
-                    league=args.get("league", "Abyss")
+                    league=args.get("league", "Abyss"),
                 )
 
                 # DEBUG: Log immediately after fetch
                 if character_data:
-                    logger.info(f"[WEAKNESS] Got character_data with keys: {list(character_data.keys())}")
-                    logger.info(f"[WEAKNESS] life: {character_data.get('life')}, ES: {character_data.get('energy_shield')}")
+                    logger.info(
+                        f"[WEAKNESS] Got character_data with keys: {list(character_data.keys())}"
+                    )
+                    logger.info(
+                        f"[WEAKNESS] life: {character_data.get('life')}, ES: {character_data.get('energy_shield')}"
+                    )
                 else:
                     logger.warning(f"[WEAKNESS] character_data is None/empty!")
 
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public.",
+                        )
+                    ]
             else:
                 # Mode 2: Use provided character_data (for testing)
                 character_data = args.get("character_data", {})
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing.",
+                        )
+                    ]
 
             # Convert character data to CharacterData format
             try:
@@ -2667,10 +2644,18 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
 
             # DEBUG: Log what we're getting
             logger.info(f"[WEAKNESS_DETECTOR] character_data keys: {list(character_data.keys())}")
-            logger.info(f"[WEAKNESS_DETECTOR] life value: {character_data.get('life', 'KEY_MISSING')}")
-            logger.info(f"[WEAKNESS_DETECTOR] energy_shield value: {character_data.get('energy_shield', 'KEY_MISSING')}")
-            logger.info(f"[WEAKNESS_DETECTOR] fire_res value: {character_data.get('fire_res', 'KEY_MISSING')}")
-            logger.info(f"[WEAKNESS_DETECTOR] source value: {character_data.get('source', 'KEY_MISSING')}")
+            logger.info(
+                f"[WEAKNESS_DETECTOR] life value: {character_data.get('life', 'KEY_MISSING')}"
+            )
+            logger.info(
+                f"[WEAKNESS_DETECTOR] energy_shield value: {character_data.get('energy_shield', 'KEY_MISSING')}"
+            )
+            logger.info(
+                f"[WEAKNESS_DETECTOR] fire_res value: {character_data.get('fire_res', 'KEY_MISSING')}"
+            )
+            logger.info(
+                f"[WEAKNESS_DETECTOR] source value: {character_data.get('source', 'KEY_MISSING')}"
+            )
 
             char = CharacterData(
                 level=character_data.get("level", 1),
@@ -2691,7 +2676,7 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
                 lightning_res=character_data.get("lightning_res", 0),
                 chaos_res=character_data.get("chaos_res", 0),
                 total_dps=character_data.get("dps"),
-                equipped_items={}
+                equipped_items={},
             )
 
             # Detect weaknesses
@@ -2701,10 +2686,16 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
             if not weaknesses:
                 response = "# Character Weakness Analysis\n\n✓ No critical weaknesses detected!"
             else:
-                response = f"# Character Weakness Analysis\n\n🔍 Found {len(weaknesses)} weaknesses:\n\n"
+                response = (
+                    f"# Character Weakness Analysis\n\n🔍 Found {len(weaknesses)} weaknesses:\n\n"
+                )
 
                 for i, weakness in enumerate(weaknesses, 1):
-                    priority_icon = "🔴" if weakness.priority >= 90 else "🟡" if weakness.priority >= 70 else "🟢"
+                    priority_icon = (
+                        "🔴"
+                        if weakness.priority >= 90
+                        else "🟡" if weakness.priority >= 70 else "🟢"
+                    )
                     response += f"## {i}. {priority_icon} {weakness.title}\n\n"
                     response += f"**Category:** {weakness.category.value}\n"
                     response += f"**Priority:** {weakness.priority}/100\n"
@@ -2720,10 +2711,7 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
 
         except Exception as e:
             logger.error(f"Weakness detection failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Weakness detection failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Weakness detection failed: {str(e)}")]
 
     async def _handle_evaluate_upgrade(self, args: dict) -> List[types.TextContent]:
         """Handle gear upgrade evaluation"""
@@ -2734,10 +2722,7 @@ poe.ninja migrated their builds/character pages to a client-side rendered SPA at
             price_chaos = args.get("price_chaos")
 
             if not self.gear_evaluator:
-                return [types.TextContent(
-                    type="text",
-                    text="Gear evaluator not initialized"
-                )]
+                return [types.TextContent(type="text", text="Gear evaluator not initialized")]
 
             # Note: GearEvaluator would need proper implementation of evaluate_upgrade
             # For now, provide a placeholder response
@@ -2764,19 +2749,13 @@ Consider:
 
         except Exception as e:
             logger.error(f"Gear evaluation failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Gear evaluation failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Gear evaluation failed: {str(e)}")]
 
     async def _handle_calculate_ehp(self, args: dict) -> List[types.TextContent]:
         """Handle EHP calculation"""
         try:
             if not self.ehp_calculator:
-                return [types.TextContent(
-                    type="text",
-                    text="EHP calculator not initialized"
-                )]
+                return [types.TextContent(type="text", text="EHP calculator not initialized")]
 
             # Support two modes: fetch from API or use provided data
             if "account" in args and "character" in args:
@@ -2787,22 +2766,26 @@ Consider:
                 character_data = await self.char_fetcher.get_character(
                     account_name=account,
                     character_name=character,
-                    league=args.get("league", "Abyss")
+                    league=args.get("league", "Abyss"),
                 )
 
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public.",
+                        )
+                    ]
             else:
                 # Mode 2: Use provided character_data (for testing)
                 character_data = args.get("character_data", {})
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing.",
+                        )
+                    ]
 
             # Convert to DefensiveStats format
             try:
@@ -2820,7 +2803,7 @@ Consider:
                 armor=character_data.get("armor", 0),
                 evasion=character_data.get("evasion", 0),
                 block_chance=character_data.get("block_chance", 0),
-                phys_taken_as_elemental=character_data.get("phys_taken_as_elemental", 0)
+                phys_taken_as_elemental=character_data.get("phys_taken_as_elemental", 0),
             )
 
             # Calculate EHP for all damage types
@@ -2858,19 +2841,13 @@ Consider:
 
         except Exception as e:
             logger.error(f"EHP calculation failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"EHP calculation failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"EHP calculation failed: {str(e)}")]
 
     async def _handle_analyze_spirit(self, args: dict) -> List[types.TextContent]:
         """Handle Spirit usage analysis"""
         try:
             if not self.spirit_calculator:
-                return [types.TextContent(
-                    type="text",
-                    text="Spirit calculator not initialized"
-                )]
+                return [types.TextContent(type="text", text="Spirit calculator not initialized")]
 
             # Support two modes: fetch from API or use provided data
             if "account" in args and "character" in args:
@@ -2881,22 +2858,26 @@ Consider:
                 character_data = await self.char_fetcher.get_character(
                     account_name=account,
                     character_name=character,
-                    league=args.get("league", "Abyss")
+                    league=args.get("league", "Abyss"),
                 )
 
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public.",
+                        )
+                    ]
             else:
                 # Mode 2: Use provided character_data (for testing)
                 character_data = args.get("character_data", {})
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing.",
+                        )
+                    ]
 
             spirit_max = character_data.get("spirit", 100)
             spirit_reserved = character_data.get("spirit_reserved", 0)
@@ -2936,10 +2917,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Spirit analysis failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Spirit analysis failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Spirit analysis failed: {str(e)}")]
 
     async def _handle_analyze_stun(self, args: dict) -> List[types.TextContent]:
         """Handle stun vulnerability analysis"""
@@ -2953,22 +2931,26 @@ Consider:
                 character_data = await self.char_fetcher.get_character(
                     account_name=account,
                     character_name=character,
-                    league=args.get("league", "Abyss")
+                    league=args.get("league", "Abyss"),
                 )
 
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public.",
+                        )
+                    ]
             else:
                 # Mode 2: Use provided character_data (for testing)
                 character_data = args.get("character_data", {})
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing.",
+                        )
+                    ]
 
             # Calculate stun thresholds
             life = character_data.get("life", 0)
@@ -3014,7 +2996,9 @@ Consider:
                 response += "  → Watch for hard-hitting enemies\n"
                 response += "  → Stun recovery speed helps\n"
             else:
-                response += "🟢 **Good Resistance** - Large health pool provides natural stun defense\n"
+                response += (
+                    "🟢 **Good Resistance** - Large health pool provides natural stun defense\n"
+                )
                 response += "  → Harder to fill Heavy Stun meter\n"
                 response += "  → Light Stun threshold is high\n"
 
@@ -3022,10 +3006,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Stun analysis failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Stun analysis failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Stun analysis failed: {str(e)}")]
 
     async def _handle_optimize_metrics(self, args: dict) -> List[types.TextContent]:
         """Handle comprehensive build metrics optimization"""
@@ -3041,22 +3022,26 @@ Consider:
                 character_data = await self.char_fetcher.get_character(
                     account_name=account,
                     character_name=character,
-                    league=args.get("league", "Abyss")
+                    league=args.get("league", "Abyss"),
                 )
 
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=f"Could not fetch character '{character}' for account '{account}'. Check if profile is public.",
+                        )
+                    ]
             else:
                 # Mode 2: Use provided character_data (for testing)
                 character_data = args.get("character_data", {})
                 if not character_data:
-                    return [types.TextContent(
-                        type="text",
-                        text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing."
-                    )]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text="Either provide 'account' and 'character' to fetch from API, or provide 'character_data' for testing.",
+                        )
+                    ]
 
             # Run all analysis systems
             response = "# Comprehensive Build Optimization\n\n"
@@ -3065,7 +3050,9 @@ Consider:
             # 1. Weakness Detection
             if self.weakness_detector:
                 response += "## ⚠️ Critical Weaknesses\n\n"
-                weakness_result = await self._handle_detect_weaknesses({"character_data": character_data})
+                weakness_result = await self._handle_detect_weaknesses(
+                    {"character_data": character_data}
+                )
                 if weakness_result and weakness_result[0].text:
                     # Extract just the weaknesses section
                     weakness_text = weakness_result[0].text
@@ -3086,7 +3073,9 @@ Consider:
             # 3. Spirit Optimization
             if self.spirit_calculator and "spirit" in character_data:
                 response += "## ✨ Spirit Optimization\n\n"
-                spirit_result = await self._handle_analyze_spirit({"character_data": character_data})
+                spirit_result = await self._handle_analyze_spirit(
+                    {"character_data": character_data}
+                )
                 if spirit_result and spirit_result[0].text:
                     spirit_text = spirit_result[0].text
                     if "# Spirit Usage Analysis" in spirit_text:
@@ -3136,10 +3125,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Optimization analysis failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Optimization analysis failed: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Optimization analysis failed: {str(e)}")]
 
     async def _handle_health_check(self, args: dict) -> List[types.TextContent]:
         """Handle MCP server health check"""
@@ -3177,13 +3163,16 @@ Consider:
                     async with self.db_manager.async_session() as session:
                         # Check if we can connect
                         from sqlalchemy import text
-                        result = await session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+
+                        result = await session.execute(
+                            text("SELECT name FROM sqlite_master WHERE type='table'")
+                        )
                         tables = result.fetchall()
                         response += f"✓ Database connected ({len(tables)} tables found)\n"
                         successes.append("Database connected")
 
                         # Check for items table
-                        if any('items' in str(table) for table in tables):
+                        if any("items" in str(table) for table in tables):
                             result = await session.execute(text("SELECT COUNT(*) FROM items"))
                             count = result.scalar()
                             if count and count > 0:
@@ -3205,7 +3194,7 @@ Consider:
 
             # Check 3: Trade API Configuration
             response += "\n## Trade API Status\n\n"
-            if hasattr(settings, 'POESESSID') and settings.POESESSID:
+            if hasattr(settings, "POESESSID") and settings.POESESSID:
                 response += f"✓ POESESSID configured ({len(settings.POESESSID)} characters)\n"
                 successes.append("Trade API cookie configured")
             else:
@@ -3234,7 +3223,7 @@ Consider:
                         test_char = await self.char_fetcher.get_character(
                             account_name="Tomawar40-2671",
                             character_name="DoesFireWorkGoodNow",
-                            league="Abyss"
+                            league="Abyss",
                         )
 
                         if test_char:
@@ -3246,23 +3235,31 @@ Consider:
                             response += f"- Source: {test_char.get('source', 'MISSING')}\n"
                             response += "\n**Critical Stats:**\n"
                             response += f"- Life: {test_char.get('life', 'MISSING')}\n"
-                            response += f"- Energy Shield: {test_char.get('energy_shield', 'MISSING')}\n"
+                            response += (
+                                f"- Energy Shield: {test_char.get('energy_shield', 'MISSING')}\n"
+                            )
                             response += f"- Fire Res: {test_char.get('fire_res', 'MISSING')}\n"
                             response += f"- Cold Res: {test_char.get('cold_res', 'MISSING')}\n"
-                            response += f"- Lightning Res: {test_char.get('lightning_res', 'MISSING')}\n"
+                            response += (
+                                f"- Lightning Res: {test_char.get('lightning_res', 'MISSING')}\n"
+                            )
                             response += "\n**Stats Location:**\n"
                             response += f"- Stats at top level: {all(k in test_char for k in ['life', 'energy_shield'])}\n"
                             response += f"- Has 'stats' dict: {'stats' in test_char}\n"
 
-                            if 'stats' in test_char:
-                                response += f"- Stats dict has life: {'life' in test_char['stats']}\n"
+                            if "stats" in test_char:
+                                response += (
+                                    f"- Stats dict has life: {'life' in test_char['stats']}\n"
+                                )
 
                             # Check for code version markers
-                            if test_char.get('source') == 'poe.ninja API':
+                            if test_char.get("source") == "poe.ninja API":
                                 response += "\n**✓ Using NEW poe.ninja API code**\n"
                                 successes.append("New API code active")
                             else:
-                                response += f"\n**⚠ Unexpected source: {test_char.get('source')}**\n"
+                                response += (
+                                    f"\n**⚠ Unexpected source: {test_char.get('source')}**\n"
+                                )
                                 warnings.append("May be using old fetcher code")
                         else:
                             response += "**Fetch Result:** FAILED ✗\n"
@@ -3354,10 +3351,13 @@ Consider:
         except Exception as e:
             logger.error(f"Health check failed: {e}", exc_info=True)
             import traceback
-            return [types.TextContent(
-                type="text",
-                text=f"Health check failed with error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
-            )]
+
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Health check failed with error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}",
+                )
+            ]
 
     async def _handle_check_tree_freshness(self, args: dict) -> List[types.TextContent]:
         """Self-diagnostic: compare local data/game/version.json against poe.ninja's current PassiveTree tag.
@@ -3397,7 +3397,9 @@ Consider:
                     response += f":warning: Failed to parse {legacy_version_file}: {e}\n\n"
 
             local_patch = (local_version or {}).get("patch_version", "(unknown)")
-            local_rev = (local_version or {}).get("released_as") or (local_version or {}).get("data_revision", "(unknown)")
+            local_rev = (local_version or {}).get("released_as") or (local_version or {}).get(
+                "data_revision", "(unknown)"
+            )
 
             response += f"## Local\n\n"
             response += f"- **Source:** `{local_source or '(no version manifest found)'}`\n"
@@ -3416,10 +3418,14 @@ Consider:
             live_league_slug = None
             try:
                 import httpx
+
                 async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as c:
                     r = await c.get(
                         "https://poe.ninja/poe2/api/data/index-state",
-                        headers={"User-Agent": "poe2-mcp/check_tree_freshness", "Accept": "application/json"},
+                        headers={
+                            "User-Agent": "poe2-mcp/check_tree_freshness",
+                            "Accept": "application/json",
+                        },
                     )
                     if r.status_code != 200:
                         response += f":warning: index-state returned HTTP {r.status_code}; can't verify freshness.\n\n"
@@ -3437,13 +3443,19 @@ Consider:
                                 live_league_slug = snap.get("url")
                                 break
                         if not live_passive_tree:
-                            response += ":warning: No PassiveTree tag found in index-state snapshots.\n\n"
+                            response += (
+                                ":warning: No PassiveTree tag found in index-state snapshots.\n\n"
+                            )
             except Exception as e:
-                response += f":warning: Could not reach poe.ninja index-state: {type(e).__name__}: {e}\n\n"
+                response += (
+                    f":warning: Could not reach poe.ninja index-state: {type(e).__name__}: {e}\n\n"
+                )
                 response += "(Are you offline? Is poe.ninja down? Check connectivity.)\n\n"
 
             if live_passive_tree:
-                response += f"- **Current league:** {live_league_name} (slug: `{live_league_slug}`)\n"
+                response += (
+                    f"- **Current league:** {live_league_name} (slug: `{live_league_slug}`)\n"
+                )
                 response += f"- **PassiveTree tag:** `{live_passive_tree}`\n\n"
 
             # 3. Verdict
@@ -3452,7 +3464,9 @@ Consider:
                 response += ":x: **Cannot verify** — no local version manifest found at `data/game/version.json` or `data/version.json`.\n\n"
                 response += "Fix: pull the latest from main (`git pull`) or run `python -m src.data.data_distributor` to fetch the data bundle from GitHub Releases.\n"
             elif not live_passive_tree:
-                response += ":grey_question: **Cannot fully verify** — local patch `{local_patch}` is loaded, but the live PassiveTree tag from poe.ninja couldn't be fetched. Local data may or may not be current; try again later.\n".format(local_patch=local_patch)
+                response += ":grey_question: **Cannot fully verify** — local patch `{local_patch}` is loaded, but the live PassiveTree tag from poe.ninja couldn't be fetched. Local data may or may not be current; try again later.\n".format(
+                    local_patch=local_patch
+                )
             else:
                 # Normalize: live is "PassiveTree-0.5" → "0.5"; local is "0.5" (just the patch)
                 live_normalized = live_passive_tree.replace("PassiveTree-", "")
@@ -3487,10 +3501,11 @@ Consider:
             return [types.TextContent(type="text", text=response)]
         except Exception as e:
             logger.error(f"check_tree_freshness failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"check_tree_freshness encountered an error: {str(e)}"
-            )]
+            return [
+                types.TextContent(
+                    type="text", text=f"check_tree_freshness encountered an error: {str(e)}"
+                )
+            ]
 
     async def _handle_check_for_updates(self, args: dict) -> List[types.TextContent]:
         """Report (and optionally apply, with consent) pending data/code updates.
@@ -3554,10 +3569,11 @@ Consider:
             return [types.TextContent(type="text", text=response)]
         except Exception as e:
             logger.error(f"check_for_updates failed: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"check_for_updates encountered an error: {str(e)}"
-            )]
+            return [
+                types.TextContent(
+                    type="text", text=f"check_for_updates encountered an error: {str(e)}"
+                )
+            ]
 
     async def _handle_clear_cache(self, args: dict) -> List[types.TextContent]:
         """Clear all caches (in-memory, SQLite, Redis)"""
@@ -3567,7 +3583,7 @@ Consider:
             errors = []
 
             # Clear character fetcher cache
-            if self.char_fetcher and hasattr(self.char_fetcher, 'cache_manager'):
+            if self.char_fetcher and hasattr(self.char_fetcher, "cache_manager"):
                 cache_mgr = self.char_fetcher.cache_manager
                 if cache_mgr:
                     try:
@@ -3592,9 +3608,9 @@ Consider:
                 response += "⚠ Character fetcher not initialized\n"
 
             # Clear poe.ninja API cache
-            if self.char_fetcher and hasattr(self.char_fetcher, 'ninja_api'):
+            if self.char_fetcher and hasattr(self.char_fetcher, "ninja_api"):
                 ninja_api = self.char_fetcher.ninja_api
-                if ninja_api and hasattr(ninja_api, 'cache_manager'):
+                if ninja_api and hasattr(ninja_api, "cache_manager"):
                     cache_mgr = ninja_api.cache_manager
                     if cache_mgr:
                         try:
@@ -3633,10 +3649,13 @@ Consider:
         except Exception as e:
             logger.error(f"Cache clear failed: {e}", exc_info=True)
             import traceback
-            return [types.TextContent(
-                type="text",
-                text=f"Cache clear failed with error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
-            )]
+
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Cache clear failed with error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}",
+                )
+            ]
 
     # NEW ENHANCEMENT FEATURE HANDLERS
 
@@ -3651,12 +3670,15 @@ Consider:
             top_n = args.get("top_n", 5)
 
             if not spell_name:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: spell_name or skill_name is required"
-                )]
+                return [
+                    types.TextContent(
+                        type="text", text="Error: spell_name or skill_name is required"
+                    )
+                ]
 
-            debug_log(f"Finding best supports for {spell_name} (goal: {goal}, spirit: {max_spirit})")
+            debug_log(
+                f"Finding best supports for {spell_name} (goal: {goal}, spirit: {max_spirit})"
+            )
 
             # Find best combinations
             results = self.gem_synergy_calculator.find_best_combinations(
@@ -3664,14 +3686,16 @@ Consider:
                 max_spirit=max_spirit,
                 num_supports=num_supports,
                 optimization_goal=goal,
-                top_n=top_n
+                top_n=top_n,
             )
 
             if not results:
-                return [types.TextContent(
-                    type="text",
-                    text=f"No support gem combinations found for '{spell_name}'. The spell may not be in the database or no compatible supports exist."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"No support gem combinations found for '{spell_name}'. The spell may not be in the database or no compatible supports exist.",
+                    )
+                ]
 
             # Format response
             response = f"# Best Support Gem Combinations for {spell_name.title()}\n\n"
@@ -3690,10 +3714,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error finding best supports: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error analyzing support gems: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error analyzing support gems: {str(e)}")]
 
     async def _handle_explain_mechanic(self, args: dict) -> List[types.TextContent]:
         """Explain a PoE2 game mechanic — canonical game text first, fallback to legacy.
@@ -3775,18 +3796,14 @@ Consider:
                 # except `source_skill` replaces `source_file`. The formatter
                 # picks up source_csd which is set on both paths, and we tag
                 # the skill key for added provenance.
-                response = self._format_stat_description_response(
-                    per_skill_exact, raw_query
-                )
+                response = self._format_stat_description_response(per_skill_exact, raw_query)
                 if per_skill_exact.get("source_skill"):
                     response = response.replace(
                         "Canonical game-shipped text",
                         f"Canonical game-shipped text (per-skill bundle, "
                         f"skill: `{per_skill_exact['source_skill']}`)",
                     )
-                logger.info(
-                    f"Explained via Tier 1a-bis (per-skill): {raw_query}"
-                )
+                logger.info(f"Explained via Tier 1a-bis (per-skill): {raw_query}")
                 return [types.TextContent(type="text", text=response)]
 
             # ---- Tier 2: legacy hand-authored mechanics (high-level concepts) ----
@@ -3829,7 +3846,9 @@ Consider:
                 response += self.mechanics_kb.format_mechanic_explanation(mechanic)
 
                 try:
-                    official_strings = await self.mechanics_kb.get_official_terminology(mechanic.name)
+                    official_strings = await self.mechanics_kb.get_official_terminology(
+                        mechanic.name
+                    )
                     if official_strings:
                         official_text = self.mechanics_kb.enhance_explanation_with_official_text(
                             mechanic, official_strings
@@ -3872,10 +3891,10 @@ Consider:
                     f"Query any of these directly for its full description:\n\n"
                 )
                 for h in combined_hits:
-                    template = (h.get('primary_template') or '').replace('\n', ' ')
+                    template = (h.get("primary_template") or "").replace("\n", " ")
                     if len(template) > 120:
-                        template = template[:117] + '...'
-                    source_marker = h.get('source_csd', '?')
+                        template = template[:117] + "..."
+                    source_marker = h.get("source_csd", "?")
                     response += (
                         f"- **`{h['primary_stat_id']}`** "
                         f"({source_marker}, matched on {h['match_field']})\n"
@@ -3908,9 +3927,9 @@ Consider:
                     f"for its full description:\n\n"
                 )
                 for h in ranked:
-                    template = (h.get('template') or '').replace('\n', ' ')
+                    template = (h.get("template") or "").replace("\n", " ")
                     if len(template) > 120:
-                        template = template[:117] + '...'
+                        template = template[:117] + "..."
                     response += f"- **`{h['stat_id']}`** (score {h['score']})\n"
                     if template:
                         response += f"  > {template}\n"
@@ -3922,30 +3941,29 @@ Consider:
                 return [types.TextContent(type="text", text=response)]
 
             # ---- Total miss: helpful failure with all-tier exhaustion noted ----
-            return [types.TextContent(
-                type="text",
-                text=(
-                    f"No match for `{raw_query}` in any tier:\n"
-                    f"- Tier 1a (root canonical stat_descriptions, 16,533 entries): "
-                    f"no exact stat_id match\n"
-                    f"- Tier 1a-bis (per-skill canonical descriptions, 1,240 entries "
-                    f"from specific_skill_stat_descriptions/): no exact match\n"
-                    f"- Tier 1b (substring search across both canonical sources): "
-                    f"no matches\n"
-                    f"- Tier 1c (BM25 lexical ranking): no relevant matches\n"
-                    f"- Tier 2 (hand-authored mechanics): no match by name, search, or Q&A\n\n"
-                    f"Try a broader substring (`proliferation` instead of "
-                    f"`fire_proliferation_radius_multiplier`), or call this tool "
-                    f"without arguments to see what categories are available."
+            return [
+                types.TextContent(
+                    type="text",
+                    text=(
+                        f"No match for `{raw_query}` in any tier:\n"
+                        f"- Tier 1a (root canonical stat_descriptions, 16,533 entries): "
+                        f"no exact stat_id match\n"
+                        f"- Tier 1a-bis (per-skill canonical descriptions, 1,240 entries "
+                        f"from specific_skill_stat_descriptions/): no exact match\n"
+                        f"- Tier 1b (substring search across both canonical sources): "
+                        f"no matches\n"
+                        f"- Tier 1c (BM25 lexical ranking): no relevant matches\n"
+                        f"- Tier 2 (hand-authored mechanics): no match by name, search, or Q&A\n\n"
+                        f"Try a broader substring (`proliferation` instead of "
+                        f"`fire_proliferation_radius_multiplier`), or call this tool "
+                        f"without arguments to see what categories are available."
+                    ),
                 )
-            )]
+            ]
 
         except Exception as e:
             logger.error(f"Error explaining mechanic: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error explaining mechanic: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error explaining mechanic: {str(e)}")]
 
     def _format_stat_description_response(self, record: dict, query: str) -> str:
         """Format a Tier 1 stat_description record as the explain_mechanic response.
@@ -3954,26 +3972,26 @@ Consider:
         handler chain, multi-stat cross-refs, and a provenance line. This is the
         opposite-of-hand-authored: every field is sourced.
         """
-        primary_stat = record.get('primary_stat_id')
-        all_stats = record.get('stat_ids') or []
-        primary_template = record.get('primary_template') or ''
-        variants = record.get('variants') or []
-        source_csd = record.get('source_csd', '?')
-        source_file = record.get('source_file', '?')
-        source_line = record.get('source_line')
+        primary_stat = record.get("primary_stat_id")
+        all_stats = record.get("stat_ids") or []
+        primary_template = record.get("primary_template") or ""
+        variants = record.get("variants") or []
+        source_csd = record.get("source_csd", "?")
+        source_file = record.get("source_file", "?")
+        source_line = record.get("source_line")
 
         response = f"# `{primary_stat}`\n\n"
 
         if primary_template:
             response += "## Game text (canonical)\n"
             # Render newlines as-is so the markdown shows the multi-line tooltip shape
-            response += primary_template.replace('\\n', '\n') + '\n\n'
+            response += primary_template.replace("\\n", "\n") + "\n\n"
 
         if len(all_stats) > 1:
             response += "## Shared description with\n"
             for sid in all_stats[1:]:
                 response += f"- `{sid}`\n"
-            response += '\n'
+            response += "\n"
 
         if len(variants) > 1:
             response += f"## Variants ({len(variants)})\n"
@@ -3982,15 +4000,15 @@ Consider:
                 "`1`/`10` = exact value, `1|#` = >=1, `#|0` = <=0.\n\n"
             )
             for i, v in enumerate(variants):
-                rng = v.get('range', '?')
-                tmpl = (v.get('template') or '').replace('\\n', ' ')
+                rng = v.get("range", "?")
+                tmpl = (v.get("template") or "").replace("\\n", " ")
                 if len(tmpl) > 200:
-                    tmpl = tmpl[:197] + '...'
-                handlers = v.get('handlers') or []
+                    tmpl = tmpl[:197] + "..."
+                handlers = v.get("handlers") or []
                 response += f"**Range `{rng}`**: {tmpl}\n"
                 if handlers:
                     response += f"  - Handlers: `{' '.join(handlers)}`\n"
-                response += '\n'
+                response += "\n"
 
         response += (
             f"---\n"
@@ -4014,13 +4032,19 @@ Consider:
         try:
             try:
                 from .calculator.spell_dps_calculator import (
-                    SpellDPSCalculator, SpellStats, CharacterModifiers, EnemyStats,
+                    SpellDPSCalculator,
+                    SpellStats,
+                    CharacterModifiers,
+                    EnemyStats,
                 )
                 from .calculator.v2_spell_db import resolve_spell_from_v2
                 from .data.game_data import get_version
             except ImportError:
                 from src.calculator.spell_dps_calculator import (
-                    SpellDPSCalculator, SpellStats, CharacterModifiers, EnemyStats,
+                    SpellDPSCalculator,
+                    SpellStats,
+                    CharacterModifiers,
+                    EnemyStats,
                 )
                 from src.calculator.v2_spell_db import resolve_spell_from_v2
                 from src.data.game_data import get_version
@@ -4037,7 +4061,9 @@ Consider:
                     name=spell_stats_override.get("name") or spell_name or "custom",
                     base_damage_min=float(spell_stats_override.get("base_damage_min", 0)),
                     base_damage_max=float(spell_stats_override.get("base_damage_max", 0)),
-                    damage_effectiveness=float(spell_stats_override.get("damage_effectiveness", 1.0)),
+                    damage_effectiveness=float(
+                        spell_stats_override.get("damage_effectiveness", 1.0)
+                    ),
                     base_crit_chance=float(spell_stats_override.get("base_crit_chance", 0)),
                     base_cast_time=float(spell_stats_override.get("base_cast_time", 1.0)),
                     damage_types=list(spell_stats_override.get("damage_types") or []),
@@ -4053,20 +4079,22 @@ Consider:
                     v2 = resolve_spell_from_v2(spell_name, gem_level=gem_level)
                     if v2 is None:
                         available = ", ".join(sorted(calc.SPELL_DATABASE.keys()))
-                        return [types.TextContent(
-                            type="text",
-                            text=(
-                                f"Spell '{spell_name}' not in the built-in "
-                                f"database ({available}) and not resolvable "
-                                f"from data/game/skill_gems/skill_gems_v2.json "
-                                f"either (or the v2 file isn't shipped in "
-                                f"this checkout). For exotic spells or "
-                                f"unsupported scaling layouts, pass "
-                                f"`spell_stats` with base_damage_min/max, "
-                                f"base_crit_chance, base_cast_time, "
-                                f"damage_types."
+                        return [
+                            types.TextContent(
+                                type="text",
+                                text=(
+                                    f"Spell '{spell_name}' not in the built-in "
+                                    f"database ({available}) and not resolvable "
+                                    f"from data/game/skill_gems/skill_gems_v2.json "
+                                    f"either (or the v2 file isn't shipped in "
+                                    f"this checkout). For exotic spells or "
+                                    f"unsupported scaling layouts, pass "
+                                    f"`spell_stats` with base_damage_min/max, "
+                                    f"base_crit_chance, base_cast_time, "
+                                    f"damage_types."
+                                ),
                             )
-                        )]
+                        ]
                     v2_meta = v2.pop("_v2_meta", {})
                     spell = SpellStats(
                         name=v2["name"],
@@ -4083,14 +4111,17 @@ Consider:
                         f"'{v2_meta.get('statset_label')}' @ gem_level={gem_level}"
                     )
             else:
-                return [types.TextContent(
-                    type="text",
-                    text=(
-                        "Error: provide spell_name (lookup) or spell_stats (custom). "
-                        "Built-in spells: " + ", ".join(sorted(calc.SPELL_DATABASE.keys()))
-                        + ". Or any of ~1,249 spells from data/game/skill_gems/skill_gems_v2.json."
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=(
+                            "Error: provide spell_name (lookup) or spell_stats (custom). "
+                            "Built-in spells: "
+                            + ", ".join(sorted(calc.SPELL_DATABASE.keys()))
+                            + ". Or any of ~1,249 spells from data/game/skill_gems/skill_gems_v2.json."
+                        ),
                     )
-                )]
+                ]
 
             # ---- Build character modifiers ----
             added = args.get("added_damage") or {}
@@ -4137,12 +4168,16 @@ Consider:
             if dot_in:
                 try:
                     from .calculator.dot_calculator import (
-                        DoTCalculator, AilmentInput, SkillDoTInput,
+                        DoTCalculator,
+                        AilmentInput,
+                        SkillDoTInput,
                         split_expected_hit_by_type,
                     )
                 except ImportError:
                     from src.calculator.dot_calculator import (
-                        DoTCalculator, AilmentInput, SkillDoTInput,
+                        DoTCalculator,
+                        AilmentInput,
+                        SkillDoTInput,
                         split_expected_hit_by_type,
                     )
 
@@ -4174,22 +4209,26 @@ Consider:
                 hits_per_second = float(result.get("casts_per_second", 0.0))
 
                 ailment_results = []
-                for a in (dot_in.get("ailments") or []):
-                    ailment_results.append(dot_calc.calculate_ailment_dot(
-                        AilmentInput(
-                            ailment=str(a.get("type", "")),
-                            chance_pct=float(a.get("chance", 100)),
-                            increased_magnitude=float(a.get("increased_magnitude", 0)),
-                            more_multipliers=[float(m) for m in (a.get("more_multipliers") or [])],
-                            increased_duration=float(a.get("increased_duration", 0)),
-                            stack_limit=int(a.get("stack_limit", 1)),
-                            enemy_moving=bool(a.get("enemy_moving", False)),
-                            aggravated=bool(a.get("aggravated", False)),
-                        ),
-                        hit_damage_by_type=hit_by_type,
-                        hits_per_second=hits_per_second,
-                        enemy=enemy,
-                    ))
+                for a in dot_in.get("ailments") or []:
+                    ailment_results.append(
+                        dot_calc.calculate_ailment_dot(
+                            AilmentInput(
+                                ailment=str(a.get("type", "")),
+                                chance_pct=float(a.get("chance", 100)),
+                                increased_magnitude=float(a.get("increased_magnitude", 0)),
+                                more_multipliers=[
+                                    float(m) for m in (a.get("more_multipliers") or [])
+                                ],
+                                increased_duration=float(a.get("increased_duration", 0)),
+                                stack_limit=int(a.get("stack_limit", 1)),
+                                enemy_moving=bool(a.get("enemy_moving", False)),
+                                aggravated=bool(a.get("aggravated", False)),
+                            ),
+                            hit_damage_by_type=hit_by_type,
+                            hits_per_second=hits_per_second,
+                            enemy=enemy,
+                        )
+                    )
 
                 skill_dot_result = None
                 sd = dot_in.get("skill_dot") or {}
@@ -4292,10 +4331,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"calculate_character_dps error: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error in calculate_character_dps: {e}"
-            )]
+            return [types.TextContent(type="text", text=f"Error in calculate_character_dps: {e}")]
 
     async def _handle_mechanic_cluster_dump(self, raw_query: str) -> List[types.TextContent]:
         """Cluster-dump mode for explain_mechanic (field-feedback wish).
@@ -4310,6 +4346,7 @@ Consider:
             search_stat_descriptions,
             search_per_skill_stat_descriptions,
         )
+
         try:
             from .data.stat_source_index import get_stat_source_index
         except ImportError:
@@ -4329,10 +4366,10 @@ Consider:
             if combined:
                 lines.append(f"## Canonical stat_ids ({len(combined)} shown)")
                 for h in combined:
-                    template = (h.get('primary_template') or '').replace('\n', ' ')
+                    template = (h.get("primary_template") or "").replace("\n", " ")
                     if len(template) > 110:
-                        template = template[:107] + '...'
-                    stat_id = h['primary_stat_id']
+                        template = template[:107] + "..."
+                    stat_id = h["primary_stat_id"]
                     lines.append(f"- **`{stat_id}`** ({h.get('source_csd', '?')})")
                     if template:
                         lines.append(f"  > {template}")
@@ -4377,7 +4414,8 @@ Consider:
                 for stat_id, mods in sources["mods"].items():
                     names = ", ".join(
                         f"{m['display_name']} ({m['generation_type']})"
-                        for m in mods[:6] if m.get('display_name')
+                        for m in mods[:6]
+                        if m.get("display_name")
                     )
                     lines.append(f"- `{stat_id}`: {names}")
                 lines.append("")
@@ -4394,10 +4432,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Cluster dump error: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error in cluster dump: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error in cluster dump: {str(e)}")]
 
     async def _handle_find_stat_sources(self, args: dict) -> List[types.TextContent]:
         """Reverse lookup: which skills/passives/ascendancies/mods grant stat X.
@@ -4414,10 +4449,12 @@ Consider:
         try:
             query = (args.get("query") or "").strip()
             if not query:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: provide `query` — a stat_id, stat_id substring, or stat text fragment."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: provide `query` — a stat_id, stat_id substring, or stat text fragment.",
+                    )
+                ]
             limit = int(args.get("limit") or 15)
 
             # Run the (synchronous, CPU-bound) index lookup in a worker thread
@@ -4428,24 +4465,26 @@ Consider:
             loop = asyncio.get_event_loop()
             try:
                 sources = await asyncio.wait_for(
-                    loop.run_in_executor(
-                        None, index.find_sources, query, limit
-                    ),
+                    loop.run_in_executor(None, index.find_sources, query, limit),
                     timeout=15.0,
                 )
             except asyncio.TimeoutError:
                 logger.error(f"find_stat_sources timed out for query={query!r}")
-                return [types.TextContent(
-                    type="text",
-                    text=(
-                        f"Error: stat-source lookup for `{query}` exceeded 15s "
-                        "and was aborted. Try a more specific substring."
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=(
+                            f"Error: stat-source lookup for `{query}` exceeded 15s "
+                            "and was aborted. Try a more specific substring."
+                        ),
                     )
-                )]
+                ]
 
             total = (
-                len(sources["skills"]) + len(sources["mods"])
-                + len(sources["passive_nodes"]) + len(sources["ascendancy_nodes"])
+                len(sources["skills"])
+                + len(sources["mods"])
+                + len(sources["passive_nodes"])
+                + len(sources["ascendancy_nodes"])
             )
             lines = [f"# Stat sources for `{query}`", ""]
 
@@ -4468,7 +4507,9 @@ Consider:
                 if sources["passive_nodes"]:
                     lines.append(f"## Passive tree nodes ({len(sources['passive_nodes'])})")
                     for n in sources["passive_nodes"]:
-                        lines.append(f"- **{n['name']}** ({n['kind']}): {'; '.join(n['stats'][:3])}")
+                        lines.append(
+                            f"- **{n['name']}** ({n['kind']}): {'; '.join(n['stats'][:3])}"
+                        )
                     lines.append("")
                 if sources["ascendancy_nodes"]:
                     lines.append(f"## Ascendancy notables ({len(sources['ascendancy_nodes'])})")
@@ -4511,10 +4552,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"find_stat_sources error: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error in find_stat_sources: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error in find_stat_sources: {str(e)}")]
 
     async def _handle_get_formula(self, args: dict) -> List[types.TextContent]:
         """Get a PoE2 calculation formula for Claude to use"""
@@ -4543,10 +4581,12 @@ Consider:
             formula_data = get_formula(formula_type)
 
             if "error" in formula_data:
-                return [types.TextContent(
-                    type="text",
-                    text=f"Unknown formula: {formula_type}\n\nAvailable formulas: {', '.join(get_all_formula_names())}"
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"Unknown formula: {formula_type}\n\nAvailable formulas: {', '.join(get_all_formula_names())}",
+                    )
+                ]
 
             # Format comprehensive formula response
             response = f"# {formula_data['name']}\n\n"
@@ -4586,10 +4626,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error getting formula: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error getting formula: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error getting formula: {str(e)}")]
 
     async def _handle_compare_items(self, args: dict) -> List[types.TextContent]:
         """Compare two items"""
@@ -4600,33 +4637,30 @@ Consider:
             build_goal = args.get("build_goal", "balanced")
 
             if not item_a or not item_b:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Both item_a and item_b are required"
-                )]
+                return [
+                    types.TextContent(
+                        type="text", text="Error: Both item_a and item_b are required"
+                    )
+                ]
 
             debug_log(f"Comparing items (goal: {build_goal})")
 
             # Compare items
             report = self.gear_comparator.compare_items(
-                item_a=item_a,
-                item_b=item_b,
-                character_data=character_data,
-                build_goal=build_goal
+                item_a=item_a, item_b=item_b, character_data=character_data, build_goal=build_goal
             )
 
             # Format response
             response = self.gear_comparator.format_full_report(report)
 
-            logger.info(f"Compared items: {item_a.get('name', 'Item A')} vs {item_b.get('name', 'Item B')}")
+            logger.info(
+                f"Compared items: {item_a.get('name', 'Item A')} vs {item_b.get('name', 'Item B')}"
+            )
             return [types.TextContent(type="text", text=response)]
 
         except Exception as e:
             logger.error(f"Error comparing items: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error comparing items: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error comparing items: {str(e)}")]
 
     async def _handle_analyze_damage_scaling(self, args: dict) -> List[types.TextContent]:
         """Analyze damage scaling bottlenecks"""
@@ -4635,17 +4669,13 @@ Consider:
             skill_type = args.get("skill_type", "spell")
 
             if not character_data:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: character_data is required"
-                )]
+                return [types.TextContent(type="text", text="Error: character_data is required")]
 
             debug_log(f"Analyzing damage scaling (skill_type: {skill_type})")
 
             # Analyze scaling
             recommendations = self.damage_scaling_analyzer.analyze_scaling(
-                character_data=character_data,
-                skill_type=skill_type
+                character_data=character_data, skill_type=skill_type
             )
 
             # Format response
@@ -4656,10 +4686,9 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error analyzing damage scaling: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error analyzing damage scaling: {str(e)}"
-            )]
+            return [
+                types.TextContent(type="text", text=f"Error analyzing damage scaling: {str(e)}")
+            ]
 
     async def _handle_check_content_readiness(self, args: dict) -> List[types.TextContent]:
         """Check if character is ready for specific content"""
@@ -4668,17 +4697,17 @@ Consider:
             content = args.get("content")
 
             if not character_data or not content:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Both character_data and content are required"
-                )]
+                return [
+                    types.TextContent(
+                        type="text", text="Error: Both character_data and content are required"
+                    )
+                ]
 
             debug_log(f"Checking content readiness for: {content}")
 
             # Check readiness
             report = self.content_readiness_checker.check_readiness(
-                character_data=character_data,
-                content=content
+                character_data=character_data, content=content
             )
 
             # Format response
@@ -4689,10 +4718,9 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error checking content readiness: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error checking content readiness: {str(e)}"
-            )]
+            return [
+                types.TextContent(type="text", text=f"Error checking content readiness: {str(e)}")
+            ]
 
     async def _handle_setup_trade_auth(self, args: dict) -> List[types.TextContent]:
         """Set up trade API authentication using browser automation"""
@@ -4703,17 +4731,19 @@ Consider:
             try:
                 from playwright.async_api import async_playwright
             except ImportError:
-                return [types.TextContent(
-                    type="text",
-                    text="❌ Playwright not installed!\n\n"
-                         "**Installation Required:**\n"
-                         "```bash\n"
-                         "pip install playwright\n"
-                         "playwright install chromium\n"
-                         "```\n\n"
-                         "After installing, use this tool again to set up authentication.\n\n"
-                         "**Note:** Playwright downloads ~100MB Chromium browser (one-time)"
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="❌ Playwright not installed!\n\n"
+                        "**Installation Required:**\n"
+                        "```bash\n"
+                        "pip install playwright\n"
+                        "playwright install chromium\n"
+                        "```\n\n"
+                        "After installing, use this tool again to set up authentication.\n\n"
+                        "**Note:** Playwright downloads ~100MB Chromium browser (one-time)",
+                    )
+                ]
 
             logger.info("Starting trade authentication setup...")
 
@@ -4731,13 +4761,12 @@ Consider:
                 # Launch browser
                 response += "✓ Browser launched\n"
                 browser = await p.chromium.launch(
-                    headless=headless,
-                    args=['--start-maximized'] if not headless else []
+                    headless=headless, args=["--start-maximized"] if not headless else []
                 )
 
                 # Create context
                 context = await browser.new_context(
-                    viewport={'width': 1920, 'height': 1080} if not headless else None
+                    viewport={"width": 1920, "height": 1080} if not headless else None
                 )
                 page = await context.new_page()
 
@@ -4761,8 +4790,8 @@ Consider:
 
                         # Look for POESESSID
                         for cookie in cookies:
-                            if cookie['name'] == 'POESESSID':
-                                session_cookie = cookie['value']
+                            if cookie["name"] == "POESESSID":
+                                session_cookie = cookie["value"]
                                 break
 
                         if session_cookie:
@@ -4777,11 +4806,14 @@ Consider:
 
                     if not session_cookie:
                         await browser.close()
-                        return [types.TextContent(
-                            type="text",
-                            text=response + "\n\n❌ **Timeout:** Login took longer than 5 minutes.\n\n"
-                                 "Please use this tool again and complete login faster."
-                        )]
+                        return [
+                            types.TextContent(
+                                type="text",
+                                text=response
+                                + "\n\n❌ **Timeout:** Login took longer than 5 minutes.\n\n"
+                                "Please use this tool again and complete login faster.",
+                            )
+                        ]
 
                     # Close browser
                     await browser.close()
@@ -4794,27 +4826,27 @@ Consider:
                     poesessid_found = False
 
                     if env_file.exists():
-                        with open(env_file, 'r', encoding='utf-8') as f:
+                        with open(env_file, "r", encoding="utf-8") as f:
                             env_lines = f.readlines()
 
                         # Update existing POESESSID
                         for i, line in enumerate(env_lines):
-                            if line.strip().startswith('POESESSID='):
-                                env_lines[i] = f'POESESSID={session_cookie}\n'
+                            if line.strip().startswith("POESESSID="):
+                                env_lines[i] = f"POESESSID={session_cookie}\n"
                                 poesessid_found = True
                                 break
 
                     # Add new POESESSID if not found
                     if not poesessid_found:
-                        if env_lines and not env_lines[-1].endswith('\n'):
-                            env_lines.append('\n')
+                        if env_lines and not env_lines[-1].endswith("\n"):
+                            env_lines.append("\n")
                         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        env_lines.append(f'\n# Path of Exile Trade Site Session Cookie\n')
-                        env_lines.append(f'# Obtained: {timestamp}\n')
-                        env_lines.append(f'POESESSID={session_cookie}\n')
+                        env_lines.append(f"\n# Path of Exile Trade Site Session Cookie\n")
+                        env_lines.append(f"# Obtained: {timestamp}\n")
+                        env_lines.append(f"POESESSID={session_cookie}\n")
 
                     # Write back
-                    with open(env_file, 'w', encoding='utf-8') as f:
+                    with open(env_file, "w", encoding="utf-8") as f:
                         f.writelines(env_lines)
 
                     response += f"✓ Saved to: {env_file}\n"
@@ -4839,22 +4871,25 @@ Consider:
         except Exception as e:
             logger.error(f"Trade auth setup failed: {e}", exc_info=True)
             import traceback
-            return [types.TextContent(
-                type="text",
-                text=f"❌ **Setup Failed**\n\n"
-                     f"Error: {str(e)}\n\n"
-                     f"**Troubleshooting:**\n"
-                     f"- Make sure Playwright is installed: `pip install playwright`\n"
-                     f"- Install Chromium: `playwright install chromium`\n"
-                     f"- Check the full error above for details\n\n"
-                     f"**Manual Fallback:**\n"
-                     f"1. Visit https://www.pathofexile.com/trade in your browser\n"
-                     f"2. Log in to your account\n"
-                     f"3. Press F12 → Application → Cookies\n"
-                     f"4. Find POESESSID and copy its value\n"
-                     f"5. Add to .env: POESESSID=your_cookie_value\n\n"
-                     f"Traceback:\n```\n{traceback.format_exc()}\n```"
-            )]
+
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"❌ **Setup Failed**\n\n"
+                    f"Error: {str(e)}\n\n"
+                    f"**Troubleshooting:**\n"
+                    f"- Make sure Playwright is installed: `pip install playwright`\n"
+                    f"- Install Chromium: `playwright install chromium`\n"
+                    f"- Check the full error above for details\n\n"
+                    f"**Manual Fallback:**\n"
+                    f"1. Visit https://www.pathofexile.com/trade in your browser\n"
+                    f"2. Log in to your account\n"
+                    f"3. Press F12 → Application → Cookies\n"
+                    f"4. Find POESESSID and copy its value\n"
+                    f"5. Add to .env: POESESSID=your_cookie_value\n\n"
+                    f"Traceback:\n```\n{traceback.format_exc()}\n```",
+                )
+            ]
 
     # ============================================================================
     # TIER 1 VALIDATION TOOL HANDLERS
@@ -4864,18 +4899,17 @@ Consider:
         """Validate if support gems can work together. Accepts support_gems, support_gem_names, or names (aliases). Optional spell_name unlocks damage-type-conflict detection (#117)."""
         try:
             support_gems = (
-                args.get("support_gems")
-                or args.get("support_gem_names")
-                or args.get("names")
-                or []
+                args.get("support_gems") or args.get("support_gem_names") or args.get("names") or []
             )
             spell_name = args.get("spell_name")
 
             if not support_gems:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: support_gems (or alias: support_gem_names, names) list is required"
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: support_gems (or alias: support_gem_names, names) list is required",
+                    )
+                ]
 
             # Use gem synergy calculator's validation method
             result = self.gem_synergy_calculator.validate_combination(
@@ -4888,9 +4922,9 @@ Consider:
             else:
                 response = f"Invalid combination\n\n"
                 response += f"Reason: {result['reason']}\n\n"
-                if result['conflicts']:
+                if result["conflicts"]:
                     response += "Conflicting pairs:\n"
-                    for conflict_a, conflict_b in result['conflicts']:
+                    for conflict_a, conflict_b in result["conflicts"]:
                         response += f"  - {conflict_a} + {conflict_b}\n"
 
             # Semantic warnings (#117) — surface even when valid=True
@@ -4900,9 +4934,7 @@ Consider:
                 for w in warnings:
                     response += f"- {w['message']}\n"
                 if result.get("spell_tags") is not None:
-                    response += (
-                        f"\nSpell tags consulted: {result['spell_tags']}\n"
-                    )
+                    response += f"\nSpell tags consulted: {result['spell_tags']}\n"
 
             response += "\n" + format_provenance(
                 COMPUTED,
@@ -4915,10 +4947,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error validating support combination: {e}")
-            return [types.TextContent(
-                type="text",
-                text=f"Error: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     async def _handle_inspect_support_gem(self, args: dict) -> List[types.TextContent]:
         """Inspect complete details of a support gem (uses FreshDataProvider SSoT)"""
@@ -4926,10 +4955,7 @@ Consider:
             support_name = args.get("support_name")
 
             if not support_name:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: support_name is required"
-                )]
+                return [types.TextContent(type="text", text="Error: support_name is required")]
 
             # Use FreshDataProvider as Single Source of Truth
             fresh_provider = get_fresh_data_provider()
@@ -4955,34 +4981,40 @@ Consider:
             # already understands.
             tier2_source_note = None
             if not support_data:
-                new_dataset_file = Path(__file__).parent.parent / 'data' / 'game' / 'skill_gems' / 'skill_gems.json'
+                new_dataset_file = (
+                    Path(__file__).parent.parent
+                    / "data"
+                    / "game"
+                    / "skill_gems"
+                    / "skill_gems.json"
+                )
                 if new_dataset_file.exists():
-                    with open(new_dataset_file, 'r', encoding='utf-8') as f:
+                    with open(new_dataset_file, "r", encoding="utf-8") as f:
                         new_data = json.load(f)
                     needle = support_name.lower()
-                    for gem in new_data.get('skill_gems', []):
-                        if gem.get('gem_type') != 'Support':
+                    for gem in new_data.get("skill_gems", []):
+                        if gem.get("gem_type") != "Support":
                             continue
-                        name = (gem.get('name') or '').lower()
-                        gid = (gem.get('gem_id') or '').lower()
-                        vid = (gem.get('variant_id') or '').lower()
+                        name = (gem.get("name") or "").lower()
+                        gid = (gem.get("gem_id") or "").lower()
+                        vid = (gem.get("variant_id") or "").lower()
                         if needle == name or needle == vid or needle in gid or needle in name:
-                            r = gem.get('requirements') or {}
+                            r = gem.get("requirements") or {}
                             support_data = {
-                                'name': gem.get('name'),
-                                'tags': gem.get('tags') or [],
-                                'tier': gem.get('tier'),
-                                'requirements': {
-                                    'str': r.get('str', 0),
-                                    'dex': r.get('dex', 0),
-                                    'int': r.get('int', 0),
+                                "name": gem.get("name"),
+                                "tags": gem.get("tags") or [],
+                                "tier": gem.get("tier"),
+                                "requirements": {
+                                    "str": r.get("str", 0),
+                                    "dex": r.get("dex", 0),
+                                    "int": r.get("int", 0),
                                 },
                                 # spirit_cost / cost_multiplier / effects /
                                 # compatible_with / restrictions /
                                 # incompatible_with are NOT in the v1
                                 # skill_gems schema — leave unset so the
                                 # formatter just skips them.
-                                'notes': (
+                                "notes": (
                                     f"Tier-2 fallback record from "
                                     f"data/game/skill_gems/ (gem_type='Support'). "
                                     f"Some support-gem fields (spirit_cost, "
@@ -5005,20 +5037,26 @@ Consider:
                 pool = []
                 try:
                     for gem in fresh_provider.get_all_support_gems().values():
-                        n = gem.get('display_name') or gem.get('name')
+                        n = gem.get("display_name") or gem.get("name")
                         if n:
                             pool.append(n)
                 except Exception:
                     pass
                 # Also pull Support-typed names from skill_gems
-                new_dataset_file = Path(__file__).parent.parent / 'data' / 'game' / 'skill_gems' / 'skill_gems.json'
+                new_dataset_file = (
+                    Path(__file__).parent.parent
+                    / "data"
+                    / "game"
+                    / "skill_gems"
+                    / "skill_gems.json"
+                )
                 if new_dataset_file.exists():
                     try:
-                        with open(new_dataset_file, 'r', encoding='utf-8') as f:
+                        with open(new_dataset_file, "r", encoding="utf-8") as f:
                             sg_data = json.load(f)
-                        for gem in sg_data.get('skill_gems', []):
-                            if gem.get('gem_type') == 'Support':
-                                n = gem.get('name')
+                        for gem in sg_data.get("skill_gems", []):
+                            if gem.get("gem_type") == "Support":
+                                n = gem.get("name")
                                 if n:
                                     pool.append(n)
                     except Exception:
@@ -5049,46 +5087,46 @@ Consider:
             response = f"# {support_data.get('name', support_name)}\n\n"
 
             # Basic info
-            if support_data.get('tags'):
+            if support_data.get("tags"):
                 response += f"**Tags**: {', '.join(support_data['tags'])}\n"
 
-            if support_data.get('tier'):
+            if support_data.get("tier"):
                 response += f"**Tier**: {support_data['tier']}\n"
 
-            if support_data.get('acquisition'):
+            if support_data.get("acquisition"):
                 response += f"**Acquisition**: {support_data['acquisition']}\n\n"
 
             # Requirements
-            reqs = support_data.get('requirements', {})
+            reqs = support_data.get("requirements", {})
             if reqs:
                 req_parts = []
-                if 'level' in reqs:
+                if "level" in reqs:
                     req_parts.append(f"Level {reqs['level']}")
-                if 'str' in reqs:
+                if "str" in reqs:
                     req_parts.append(f"{reqs['str']} Str")
-                if 'dex' in reqs:
+                if "dex" in reqs:
                     req_parts.append(f"{reqs['dex']} Dex")
-                if 'int' in reqs:
+                if "int" in reqs:
                     req_parts.append(f"{reqs['int']} Int")
                 if req_parts:
                     response += f"**Requirements**: {', '.join(req_parts)}\n\n"
 
             # Costs
-            spirit_cost = support_data.get('spirit_cost', 0)
+            spirit_cost = support_data.get("spirit_cost", 0)
             if spirit_cost:
                 response += f"**Spirit Cost**: {spirit_cost}\n"
 
-            cost_multi = support_data.get('cost_multiplier')
+            cost_multi = support_data.get("cost_multiplier")
             if cost_multi:
                 response += f"**Cost Multiplier**: {cost_multi}%\n\n"
 
             # Effects (the meat of the support)
-            effects = support_data.get('effects', {})
+            effects = support_data.get("effects", {})
             if effects:
                 response += "**Effects**:\n"
                 for effect_name, effect_value in effects.items():
                     # Format effect names nicely
-                    formatted_name = effect_name.replace('_', ' ').title()
+                    formatted_name = effect_name.replace("_", " ").title()
                     if isinstance(effect_value, bool):
                         response += f"- {formatted_name}\n"
                     else:
@@ -5096,22 +5134,22 @@ Consider:
                 response += "\n"
 
             # Compatibility
-            req_tags = support_data.get('compatible_with', [])
+            req_tags = support_data.get("compatible_with", [])
             if req_tags:
                 response += f"**Compatible With**: {', '.join(req_tags)}\n"
 
             # Restrictions
-            restrictions = support_data.get('restrictions', [])
+            restrictions = support_data.get("restrictions", [])
             if restrictions:
                 response += f"**Restrictions**: {', '.join(restrictions)}\n"
 
             # Incompatibilities
-            incomp = support_data.get('incompatible_with', [])
+            incomp = support_data.get("incompatible_with", [])
             if incomp:
                 response += f"**Incompatible With**: {', '.join(incomp)}\n"
 
             # Notes
-            notes = support_data.get('notes')
+            notes = support_data.get("notes")
             if notes:
                 response += f"\n**Notes**: {notes}\n"
 
@@ -5129,10 +5167,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error inspecting support gem: {e}")
-            return [types.TextContent(
-                type="text",
-                text=f"Error: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     async def _handle_inspect_spell_gem(self, args: dict) -> List[types.TextContent]:
         """Inspect complete details of a spell gem. Accepts spell_name, name, or gem_name (aliases).
@@ -5145,89 +5180,96 @@ Consider:
             spell_name = args.get("spell_name") or args.get("name") or args.get("gem_name")
 
             if not spell_name:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: spell_name (or alias: name, gem_name) is required"
-                )]
+                return [
+                    types.TextContent(
+                        type="text", text="Error: spell_name (or alias: name, gem_name) is required"
+                    )
+                ]
 
             # --- Tier 1: try the fresh 0.5 dataset ---
-            new_dataset_file = Path(__file__).parent.parent / 'data' / 'game' / 'skill_gems' / 'skill_gems.json'
-            new_dataset_meta = Path(__file__).parent.parent / 'data' / 'game' / 'skill_gems' / 'metadata.json'
+            new_dataset_file = (
+                Path(__file__).parent.parent / "data" / "game" / "skill_gems" / "skill_gems.json"
+            )
+            new_dataset_meta = (
+                Path(__file__).parent.parent / "data" / "game" / "skill_gems" / "metadata.json"
+            )
 
             spell_data = None
             spell_id = None
             data_source_note = ""
 
             if new_dataset_file.exists():
-                with open(new_dataset_file, 'r', encoding='utf-8') as f:
+                with open(new_dataset_file, "r", encoding="utf-8") as f:
                     new_data = json.load(f)
                 needle = spell_name.lower()
-                for gem in new_data.get('skill_gems', []):
-                    name = (gem.get('name') or '').lower()
-                    gid = (gem.get('gem_id') or '').lower()
-                    vid = (gem.get('variant_id') or '').lower()
+                for gem in new_data.get("skill_gems", []):
+                    name = (gem.get("name") or "").lower()
+                    gid = (gem.get("gem_id") or "").lower()
+                    vid = (gem.get("variant_id") or "").lower()
                     if needle == name or needle == vid or needle in gid or needle in name:
                         # Translate the new schema into the legacy-shaped dict the
                         # rest of this handler already understands. Saves a rewrite.
-                        ge = gem.get('granted_effect') or {}
+                        ge = gem.get("granted_effect") or {}
                         # Normalize levels: keys are strings in JSON already
                         normalized_levels = {}
-                        for lvl_key, lvl in (ge.get('levels') or {}).items():
+                        for lvl_key, lvl in (ge.get("levels") or {}).items():
                             entry = {}
-                            if 'level_requirement' in lvl:
-                                entry['levelRequirement'] = lvl['level_requirement']
-                            if 'crit_chance' in lvl:
-                                entry['critChance'] = lvl['crit_chance']
-                            if 'cooldown' in lvl:
-                                entry['cooldown'] = lvl['cooldown']
-                            if 'cost' in lvl and isinstance(lvl['cost'], dict):
-                                c = lvl['cost']
-                                entry['cost'] = {c.get('type', 'Mana'): c.get('value', 0)}
+                            if "level_requirement" in lvl:
+                                entry["levelRequirement"] = lvl["level_requirement"]
+                            if "crit_chance" in lvl:
+                                entry["critChance"] = lvl["crit_chance"]
+                            if "cooldown" in lvl:
+                                entry["cooldown"] = lvl["cooldown"]
+                            if "cost" in lvl and isinstance(lvl["cost"], dict):
+                                c = lvl["cost"]
+                                entry["cost"] = {c.get("type", "Mana"): c.get("value", 0)}
                             # Spirit reservation (campaign C1b): present since
                             # the 0.5-current refresh (data-v0.5.0-r11)
-                            if 'spirit_reservation_flat' in lvl:
-                                entry['spiritReservationFlat'] = lvl['spirit_reservation_flat']
-                            if 'reservation_flat' in lvl:
-                                entry['reservationFlat'] = lvl['reservation_flat']
+                            if "spirit_reservation_flat" in lvl:
+                                entry["spiritReservationFlat"] = lvl["spirit_reservation_flat"]
+                            if "reservation_flat" in lvl:
+                                entry["reservationFlat"] = lvl["reservation_flat"]
                             normalized_levels[lvl_key] = entry
                         normalized_stat_sets = []
-                        for ss in (ge.get('stat_sets') or []):
-                            normalized_stat_sets.append({
-                                'label': ss.get('label'),
-                                'baseEffectiveness': ss.get('base_effectiveness'),
-                                'incrementalEffectiveness': ss.get('incremental_effectiveness'),
-                            })
+                        for ss in ge.get("stat_sets") or []:
+                            normalized_stat_sets.append(
+                                {
+                                    "label": ss.get("label"),
+                                    "baseEffectiveness": ss.get("base_effectiveness"),
+                                    "incrementalEffectiveness": ss.get("incremental_effectiveness"),
+                                }
+                            )
                         spell_data = {
-                            'name': gem.get('name'),
-                            'description': None,  # not in v1 schema
-                            'skillTypes': ge.get('skill_types') or [],
-                            'castTime': ge.get('cast_time'),
-                            'levels': normalized_levels,
-                            'statSets': normalized_stat_sets,
-                            'qualityStats': [],  # not in v1 schema
-                            '_new_dataset_extras': {
-                                'gem_id': gem.get('gem_id'),
-                                'variant_id': gem.get('variant_id'),
-                                'gem_type': gem.get('gem_type'),
-                                'tier': gem.get('tier'),
-                                'natural_max_level': gem.get('natural_max_level'),
-                                'requirements': gem.get('requirements'),
-                                'weapon_requirements': gem.get('weapon_requirements'),
-                                'tags': gem.get('tags') or [],
-                                'tag_string': gem.get('tag_string'),
-                                'additional_stat_sets': gem.get('additional_stat_sets') or [],
+                            "name": gem.get("name"),
+                            "description": None,  # not in v1 schema
+                            "skillTypes": ge.get("skill_types") or [],
+                            "castTime": ge.get("cast_time"),
+                            "levels": normalized_levels,
+                            "statSets": normalized_stat_sets,
+                            "qualityStats": [],  # not in v1 schema
+                            "_new_dataset_extras": {
+                                "gem_id": gem.get("gem_id"),
+                                "variant_id": gem.get("variant_id"),
+                                "gem_type": gem.get("gem_type"),
+                                "tier": gem.get("tier"),
+                                "natural_max_level": gem.get("natural_max_level"),
+                                "requirements": gem.get("requirements"),
+                                "weapon_requirements": gem.get("weapon_requirements"),
+                                "tags": gem.get("tags") or [],
+                                "tag_string": gem.get("tag_string"),
+                                "additional_stat_sets": gem.get("additional_stat_sets") or [],
                             },
                         }
-                        spell_id = gem.get('gem_id') or gem.get('variant_id')
+                        spell_id = gem.get("gem_id") or gem.get("variant_id")
                         # Build the data-source note from metadata.json if available
                         commit_ref = "PoB2 dev"
                         extracted_at = "?"
                         if new_dataset_meta.exists():
                             try:
-                                with open(new_dataset_meta, 'r', encoding='utf-8') as mf:
+                                with open(new_dataset_meta, "r", encoding="utf-8") as mf:
                                     meta = json.load(mf)
-                                commit_ref = (meta.get('source_commit') or commit_ref)[:12]
-                                extracted_at = meta.get('extracted_at', extracted_at)
+                                commit_ref = (meta.get("source_commit") or commit_ref)[:12]
+                                extracted_at = meta.get("extracted_at", extracted_at)
                             except Exception:
                                 pass
                         data_source_note = (
@@ -5238,30 +5280,34 @@ Consider:
 
             # --- Tier 2: fall back to legacy pob_complete_skills.json ---
             if spell_data is None:
-                pob_skills_file = Path(__file__).parent.parent / 'data' / 'pob_complete_skills.json'
+                pob_skills_file = Path(__file__).parent.parent / "data" / "pob_complete_skills.json"
 
                 if not pob_skills_file.exists():
-                    return [types.TextContent(
-                        type="text",
-                        text=(
-                            f"Spell gem '{spell_name}' not found in data/game/skill_gems/ "
-                            "and no legacy pob_complete_skills.json fallback available."
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=(
+                                f"Spell gem '{spell_name}' not found in data/game/skill_gems/ "
+                                "and no legacy pob_complete_skills.json fallback available."
+                            ),
                         )
-                    )]
+                    ]
 
-                with open(pob_skills_file, 'r', encoding='utf-8') as f:
+                with open(pob_skills_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
                 # Search for spell by name (case-insensitive) or ID
-                skills = data.get('skills', {})
+                skills = data.get("skills", {})
 
                 for skill_id_candidate, skill in skills.items():
                     if not isinstance(skill, dict):
                         continue
-                    skill_name = skill.get('name', '')
-                    if (skill_name.lower() == spell_name.lower() or
-                        skill_id_candidate.lower() == spell_name.lower() or
-                        spell_name.lower() in skill_name.lower()):
+                    skill_name = skill.get("name", "")
+                    if (
+                        skill_name.lower() == spell_name.lower()
+                        or skill_id_candidate.lower() == spell_name.lower()
+                        or spell_name.lower() in skill_name.lower()
+                    ):
                         spell_data = skill
                         spell_id = skill_id_candidate
                         break
@@ -5272,20 +5318,20 @@ Consider:
                     pool = []
                     if new_dataset_file.exists():
                         try:
-                            with open(new_dataset_file, 'r', encoding='utf-8') as f:
+                            with open(new_dataset_file, "r", encoding="utf-8") as f:
                                 sg = json.load(f)
-                            for gem in sg.get('skill_gems', []):
+                            for gem in sg.get("skill_gems", []):
                                 # Skip supports — inspect_support_gem handles those.
-                                if gem.get('gem_type') == 'Support':
+                                if gem.get("gem_type") == "Support":
                                     continue
-                                n = gem.get('name')
+                                n = gem.get("name")
                                 if n:
                                     pool.append(n)
                         except Exception:
                             pass
                     for skill in skills.values():
                         if isinstance(skill, dict):
-                            n = skill.get('name')
+                            n = skill.get("name")
                             if n:
                                 pool.append(n)
                     suggestions = did_you_mean(spell_name, pool, k=5)
@@ -5347,8 +5393,12 @@ Consider:
                     if i < len(v2_statsets):
                         v2_ss = v2_statsets[i]
                         if isinstance(v2_ss, dict):
-                            for k in ("constantStats", "stats", "levels",
-                                      "damageIncrementalEffectiveness"):
+                            for k in (
+                                "constantStats",
+                                "stats",
+                                "levels",
+                                "damageIncrementalEffectiveness",
+                            ):
                                 if v2_ss.get(k) is not None and ss.get(k) is None:
                                     ss[k] = v2_ss[k]
                 # If v1 had no statSets at all, fall back to v2's directly
@@ -5367,104 +5417,109 @@ Consider:
             response += f"**ID**: {spell_id}\n"
 
             # Description
-            if spell_data.get('description'):
+            if spell_data.get("description"):
                 response += f"**Description**: {spell_data['description']}\n\n"
 
             # Gem metadata block — only from new dataset (Gems.lua-sourced)
-            extras = spell_data.get('_new_dataset_extras')
+            extras = spell_data.get("_new_dataset_extras")
             if extras:
                 response += "**Gem Metadata** (PoB2 Gems.lua):\n"
-                if extras.get('gem_type'):
+                if extras.get("gem_type"):
                     response += f"  - Gem Type: {extras['gem_type']}\n"
-                if extras.get('tier') is not None:
+                if extras.get("tier") is not None:
                     response += f"  - Tier: {extras['tier']}\n"
-                if extras.get('natural_max_level') is not None:
+                if extras.get("natural_max_level") is not None:
                     response += f"  - Natural Max Level: {extras['natural_max_level']}\n"
-                if extras.get('requirements'):
-                    r = extras['requirements']
+                if extras.get("requirements"):
+                    r = extras["requirements"]
                     response += (
                         f"  - Requirements: Str {r.get('str', 0)}, "
                         f"Dex {r.get('dex', 0)}, Int {r.get('int', 0)}\n"
                     )
-                if extras.get('weapon_requirements'):
+                if extras.get("weapon_requirements"):
                     response += f"  - Weapon Requirements: {extras['weapon_requirements']}\n"
-                if extras.get('tag_string'):
+                if extras.get("tag_string"):
                     response += f"  - Tag String: {extras['tag_string']}\n"
-                if extras.get('tags'):
+                if extras.get("tags"):
                     response += f"  - Tags: {', '.join(extras['tags'])}\n"
-                if extras.get('additional_stat_sets'):
-                    response += f"  - Additional Stat Sets: {', '.join(extras['additional_stat_sets'])}\n"
+                if extras.get("additional_stat_sets"):
+                    response += (
+                        f"  - Additional Stat Sets: {', '.join(extras['additional_stat_sets'])}\n"
+                    )
                 response += "\n"
 
             # Skill types (tags)
-            if spell_data.get('skillTypes'):
+            if spell_data.get("skillTypes"):
                 response += f"**Skill Types**: {', '.join(spell_data['skillTypes'])}\n"
 
             # Weapon types
-            if spell_data.get('weaponTypes'):
+            if spell_data.get("weaponTypes"):
                 response += f"**Weapon Types**: {', '.join(spell_data['weaponTypes'])}\n"
 
             # Cast time
-            if spell_data.get('castTime'):
+            if spell_data.get("castTime"):
                 response += f"**Cast Time**: {spell_data['castTime']}s\n\n"
 
             # Per-level stats (show L1, L10, L20)
-            levels = spell_data.get('levels', {})
+            levels = spell_data.get("levels", {})
             if levels:
                 response += "**Per-Level Stats**:\n"
-                for level_key in ['1', '10', '20']:
+                for level_key in ["1", "10", "20"]:
                     if level_key in levels:
                         level_data = levels[level_key]
                         response += f"\nLevel {level_key}:\n"
 
                         # Level requirement
-                        if 'levelRequirement' in level_data:
+                        if "levelRequirement" in level_data:
                             response += f"  - Level Requirement: {level_data['levelRequirement']}\n"
 
                         # Base multiplier
-                        if 'baseMultiplier' in level_data:
+                        if "baseMultiplier" in level_data:
                             response += f"  - Base Multiplier: {level_data['baseMultiplier']:.2f}\n"
 
                         # Mana/resource cost
-                        if 'cost' in level_data:
-                            costs = level_data['cost']
+                        if "cost" in level_data:
+                            costs = level_data["cost"]
                             cost_parts = [f"{k}: {v}" for k, v in costs.items()]
                             response += f"  - Cost: {', '.join(cost_parts)}\n"
 
                         # Spirit reservation (persistent skills / meta gems —
                         # campaign C1b; the answer to "what does this reserve")
-                        if 'spiritReservationFlat' in level_data:
-                            response += f"  - Spirit Reservation: {level_data['spiritReservationFlat']}\n"
-                        if 'reservationFlat' in level_data:
+                        if "spiritReservationFlat" in level_data:
+                            response += (
+                                f"  - Spirit Reservation: {level_data['spiritReservationFlat']}\n"
+                            )
+                        if "reservationFlat" in level_data:
                             response += f"  - Reservation: {level_data['reservationFlat']}\n"
 
                         # Crit chance
-                        if 'critChance' in level_data:
+                        if "critChance" in level_data:
                             response += f"  - Crit Chance: {level_data['critChance']}%\n"
 
                         # Cooldown
-                        if 'cooldown' in level_data:
+                        if "cooldown" in level_data:
                             response += f"  - Cooldown: {level_data['cooldown']}s\n"
 
                 response += "\n"
 
             # StatSets (damage effectiveness, constantStats)
-            stat_sets = spell_data.get('statSets', [])
+            stat_sets = spell_data.get("statSets", [])
             # Drop entries where both label and baseEffectiveness are unset — these are
             # placeholder slots in the v1 skill_gems schema; surfacing them as "None: None%"
             # is noise. The legacy pob_complete_skills.json doesn't have this problem.
             stat_sets = [
-                s for s in stat_sets
-                if s.get('label') is not None or s.get('baseEffectiveness') is not None
+                s
+                for s in stat_sets
+                if s.get("label") is not None or s.get("baseEffectiveness") is not None
             ]
             if stat_sets:
                 response += "**Stat Sets**:\n"
                 for i, stat_set in enumerate(stat_sets):
-                    label = stat_set.get('label') or f'Set {i+1}'
+                    label = stat_set.get("label") or f"Set {i+1}"
                     response += f"\n{label}:\n"
 
                     # Damage effectiveness
-                    base_eff = stat_set.get('baseEffectiveness')
+                    base_eff = stat_set.get("baseEffectiveness")
                     if base_eff is not None:
                         # Round noisy floats from the v1 extractor (e.g. 1.5199999809265)
                         try:
@@ -5472,17 +5527,19 @@ Consider:
                         except (TypeError, ValueError):
                             base_eff_disp = base_eff
                         response += f"  - Base Effectiveness: {base_eff_disp}\n"
-                        incr_eff = stat_set.get('incrementalEffectiveness')
+                        incr_eff = stat_set.get("incrementalEffectiveness")
                         if incr_eff:
                             try:
                                 incr_eff_disp = round(float(incr_eff), 4)
                             except (TypeError, ValueError):
                                 incr_eff_disp = incr_eff
-                            response += f"  - Incremental Effectiveness: {incr_eff_disp} per level\n"
+                            response += (
+                                f"  - Incremental Effectiveness: {incr_eff_disp} per level\n"
+                            )
 
                     # Constant stats (built-in modifiers) — from v2 enrichment
                     # or legacy pob_complete_skills.json.
-                    const_stats = stat_set.get('constantStats', [])
+                    const_stats = stat_set.get("constantStats", [])
                     if const_stats:
                         response += f"  - Built-in Modifiers:\n"
                         for stat in const_stats[:10]:  # Limit to first 10
@@ -5496,8 +5553,8 @@ Consider:
                     # field, paired with sampled damage values at L1 / L10 / L20
                     # from the v2 levels[] array. Skipped silently when v2
                     # enrichment didn't fire.
-                    v2_stats_list = stat_set.get('stats') or []
-                    v2_levels = stat_set.get('levels') or []
+                    v2_stats_list = stat_set.get("stats") or []
+                    v2_levels = stat_set.get("levels") or []
                     if v2_stats_list and v2_levels:
                         response += f"  - Per-Level Scaling Stats:\n"
                         # Sample levels 1 / 10 / 20 (lua 1-indexed -> py 0/9/19)
@@ -5514,9 +5571,7 @@ Consider:
                                     if isinstance(entry, dict) and stat_key in entry:
                                         samples.append(f"L{game_level}={entry[stat_key]}")
                             if samples:
-                                response += (
-                                    f"    - {stat_name}: " + ", ".join(samples) + "\n"
-                                )
+                                response += f"    - {stat_name}: " + ", ".join(samples) + "\n"
                             else:
                                 response += f"    - {stat_name}\n"
                         if len(v2_stats_list) > 6:
@@ -5525,7 +5580,7 @@ Consider:
                 response += "\n"
 
             # Quality stats
-            quality_stats = spell_data.get('qualityStats', [])
+            quality_stats = spell_data.get("qualityStats", [])
             if quality_stats:
                 response += "**Quality Stats**:\n"
                 for stat in quality_stats:
@@ -5545,17 +5600,17 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error inspecting spell gem: {e}")
-            return [types.TextContent(
-                type="text",
-                text=f"Error: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     async def _handle_list_all_supports(self, args: dict) -> List[types.TextContent]:
         """List all support gems with filtering, sorting, pagination, and output format options."""
         try:
             from src.utils.response_formatter import (
-                PaginationMeta, filter_fields, format_list_response,
-                SUPPORT_GEM_FIELDS, compact_json
+                PaginationMeta,
+                filter_fields,
+                format_list_response,
+                SUPPORT_GEM_FIELDS,
+                compact_json,
             )
 
             filter_tags = args.get("filter_tags", [])
@@ -5574,14 +5629,14 @@ Consider:
             # Extract and filter supports
             all_supports = []
             for support_id, support_data in support_gems.items():
-                if not isinstance(support_data, dict) or 'display_name' not in support_data:
+                if not isinstance(support_data, dict) or "display_name" not in support_data:
                     continue
 
-                spirit_cost = support_data.get('spirit_cost', 0) or 0
+                spirit_cost = support_data.get("spirit_cost", 0) or 0
 
                 # Apply filters
                 if filter_tags:
-                    support_tags = [t.lower() for t in (support_data.get('tags') or [])]
+                    support_tags = [t.lower() for t in (support_data.get("tags") or [])]
                     if not any(ft.lower() in support_tags for ft in filter_tags):
                         continue
 
@@ -5591,40 +5646,44 @@ Consider:
                     continue
 
                 # Get key effects for display
-                effects = support_data.get('effects', {})
+                effects = support_data.get("effects", {})
                 effect_summary = ""
                 if effects:
                     key_effects = []
                     for k, v in list(effects.items())[:2]:
                         if isinstance(v, bool):
-                            key_effects.append(k.replace('_', ' ').title())
+                            key_effects.append(k.replace("_", " ").title())
                         else:
                             key_effects.append(f"{k.replace('_', ' ').title()}: {v}")
                     effect_summary = ", ".join(key_effects)
 
-                all_supports.append({
-                    'name': support_data['display_name'],
-                    'tags': support_data.get('tags') or [],
-                    'tier': support_data.get('tier', '?'),
-                    'spirit_cost': spirit_cost,
-                    'effect_summary': effect_summary,
-                    'effects': effects,
-                    'compatible_with': support_data.get('compatible_with', []),
-                    'requirements': support_data.get('requirements', {}),
-                    'acquisition': support_data.get('acquisition', '')
-                })
+                all_supports.append(
+                    {
+                        "name": support_data["display_name"],
+                        "tags": support_data.get("tags") or [],
+                        "tier": support_data.get("tier", "?"),
+                        "spirit_cost": spirit_cost,
+                        "effect_summary": effect_summary,
+                        "effects": effects,
+                        "compatible_with": support_data.get("compatible_with", []),
+                        "requirements": support_data.get("requirements", {}),
+                        "acquisition": support_data.get("acquisition", ""),
+                    }
+                )
 
             # Sort
             if sort_by == "spirit_cost":
-                all_supports.sort(key=lambda x: x['spirit_cost'])
+                all_supports.sort(key=lambda x: x["spirit_cost"])
             elif sort_by == "tier":
-                all_supports.sort(key=lambda x: (x['tier'] if isinstance(x['tier'], int) else 99, x['name']))
+                all_supports.sort(
+                    key=lambda x: (x["tier"] if isinstance(x["tier"], int) else 99, x["name"])
+                )
             else:
-                all_supports.sort(key=lambda x: x['name'])
+                all_supports.sort(key=lambda x: x["name"])
 
             # Pagination
             total = len(all_supports)
-            paginated = all_supports[offset:offset + limit]
+            paginated = all_supports[offset : offset + limit]
             meta = PaginationMeta(total=total, limit=limit, offset=offset, showing=len(paginated))
 
             # Filter by detail level
@@ -5635,8 +5694,10 @@ Consider:
                 response = compact_json({"results": filtered, "meta": meta.to_dict()})
             else:
                 response = format_list_response(
-                    filtered, meta, "Support Gems",
-                    item_formatter=lambda s: self._format_support_item(s, detail)
+                    filtered,
+                    meta,
+                    "Support Gems",
+                    item_formatter=lambda s: self._format_support_item(s, detail),
                 )
 
             return [types.TextContent(type="text", text=response)]
@@ -5653,9 +5714,9 @@ Consider:
         result = f"**{sup.get('name', 'Unknown')}** (Tier {sup.get('tier', '?')})\n"
         if detail in ("standard", "full"):
             result += f"  Spirit: {sup.get('spirit_cost', 0)}, Tags: {', '.join((sup.get('tags') or [])[:3])}\n"
-            if sup.get('effect_summary'):
+            if sup.get("effect_summary"):
                 result += f"  Effects: {sup['effect_summary']}\n"
-        if detail == "full" and sup.get('effects'):
+        if detail == "full" and sup.get("effects"):
             result += f"  Full Effects: {sup['effects']}\n"
         result += "\n"
         return result
@@ -5668,8 +5729,11 @@ Consider:
         """
         try:
             from src.utils.response_formatter import (
-                PaginationMeta, filter_fields, format_list_response,
-                SPELL_GEM_FIELDS, compact_json
+                PaginationMeta,
+                filter_fields,
+                format_list_response,
+                SPELL_GEM_FIELDS,
+                compact_json,
             )
 
             filter_element = args.get("filter_element")
@@ -5684,125 +5748,137 @@ Consider:
             all_spells = []
 
             # --- Tier 1: prefer the fresh 0.5 dataset ---
-            new_dataset_file = Path(__file__).parent.parent / 'data' / 'game' / 'skill_gems' / 'skill_gems.json'
+            new_dataset_file = (
+                Path(__file__).parent.parent / "data" / "game" / "skill_gems" / "skill_gems.json"
+            )
 
             if new_dataset_file.exists():
-                with open(new_dataset_file, 'r', encoding='utf-8') as f:
+                with open(new_dataset_file, "r", encoding="utf-8") as f:
                     new_data = json.load(f)
                 # Active-spell selection: gem_type == 'Spell' (PoB2's own categorization).
                 # This is intentionally narrower than the old "any gem with cast_time" —
                 # it matches the dataset's authoritative Gems.lua classification.
-                for gem in new_data.get('skill_gems', []):
-                    if gem.get('gem_type') != 'Spell':
+                for gem in new_data.get("skill_gems", []):
+                    if gem.get("gem_type") != "Spell":
                         continue
-                    ge = gem.get('granted_effect') or {}
-                    skill_types = ge.get('skill_types') or []
+                    ge = gem.get("granted_effect") or {}
+                    skill_types = ge.get("skill_types") or []
 
                     if filter_tags:
-                        if not any(tag.lower() in [st.lower() for st in skill_types] for tag in filter_tags):
+                        if not any(
+                            tag.lower() in [st.lower() for st in skill_types] for tag in filter_tags
+                        ):
                             continue
 
-                    element = 'Physical'
+                    element = "Physical"
                     for st in skill_types:
-                        if st in ['Fire', 'Cold', 'Lightning', 'Chaos']:
+                        if st in ["Fire", "Cold", "Lightning", "Chaos"]:
                             element = st
                             break
                     if filter_element and element.lower() != filter_element.lower():
                         continue
 
-                    levels = ge.get('levels') or {}
+                    levels = ge.get("levels") or {}
                     # Pick the highest available level (20 is the typical PoB cap)
-                    lvl20 = levels.get('20') or levels.get('1') or {}
-                    cost = lvl20.get('cost') or {}
+                    lvl20 = levels.get("20") or levels.get("1") or {}
+                    cost = lvl20.get("cost") or {}
                     # v1 schema: cost is {type: 'Mana', value: N}
-                    mana_cost = cost.get('value', 0) if cost.get('type') == 'Mana' else 0
+                    mana_cost = cost.get("value", 0) if cost.get("type") == "Mana" else 0
 
-                    all_spells.append({
-                        'name': gem.get('name'),
-                        'id': gem.get('gem_id') or gem.get('variant_id'),
-                        'element': element,
-                        'tags': skill_types,
-                        'base_multiplier': 0,  # not in v1 schema
-                        'cast_time': ge.get('cast_time') or 0,
-                        'mana_cost': mana_cost,
-                        'description': '',  # not in v1 schema
-                        'skill_types': skill_types,
-                        'levels': levels,
-                    })
+                    all_spells.append(
+                        {
+                            "name": gem.get("name"),
+                            "id": gem.get("gem_id") or gem.get("variant_id"),
+                            "element": element,
+                            "tags": skill_types,
+                            "base_multiplier": 0,  # not in v1 schema
+                            "cast_time": ge.get("cast_time") or 0,
+                            "mana_cost": mana_cost,
+                            "description": "",  # not in v1 schema
+                            "skill_types": skill_types,
+                            "levels": levels,
+                        }
+                    )
 
             # --- Tier 2: legacy fallback if new dataset missing or empty ---
             if not all_spells:
-                pob_skills_file = Path(__file__).parent.parent / 'data' / 'pob_complete_skills.json'
+                pob_skills_file = Path(__file__).parent.parent / "data" / "pob_complete_skills.json"
 
                 if not pob_skills_file.exists():
-                    return [types.TextContent(
-                        type="text",
-                        text=(
-                            "Error: neither data/game/skill_gems/skill_gems.json "
-                            "nor data/pob_complete_skills.json available"
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=(
+                                "Error: neither data/game/skill_gems/skill_gems.json "
+                                "nor data/pob_complete_skills.json available"
+                            ),
                         )
-                    )]
+                    ]
 
-                with open(pob_skills_file, 'r', encoding='utf-8') as f:
+                with open(pob_skills_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
-                skills = data.get('skills', {})
+                skills = data.get("skills", {})
 
                 for skill_id, skill_data in skills.items():
                     if not isinstance(skill_data, dict):
                         continue
-                    if skill_data.get('hidden'):
+                    if skill_data.get("hidden"):
                         continue
 
-                    name = skill_data.get('name', skill_id)
-                    skill_types = skill_data.get('skillTypes', [])
+                    name = skill_data.get("name", skill_id)
+                    skill_types = skill_data.get("skillTypes", [])
 
                     if filter_tags:
-                        if not any(tag.lower() in [st.lower() for st in skill_types] for tag in filter_tags):
+                        if not any(
+                            tag.lower() in [st.lower() for st in skill_types] for tag in filter_tags
+                        ):
                             continue
 
-                    levels = skill_data.get('levels', {})
-                    level_20_data = levels.get('20', levels.get('1', {}))
-                    cast_time = skill_data.get('castTime', 0)
-                    base_mult = level_20_data.get('baseMultiplier', 0)
-                    cost = level_20_data.get('cost', {})
-                    mana_cost = cost.get('Mana', 0)
+                    levels = skill_data.get("levels", {})
+                    level_20_data = levels.get("20", levels.get("1", {}))
+                    cast_time = skill_data.get("castTime", 0)
+                    base_mult = level_20_data.get("baseMultiplier", 0)
+                    cost = level_20_data.get("cost", {})
+                    mana_cost = cost.get("Mana", 0)
 
-                    element = 'Physical'
+                    element = "Physical"
                     for st in skill_types:
-                        if st in ['Fire', 'Cold', 'Lightning', 'Chaos']:
+                        if st in ["Fire", "Cold", "Lightning", "Chaos"]:
                             element = st
                             break
 
                     if filter_element and element.lower() != filter_element.lower():
                         continue
 
-                    all_spells.append({
-                        'name': name,
-                        'id': skill_id,
-                        'element': element,
-                        'tags': skill_types,
-                        'base_multiplier': base_mult,
-                        'cast_time': cast_time,
-                        'mana_cost': mana_cost,
-                        'description': skill_data.get('description', ''),
-                        'skill_types': skill_types,
-                        'levels': levels
-                    })
+                    all_spells.append(
+                        {
+                            "name": name,
+                            "id": skill_id,
+                            "element": element,
+                            "tags": skill_types,
+                            "base_multiplier": base_mult,
+                            "cast_time": cast_time,
+                            "mana_cost": mana_cost,
+                            "description": skill_data.get("description", ""),
+                            "skill_types": skill_types,
+                            "levels": levels,
+                        }
+                    )
 
             # Sort
             if sort_by == "base_damage" or sort_by == "base_multiplier":
-                all_spells.sort(key=lambda x: x['base_multiplier'], reverse=True)
+                all_spells.sort(key=lambda x: x["base_multiplier"], reverse=True)
             elif sort_by == "cast_time":
-                all_spells.sort(key=lambda x: x['cast_time'] if x['cast_time'] > 0 else 999)
+                all_spells.sort(key=lambda x: x["cast_time"] if x["cast_time"] > 0 else 999)
             elif sort_by == "mana_cost":
-                all_spells.sort(key=lambda x: x['mana_cost'], reverse=True)
+                all_spells.sort(key=lambda x: x["mana_cost"], reverse=True)
             else:
-                all_spells.sort(key=lambda x: x['name'])
+                all_spells.sort(key=lambda x: x["name"])
 
             # Pagination
             total = len(all_spells)
-            paginated = all_spells[offset:offset + limit]
+            paginated = all_spells[offset : offset + limit]
             meta = PaginationMeta(total=total, limit=limit, offset=offset, showing=len(paginated))
 
             # Filter by detail level
@@ -5813,8 +5889,10 @@ Consider:
                 response = compact_json({"results": filtered, "meta": meta.to_dict()})
             else:
                 response = format_list_response(
-                    filtered, meta, "Spell Gems",
-                    item_formatter=lambda s: self._format_spell_item(s, detail)
+                    filtered,
+                    meta,
+                    "Spell Gems",
+                    item_formatter=lambda s: self._format_spell_item(s, detail),
                 )
 
             return [types.TextContent(type="text", text=response)]
@@ -5828,13 +5906,17 @@ Consider:
         if detail == "summary":
             return f"- {spell.get('name', 'Unknown')} ({spell.get('element', 'Physical')})\n"
 
-        mult_str = f"{spell.get('base_multiplier', 0):.1f}x" if spell.get('base_multiplier', 0) > 0 else "N/A"
-        cast_str = f"{spell.get('cast_time', 0):.2f}s" if spell.get('cast_time', 0) > 0 else "N/A"
-        mana_str = f"{spell.get('mana_cost', 0)}" if spell.get('mana_cost', 0) > 0 else "N/A"
+        mult_str = (
+            f"{spell.get('base_multiplier', 0):.1f}x"
+            if spell.get("base_multiplier", 0) > 0
+            else "N/A"
+        )
+        cast_str = f"{spell.get('cast_time', 0):.2f}s" if spell.get("cast_time", 0) > 0 else "N/A"
+        mana_str = f"{spell.get('mana_cost', 0)}" if spell.get("mana_cost", 0) > 0 else "N/A"
 
         result = f"**{spell.get('name', 'Unknown')}** ({spell.get('element', 'Physical')})\n"
         result += f"  Base Mult: {mult_str}, Cast: {cast_str}, Mana: {mana_str}\n"
-        if spell.get('tags'):
+        if spell.get("tags"):
             result += f"  Tags: {', '.join(spell['tags'][:4])}\n"
         result += "\n"
         return result
@@ -5852,10 +5934,7 @@ Consider:
             goal = args.get("goal", "dps")
 
             if not spell_name:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: spell_name is required"
-                )]
+                return [types.TextContent(type="text", text="Error: spell_name is required")]
 
             # Call with trace enabled
             result = self.gem_synergy_calculator.find_best_combinations(
@@ -5863,7 +5942,7 @@ Consider:
                 max_spirit=max_spirit,
                 num_supports=num_supports,
                 optimization_goal=goal,
-                return_trace=True
+                return_trace=True,
             )
 
             if isinstance(result, dict) and "trace" in result:
@@ -5880,7 +5959,7 @@ Consider:
 
                 response += "## Step 1: Compatible Support Filtering\n"
                 response += f"- Found {trace['compatible_supports_count']} compatible supports\n"
-                if trace['compatible_supports']:
+                if trace["compatible_supports"]:
                     response += f"- Examples: {', '.join(trace['compatible_supports'][:10])}\n"
                 response += "\n"
 
@@ -5902,17 +5981,11 @@ Consider:
 
                 return [types.TextContent(type="text", text=response)]
             else:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Trace data not available"
-                )]
+                return [types.TextContent(type="text", text="Error: Trace data not available")]
 
         except Exception as e:
             logger.error(f"Error tracing support selection: {e}")
-            return [types.TextContent(
-                type="text",
-                text=f"Error: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     async def _handle_trace_dps_calculation(self, args: dict) -> List[types.TextContent]:
         """Trace step-by-step DPS calculation"""
@@ -5923,23 +5996,17 @@ Consider:
             max_spirit = args.get("max_spirit", 100)
 
             if not spell_name:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: spell_name is required"
-                )]
+                return [types.TextContent(type="text", text="Error: spell_name is required")]
 
             if not support_gems:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: support_gems list is required"
-                )]
+                return [types.TextContent(type="text", text="Error: support_gems list is required")]
 
             # Get trace
             trace = self.gem_synergy_calculator.trace_dps_calculation(
                 spell_name=spell_name,
                 support_names=support_gems,
                 character_mods=character_mods,
-                max_spirit=max_spirit
+                max_spirit=max_spirit,
             )
 
             response = f"# DPS Calculation Trace: {spell_name}\n\n"
@@ -5960,11 +6027,11 @@ Consider:
             response += "## Supports\n"
             for sup in trace["supports"]:
                 response += f"- {sup['name']}: "
-                if sup['more_damage'] != 0:
+                if sup["more_damage"] != 0:
                     response += f"+{sup['more_damage']}% more damage "
-                if sup['less_damage'] != 0:
+                if sup["less_damage"] != 0:
                     response += f"{sup['less_damage']}% less damage "
-                if sup['increased_damage'] != 0:
+                if sup["increased_damage"] != 0:
                     response += f"+{sup['increased_damage']}% increased damage "
                 response += f"(Spirit: {sup['spirit_cost']})\n"
             response += "\n"
@@ -5973,7 +6040,7 @@ Consider:
             spirit = trace["spirit"]
             response += f"## Spirit Budget\n"
             response += f"- Total: {spirit['total']} / {spirit['available']}\n"
-            if spirit['overflow'] > 0:
+            if spirit["overflow"] > 0:
                 response += f"- Warning: Overflow: {spirit['overflow']}\n"
             response += "\n"
 
@@ -6004,10 +6071,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error tracing DPS calculation: {e}")
-            return [types.TextContent(
-                type="text",
-                text=f"Error: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     @staticmethod
     def _coerce_optional_number(value) -> Optional[float]:
@@ -6048,10 +6112,7 @@ Consider:
             character_data = args.get("character_data", {})
 
             if not character_data:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: character_data is required"
-                )]
+                return [types.TextContent(type="text", text="Error: character_data is required")]
 
             violations = []
             skipped = []
@@ -6064,23 +6125,29 @@ Consider:
                     skipped.append(f"{label} (not provided)")
                     continue
                 if res_value < -60:
-                    violations.append({
-                        "severity": "CRITICAL",
-                        "category": "Resistances",
-                        "message": f"{label} is below minimum (-60%): {res_value:g}%"
-                    })
+                    violations.append(
+                        {
+                            "severity": "CRITICAL",
+                            "category": "Resistances",
+                            "message": f"{label} is below minimum (-60%): {res_value:g}%",
+                        }
+                    )
                 elif res_value < 75:
-                    violations.append({
-                        "severity": "HIGH",
-                        "category": "Resistances",
-                        "message": f"{label} is below cap (75%): {res_value:g}%"
-                    })
+                    violations.append(
+                        {
+                            "severity": "HIGH",
+                            "category": "Resistances",
+                            "message": f"{label} is below cap (75%): {res_value:g}%",
+                        }
+                    )
                 elif res_value > 90:
-                    violations.append({
-                        "severity": "MEDIUM",
-                        "category": "Resistances",
-                        "message": f"{label} exceeds hard cap (90%): {res_value:g}%"
-                    })
+                    violations.append(
+                        {
+                            "severity": "MEDIUM",
+                            "category": "Resistances",
+                            "message": f"{label} exceeds hard cap (90%): {res_value:g}%",
+                        }
+                    )
 
             # Chaos res: floor check only — PoE2 builds commonly run low/negative
             # chaos res by choice; only the -60% floor is a hard violation.
@@ -6088,11 +6155,13 @@ Consider:
             if chaos_res is None:
                 skipped.append("Chaos Res (not provided)")
             elif chaos_res < -60:
-                violations.append({
-                    "severity": "CRITICAL",
-                    "category": "Resistances",
-                    "message": f"Chaos Res is below minimum (-60%): {chaos_res:g}%"
-                })
+                violations.append(
+                    {
+                        "severity": "CRITICAL",
+                        "category": "Resistances",
+                        "message": f"Chaos Res is below minimum (-60%): {chaos_res:g}%",
+                    }
+                )
 
             # ---- Spirit (#153: null-tolerant) ----
             spirit = self._coerce_optional_number(character_data.get("spirit"))
@@ -6100,11 +6169,13 @@ Consider:
             if spirit is None or spirit_reserved is None:
                 skipped.append("Spirit allocation (spirit/spirit_reserved not provided)")
             elif spirit_reserved > spirit:
-                violations.append({
-                    "severity": "CRITICAL",
-                    "category": "Spirit",
-                    "message": f"Spirit overflow: {spirit_reserved:g} reserved > {spirit:g} available"
-                })
+                violations.append(
+                    {
+                        "severity": "CRITICAL",
+                        "category": "Spirit",
+                        "message": f"Spirit overflow: {spirit_reserved:g} reserved > {spirit:g} available",
+                    }
+                )
 
             # NOTE: PoE2 uses Spirit system, not mana reservation
             # Mana reservation validation removed - it's a PoE1 mechanic
@@ -6116,16 +6187,22 @@ Consider:
             level = self._coerce_optional_number(character_data.get("level")) or 1
 
             if life is None and es is None and combined_direct is None:
-                skipped.append("Survivability baseline (life/energy_shield/life_plus_es not provided)")
+                skipped.append(
+                    "Survivability baseline (life/energy_shield/life_plus_es not provided)"
+                )
             else:
-                combined = combined_direct if combined_direct is not None else (life or 0.0) + (es or 0.0)
+                combined = (
+                    combined_direct if combined_direct is not None else (life or 0.0) + (es or 0.0)
+                )
                 expected_min_life = 300 + (level * 50)  # Rough guideline
                 if combined < expected_min_life:
-                    violations.append({
-                        "severity": "HIGH",
-                        "category": "Survivability",
-                        "message": f"Combined Life+ES ({combined:g}) below recommended for level {level:g} ({expected_min_life:g})"
-                    })
+                    violations.append(
+                        {
+                            "severity": "HIGH",
+                            "category": "Survivability",
+                            "message": f"Combined Life+ES ({combined:g}) below recommended for level {level:g} ({expected_min_life:g})",
+                        }
+                    )
 
             # Format response
             response = "# Build Constraint Validation\n\n"
@@ -6175,10 +6252,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error validating build constraints: {e}")
-            return [types.TextContent(
-                type="text",
-                text=f"Error: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     async def _handle_reconcile_defensive_stats(self, args: dict) -> List[types.TextContent]:
         """Reconcile local EHP/defense calcs against poe.ninja's defensiveStats
@@ -6187,22 +6261,26 @@ Consider:
         try:
             try:
                 from .calculator.reconcile_poe_ninja import (
-                    reconcile_defensive_stats, format_report,
+                    reconcile_defensive_stats,
+                    format_report,
                 )
             except ImportError:
                 from src.calculator.reconcile_poe_ninja import (
-                    reconcile_defensive_stats, format_report,
+                    reconcile_defensive_stats,
+                    format_report,
                 )
 
             char_model = args.get("char_model")
             if not char_model or not isinstance(char_model, dict):
-                return [types.TextContent(
-                    type="text",
-                    text=(
-                        "Error: char_model (object) is required — a poe.ninja "
-                        "charModel dict or its defensiveStats sub-dict."
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=(
+                            "Error: char_model (object) is required — a poe.ninja "
+                            "charModel dict or its defensiveStats sub-dict."
+                        ),
                     )
-                )]
+                ]
 
             tolerance_pct = args.get("tolerance_pct") or None
             report = reconcile_defensive_stats(char_model, tolerance_pct=tolerance_pct)
@@ -6230,34 +6308,36 @@ Consider:
 
         except Exception as e:
             logger.error(f"reconcile_defensive_stats error: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error in reconcile_defensive_stats: {str(e)}"
-            )]
+            return [
+                types.TextContent(type="text", text=f"Error in reconcile_defensive_stats: {str(e)}")
+            ]
 
     async def _handle_analyze_passive_tree(self, args: dict) -> List[types.TextContent]:
         """Analyze passive tree allocation with pathfinding and recommendations"""
         try:
             if not self.passive_tree_resolver:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Passive tree resolver not initialized. PSG database may be missing."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Passive tree resolver not initialized. PSG database may be missing.",
+                    )
+                ]
 
             node_ids = args.get("node_ids", [])
             target_notable = args.get("target_notable")
             find_recommendations = args.get("find_recommendations", True)
 
             if not node_ids:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: node_ids is required (list of allocated passive node IDs)"
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: node_ids is required (list of allocated passive node IDs)",
+                    )
+                ]
 
             # Analyze the build
             analysis = self.passive_tree_resolver.analyze_build(
-                node_ids,
-                find_recommendations=find_recommendations
+                node_ids, find_recommendations=find_recommendations
             )
 
             # Build response
@@ -6326,7 +6406,9 @@ Consider:
                             best_start = allocated
 
                     if best_path:
-                        response += f"**Distance:** {best_path.distance} nodes from your current build\n\n"
+                        response += (
+                            f"**Distance:** {best_path.distance} nodes from your current build\n\n"
+                        )
                         response += "**Path:**\n"
                         for i, node in enumerate(best_path.nodes):
                             in_build = "*" if node.node_id in node_ids else " "
@@ -6352,10 +6434,7 @@ Consider:
 
         except Exception as e:
             logger.error(f"Error analyzing passive tree: {e}", exc_info=True)
-            return [types.TextContent(
-                type="text",
-                text=f"Error: {str(e)}"
-            )]
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     async def _handle_import_poe_ninja_url(self, args: dict) -> List[types.TextContent]:
         """Import and analyze a character from a poe.ninja URL"""
@@ -6368,9 +6447,10 @@ Consider:
         parsed = parse_poe_ninja_url(url)
 
         if not parsed:
-            return [types.TextContent(
-                type="text",
-                text=f"""# URL Parse Error
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"""# URL Parse Error
 
 Could not extract account and character from URL.
 
@@ -6384,8 +6464,9 @@ Could not extract account and character from URL.
 
 **Example:**
 `https://poe.ninja/poe2/profile/Tomawar40-2671/runesofaldur/character/TomawarTheFourth`
-"""
-            )]
+""",
+                )
+            ]
 
         # Prefer the display name resolved from the URL's league slug; fall
         # back to the raw slug for leagues we don't know yet (the fetcher's
@@ -6393,11 +6474,9 @@ Could not extract account and character from URL.
         # current league.
         league = parsed["league"] or parsed["league_slug"] or "Runes of Aldur"
 
-        return await self._handle_analyze_character({
-            "account": parsed["account"],
-            "character": parsed["character"],
-            "league": league
-        })
+        return await self._handle_analyze_character(
+            {"account": parsed["account"], "character": parsed["character"], "league": league}
+        )
 
     # ============================================================================
     # PASSIVE TREE DATA HANDLERS (4 new handlers)
@@ -6407,15 +6486,20 @@ Could not extract account and character from URL.
         """List all keystone passive nodes with pagination, detail levels, and format options."""
         try:
             from src.utils.response_formatter import (
-                PaginationMeta, filter_fields, format_list_response,
-                KEYSTONE_FIELDS, compact_json
+                PaginationMeta,
+                filter_fields,
+                format_list_response,
+                KEYSTONE_FIELDS,
+                compact_json,
             )
 
             if not self.passive_tree_resolver:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Passive tree resolver not initialized. PSG database may be missing."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Passive tree resolver not initialized. PSG database may be missing.",
+                    )
+                ]
 
             filter_stat = args.get("filter_stat", "").lower()
             sort_by = args.get("sort_by", "name")
@@ -6430,7 +6514,8 @@ Could not extract account and character from URL.
             # Filter by stat text if provided
             if filter_stat:
                 keystones = [
-                    k for k in keystones
+                    k
+                    for k in keystones
                     if k and any(filter_stat in stat.lower() for stat in k.stats)
                 ]
 
@@ -6445,18 +6530,20 @@ Could not extract account and character from URL.
             for k in keystones:
                 if not k:
                     continue
-                keystone_dicts.append({
-                    'name': k.name,
-                    'node_id': getattr(k, 'node_id', None),
-                    'stats': list(k.stats) if k.stats else [],
-                    'reminder_text': getattr(k, 'reminder_text', ''),
-                    'ascendancy_name': getattr(k, 'ascendancy_name', ''),
-                    'flavour_text': getattr(k, 'flavour_text', '')
-                })
+                keystone_dicts.append(
+                    {
+                        "name": k.name,
+                        "node_id": getattr(k, "node_id", None),
+                        "stats": list(k.stats) if k.stats else [],
+                        "reminder_text": getattr(k, "reminder_text", ""),
+                        "ascendancy_name": getattr(k, "ascendancy_name", ""),
+                        "flavour_text": getattr(k, "flavour_text", ""),
+                    }
+                )
 
             # Pagination
             total = len(keystone_dicts)
-            paginated = keystone_dicts[offset:offset + limit]
+            paginated = keystone_dicts[offset : offset + limit]
             meta = PaginationMeta(total=total, limit=limit, offset=offset, showing=len(paginated))
 
             # Filter by detail level
@@ -6467,8 +6554,10 @@ Could not extract account and character from URL.
                 response = compact_json({"results": filtered, "meta": meta.to_dict()})
             else:
                 response = format_list_response(
-                    filtered, meta, "Keystones",
-                    item_formatter=lambda k: self._format_keystone_item(k, detail)
+                    filtered,
+                    meta,
+                    "Keystones",
+                    item_formatter=lambda k: self._format_keystone_item(k, detail),
                 )
 
             return [types.TextContent(type="text", text=response)]
@@ -6483,8 +6572,8 @@ Could not extract account and character from URL.
             return f"- {keystone.get('name', 'Unknown')}\n"
 
         result = f"## {keystone.get('name', 'Unknown')}\n"
-        if keystone.get('stats'):
-            for stat in keystone['stats']:
+        if keystone.get("stats"):
+            for stat in keystone["stats"]:
                 result += f"- {stat}\n"
         result += "\n"
         return result
@@ -6493,18 +6582,21 @@ Could not extract account and character from URL.
         """Get complete details for a specific keystone. Accepts keystone_name or name (alias)."""
         try:
             if not self.passive_tree_resolver:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Passive tree resolver not initialized. PSG database may be missing."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Passive tree resolver not initialized. PSG database may be missing.",
+                    )
+                ]
 
             keystone_name = (args.get("keystone_name") or args.get("name") or "").strip()
 
             if not keystone_name:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: keystone_name (or alias: name) is required"
-                )]
+                return [
+                    types.TextContent(
+                        type="text", text="Error: keystone_name (or alias: name) is required"
+                    )
+                ]
 
             # Search for keystone by name (case-insensitive)
             keystones = self.passive_tree_resolver.get_all_keystones()
@@ -6534,8 +6626,7 @@ Could not extract account and character from URL.
                     for name in suggestions:
                         response += f"- {name}\n"
                     response += (
-                        f"\nCall ``inspect_keystone`` with one of these names "
-                        f"for full stats.\n"
+                        f"\nCall ``inspect_keystone`` with one of these names " f"for full stats.\n"
                     )
                 else:
                     response = (
@@ -6570,10 +6661,12 @@ Could not extract account and character from URL.
         """List all notable passive nodes"""
         try:
             if not self.passive_tree_resolver:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Passive tree resolver not initialized. PSG database may be missing."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Passive tree resolver not initialized. PSG database may be missing.",
+                    )
+                ]
 
             filter_stat = args.get("filter_stat", "").lower()
             limit = args.get("limit", 100)
@@ -6585,7 +6678,8 @@ Could not extract account and character from URL.
             # Filter by stat text if provided
             if filter_stat:
                 notables = [
-                    n for n in notables
+                    n
+                    for n in notables
                     if n and any(filter_stat in stat.lower() for stat in n.stats)
                 ]
 
@@ -6625,19 +6719,22 @@ Could not extract account and character from URL.
         """Get complete details for any passive node"""
         try:
             if not self.passive_tree_resolver:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Passive tree resolver not initialized. PSG database may be missing."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Passive tree resolver not initialized. PSG database may be missing.",
+                    )
+                ]
 
             node_name = args.get("node_name", "").strip()
             node_id = args.get("node_id")
 
             if not node_name and node_id is None:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Either node_name or node_id is required"
-                )]
+                return [
+                    types.TextContent(
+                        type="text", text="Error: Either node_name or node_id is required"
+                    )
+                ]
 
             found = None
 
@@ -6670,10 +6767,12 @@ Could not extract account and character from URL.
                             break
 
             if not found:
-                return [types.TextContent(
-                    type="text",
-                    text=f"# Node Not Found\n\nNo passive node matching '{node_name or node_id}'.\n\nTry using `list_all_keystones` or `list_all_notables` to find available nodes."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"# Node Not Found\n\nNo passive node matching '{node_name or node_id}'.\n\nTry using `list_all_keystones` or `list_all_notables` to find available nodes.",
+                    )
+                ]
 
             # Format detailed response
             response = f"# {found.name}\n\n"
@@ -6723,15 +6822,19 @@ Could not extract account and character from URL.
 
             if base_items:
                 for item_id, item_data in base_items.items():
-                    name = item_data.get('name', item_id)
+                    name = item_data.get("name", item_id)
 
                     # Apply filters
-                    if filter_type and filter_type not in item_id.lower() and filter_type not in name.lower():
+                    if (
+                        filter_type
+                        and filter_type not in item_id.lower()
+                        and filter_type not in name.lower()
+                    ):
                         continue
                     if filter_name and filter_name not in name.lower():
                         continue
 
-                    items_list.append({'id': item_id, 'name': name, 'type': ''})
+                    items_list.append({"id": item_id, "name": name, "type": ""})
             else:
                 # Fallback: the FreshDataProvider base-item set is empty when the
                 # raw baseitemtypes.datc64 is absent and complete_models carries
@@ -6744,18 +6847,22 @@ Could not extract account and character from URL.
                     db_items = []
                     logger.warning(f"Base-item DB fallback failed: {e}")
                 for it in db_items:
-                    name = (it.get('name') or '').strip()
-                    itype = (it.get('type') or '').strip()
+                    name = (it.get("name") or "").strip()
+                    itype = (it.get("type") or "").strip()
                     if not name:
                         continue
-                    if filter_type and filter_type not in itype.lower() and filter_type not in name.lower():
+                    if (
+                        filter_type
+                        and filter_type not in itype.lower()
+                        and filter_type not in name.lower()
+                    ):
                         continue
                     if filter_name and filter_name not in name.lower():
                         continue
-                    items_list.append({'id': name, 'name': name, 'type': itype})
+                    items_list.append({"id": name, "name": name, "type": itype})
 
             # Sort by name
-            items_list.sort(key=lambda x: x['name'])
+            items_list.sort(key=lambda x: x["name"])
 
             # Limit
             total_count = len(items_list)
@@ -6767,14 +6874,16 @@ Could not extract account and character from URL.
             # Group by type prefix (metadata IDs) for better organization
             current_prefix = ""
             for item in items_list:
-                parts = item['id'].split('/')
+                parts = item["id"].split("/")
                 prefix = parts[0] if len(parts) > 1 else ""
                 if prefix != current_prefix:
                     current_prefix = prefix
                     if prefix:
-                        response += f"\n## {prefix.replace('Metadata', '').replace('Items', '').strip()}\n"
+                        response += (
+                            f"\n## {prefix.replace('Metadata', '').replace('Items', '').strip()}\n"
+                        )
 
-                type_suffix = f" — *{item['type']}*" if item.get('type') else ""
+                type_suffix = f" — *{item['type']}*" if item.get("type") else ""
                 response += f"- **{item['name']}**{type_suffix} (`{item['id']}`)\n"
 
             if not items_list:
@@ -6794,10 +6903,7 @@ Could not extract account and character from URL.
             item_name = args.get("item_name", "").strip()
 
             if not item_name:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: item_name is required"
-                )]
+                return [types.TextContent(type="text", text="Error: item_name is required")]
 
             # Get base items from FreshDataProvider
             fresh_provider = get_fresh_data_provider()
@@ -6809,7 +6915,7 @@ Could not extract account and character from URL.
             item_name_lower = item_name.lower()
 
             for item_id, item_data in base_items.items():
-                name = item_data.get('name', '')
+                name = item_data.get("name", "")
                 if name.lower() == item_name_lower or item_name_lower in item_id.lower():
                     found = item_data
                     found_id = item_id
@@ -6818,7 +6924,7 @@ Could not extract account and character from URL.
             # Try partial match
             if not found:
                 for item_id, item_data in base_items.items():
-                    name = item_data.get('name', '')
+                    name = item_data.get("name", "")
                     if item_name_lower in name.lower():
                         found = item_data
                         found_id = item_id
@@ -6836,7 +6942,7 @@ Could not extract account and character from URL.
                 if db_matches:
                     # Prefer an exact (case-insensitive) name match, else first.
                     best = next(
-                        (m for m in db_matches if (m.get('name', '')).lower() == item_name_lower),
+                        (m for m in db_matches if (m.get("name", "")).lower() == item_name_lower),
                         db_matches[0],
                     )
                     response = f"# {best.get('name', item_name)}\n\n"
@@ -6848,10 +6954,12 @@ Could not extract account and character from URL.
                     return [types.TextContent(type="text", text=response)]
 
             if not found:
-                return [types.TextContent(
-                    type="text",
-                    text=f"# Base Item Not Found\n\nNo base item matching '{item_name}'.\n\nTry using `list_all_base_items` to see available items."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"# Base Item Not Found\n\nNo base item matching '{item_name}'.\n\nTry using `list_all_base_items` to see available items.",
+                    )
+                ]
 
             # Format detailed response
             response = f"# {found.get('name', found_id)}\n\n"
@@ -6859,7 +6967,7 @@ Could not extract account and character from URL.
 
             # Show all available fields
             for key, value in found.items():
-                if key not in ('name', 'id', 'row_index'):
+                if key not in ("name", "id", "row_index"):
                     response += f"**{key.replace('_', ' ').title()}:** {value}\n"
 
             response += "\n" + format_provenance(
@@ -6886,53 +6994,54 @@ Could not extract account and character from URL.
             mod_id = args.get("mod_id", "").strip()
 
             if not mod_id:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: mod_id is required"
-                )]
+                return [types.TextContent(type="text", text="Error: mod_id is required")]
 
             # Prefer canonical data/game/mods/, fall back to legacy path.
             mods_file = _canonical_mods_path(DATA_DIR)
             if not mods_file.exists():
                 mods_file = _legacy_mods_path(DATA_DIR)
             if not mods_file.exists():
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Mod database not found. Run `git pull` or scripts/extract_mods_datc64_v2.py."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Mod database not found. Run `git pull` or scripts/extract_mods_datc64_v2.py.",
+                    )
+                ]
 
-            with open(mods_file, 'r', encoding='utf-8') as f:
+            with open(mods_file, "r", encoding="utf-8") as f:
                 mods_data = json.load(f)
 
             # Search for mod by ID (case-insensitive)
             found = None
             mod_id_lower = mod_id.lower()
 
-            for mod in mods_data.get('mods', []):
-                if mod.get('mod_id', '').lower() == mod_id_lower:
+            for mod in mods_data.get("mods", []):
+                if mod.get("mod_id", "").lower() == mod_id_lower:
                     found = mod
                     break
 
             # Try partial match if exact not found
             if not found:
-                for mod in mods_data.get('mods', []):
-                    if mod_id_lower in mod.get('mod_id', '').lower():
+                for mod in mods_data.get("mods", []):
+                    if mod_id_lower in mod.get("mod_id", "").lower():
                         found = mod
                         break
 
             if not found:
-                return [types.TextContent(
-                    type="text",
-                    text=f"# Mod Not Found\n\nNo mod matching '{mod_id}'.\n\nTry using `list_all_mods` or `search_mods_by_stat` to find mods."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"# Mod Not Found\n\nNo mod matching '{mod_id}'.\n\nTry using `list_all_mods` or `search_mods_by_stat` to find mods.",
+                    )
+                ]
 
             # Format detailed response
             response = f"# {found['mod_id']}\n\n"
-            if found.get('display_name'):
+            if found.get("display_name"):
                 response += f"**Display Name:** *{found['display_name']}*\n"
             response += f"**Generation Type:** {found.get('generation_type_name', 'Unknown')}\n"
             response += f"**Level Requirement:** {found.get('level_requirement', 0)}\n"
-            if 'domain' in found:
+            if "domain" in found:
                 response += f"**Domain:** {found.get('domain', 0)}\n"
             response += "\n"
 
@@ -6949,7 +7058,7 @@ Could not extract account and character from URL.
                     else:
                         response += f"- `{r['stat_id']}`: {r['min_value']} to {r['max_value']}{src_marker}\n"
                 response += "\n"
-            elif found.get('stats'):
+            elif found.get("stats"):
                 # All stats were is_empty — record is a structural/sentinel mod
                 response += "## Stats\n*(no resolvable stats — all entries marked empty)*\n\n"
 
@@ -6966,8 +7075,11 @@ Could not extract account and character from URL.
         """List all mods with filtering, pagination, detail levels, and format options."""
         try:
             from src.utils.response_formatter import (
-                PaginationMeta, filter_fields, format_list_response,
-                MOD_FIELDS, compact_json
+                PaginationMeta,
+                filter_fields,
+                format_list_response,
+                MOD_FIELDS,
+                compact_json,
             )
 
             generation_type = args.get("generation_type")
@@ -6982,12 +7094,14 @@ Could not extract account and character from URL.
             if not mods_file.exists():
                 mods_file = _legacy_mods_path(DATA_DIR)
             if not mods_file.exists():
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Mod database not found. Run `git pull` or scripts/extract_mods_datc64_v2.py."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Mod database not found. Run `git pull` or scripts/extract_mods_datc64_v2.py.",
+                    )
+                ]
 
-            with open(mods_file, 'r', encoding='utf-8') as f:
+            with open(mods_file, "r", encoding="utf-8") as f:
                 mods_data = json.load(f)
 
             # Stat lookup is a no-op fallback for modern inline-stat_id dumps,
@@ -7000,11 +7114,11 @@ Could not extract account and character from URL.
             # exist (field bug, 2026-06-16). Now it agrees with
             # find_stat_sources, which keys on stat_id.
             filtered_mods = []
-            for mod in mods_data.get('mods', []):
-                if generation_type and mod.get('generation_type_name') != generation_type:
+            for mod in mods_data.get("mods", []):
+                if generation_type and mod.get("generation_type_name") != generation_type:
                     continue
                 if filter_stat:
-                    if filter_stat in mod.get('mod_id', '').lower():
+                    if filter_stat in mod.get("mod_id", "").lower():
                         pass  # mod_id match
                     elif any(
                         filter_stat in r["stat_id"].lower()
@@ -7016,11 +7130,11 @@ Could not extract account and character from URL.
                 filtered_mods.append(mod)
 
             # Sort by level requirement
-            filtered_mods.sort(key=lambda m: m.get('level_requirement', 0))
+            filtered_mods.sort(key=lambda m: m.get("level_requirement", 0))
 
             # Pagination
             total = len(filtered_mods)
-            paginated = filtered_mods[offset:offset + limit]
+            paginated = filtered_mods[offset : offset + limit]
             meta = PaginationMeta(total=total, limit=limit, offset=offset, showing=len(paginated))
 
             # Filter by detail level
@@ -7031,8 +7145,10 @@ Could not extract account and character from URL.
                 response = compact_json({"results": filtered, "meta": meta.to_dict()})
             else:
                 response = format_list_response(
-                    filtered, meta, "Mods",
-                    item_formatter=lambda m: self._format_mod_item(m, detail)
+                    filtered,
+                    meta,
+                    "Mods",
+                    item_formatter=lambda m: self._format_mod_item(m, detail),
                 )
 
             return [types.TextContent(type="text", text=response)]
@@ -7052,7 +7168,7 @@ Could not extract account and character from URL.
             return f"- {mod.get('mod_id', 'Unknown')} ({mod.get('generation_type_name', '?')})\n"
 
         result = f"### {mod.get('mod_id', 'Unknown')}"
-        if mod.get('display_name'):
+        if mod.get("display_name"):
             result += f" — *{mod['display_name']}*"
         result += "\n"
         result += f"- Type: {mod.get('generation_type_name', 'Unknown')}\n"
@@ -7089,16 +7205,20 @@ Could not extract account and character from URL.
         populated yet (eg fresh checkout before first git pull of game data).
         """
         try:
-            stat_keyword = args.get("stat_keyword") or args.get("query") or args.get("keyword") or ""
+            stat_keyword = (
+                args.get("stat_keyword") or args.get("query") or args.get("keyword") or ""
+            )
             stat_keyword = stat_keyword.strip().lower()
             generation_type = args.get("generation_type")
             limit = args.get("limit", 50)
 
             if not stat_keyword:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: stat_keyword (or alias: query, keyword) is required"
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: stat_keyword (or alias: query, keyword) is required",
+                    )
+                ]
 
             # Tokenize the query — split on whitespace/underscore so 'life regeneration'
             # matches snake_case stat IDs like 'base_life_regeneration_rate_per_second'.
@@ -7112,12 +7232,14 @@ Could not extract account and character from URL.
             elif legacy_mods_file.exists():
                 mods_source = legacy_mods_file
             else:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Mod database not found. Run `git pull` to fetch data/game/mods/, or run scripts/extract_mods_datc64_v2.py locally."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Mod database not found. Run `git pull` to fetch data/game/mods/, or run scripts/extract_mods_datc64_v2.py locally.",
+                    )
+                ]
 
-            with open(mods_source, 'r', encoding='utf-8') as f:
+            with open(mods_source, "r", encoding="utf-8") as f:
                 mods_data = json.load(f)
 
             # Build stat_key -> stat_id lookup from data/game/stats/ when available.
@@ -7126,7 +7248,7 @@ Could not extract account and character from URL.
             stat_lookup: Dict[int, str] = {}
             if stats_file.exists():
                 try:
-                    with open(stats_file, 'r', encoding='utf-8') as f:
+                    with open(stats_file, "r", encoding="utf-8") as f:
                         stats_data = json.load(f)
                     for entry in stats_data.get("stats", []):
                         stat_lookup[entry["row_index"]] = entry["stat_id"]
@@ -7141,13 +7263,13 @@ Could not extract account and character from URL.
                 return all(t in lc for t in tokens)
 
             matching_mods = []
-            for mod in mods_data.get('mods', []):
+            for mod in mods_data.get("mods", []):
                 # Apply generation type filter first (cheap)
-                if generation_type and mod.get('generation_type_name') != generation_type:
+                if generation_type and mod.get("generation_type_name") != generation_type:
                     continue
 
-                mod_id = mod.get('mod_id', '')
-                display_name = mod.get('display_name', '')
+                mod_id = mod.get("mod_id", "")
+                display_name = mod.get("display_name", "")
 
                 # Surface 1: mod_id
                 if matches(mod_id):
@@ -7166,7 +7288,7 @@ Could not extract account and character from URL.
                         continue
 
             # Sort by level requirement
-            matching_mods.sort(key=lambda m: m.get('level_requirement', 0))
+            matching_mods.sort(key=lambda m: m.get("level_requirement", 0))
 
             total_found = len(matching_mods)
             matching_mods = matching_mods[:limit]
@@ -7195,7 +7317,7 @@ Could not extract account and character from URL.
             else:
                 for mod in matching_mods:
                     response += f"### {mod['mod_id']}"
-                    if mod.get('display_name'):
+                    if mod.get("display_name"):
                         response += f" — *{mod['display_name']}*"
                     response += "\n"
                     response += f"- Type: {mod.get('generation_type_name', 'Unknown')}\n"
@@ -7222,56 +7344,57 @@ Could not extract account and character from URL.
             mod_base = args.get("mod_base", "").strip()
 
             if not mod_base:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: mod_base is required"
-                )]
+                return [types.TextContent(type="text", text="Error: mod_base is required")]
 
             # Prefer canonical data/game/mods/, fall back to legacy path (#118).
             mods_file = _canonical_mods_path(DATA_DIR)
             if not mods_file.exists():
                 mods_file = _legacy_mods_path(DATA_DIR)
             if not mods_file.exists():
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Mod database not found. Run `git pull` or scripts/extract_mods_datc64_v2.py."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Mod database not found. Run `git pull` or scripts/extract_mods_datc64_v2.py.",
+                    )
+                ]
 
-            with open(mods_file, 'r', encoding='utf-8') as f:
+            with open(mods_file, "r", encoding="utf-8") as f:
                 mods_data = json.load(f)
 
             # Find all mods matching the base name
             tier_mods = []
             mod_base_lower = mod_base.lower()
 
-            for mod in mods_data.get('mods', []):
-                mod_id = mod.get('mod_id', '')
+            for mod in mods_data.get("mods", []):
+                mod_id = mod.get("mod_id", "")
                 mod_id_lower = mod_id.lower()
 
                 # Check if this mod belongs to the family
                 # Match pattern: base name followed by optional number
                 if mod_id_lower.startswith(mod_base_lower):
                     # Extract the part after base name
-                    suffix = mod_id[len(mod_base):]
+                    suffix = mod_id[len(mod_base) :]
                     # Check if it's empty or a number
                     if not suffix or suffix.isdigit():
                         tier_mods.append(mod)
 
             if not tier_mods:
-                return [types.TextContent(
-                    type="text",
-                    text=f"# No Mod Tiers Found\n\nNo mods found with base name '{mod_base}'.\n\nTry using `list_all_mods` to browse available mods."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=f"# No Mod Tiers Found\n\nNo mods found with base name '{mod_base}'.\n\nTry using `list_all_mods` to browse available mods.",
+                    )
+                ]
 
             # Sort by level requirement (which usually correlates with tier)
-            tier_mods.sort(key=lambda m: m.get('level_requirement', 0))
+            tier_mods.sort(key=lambda m: m.get("level_requirement", 0))
 
             # Format response
             response = f"# Mod Tiers: {mod_base}\n\n"
             response += f"**Total tiers found:** {len(tier_mods)}\n"
 
             # Show generation type if consistent
-            gen_types = set(m.get('generation_type_name') for m in tier_mods)
+            gen_types = set(m.get("generation_type_name") for m in tier_mods)
             if len(gen_types) == 1:
                 response += f"**Generation Type:** {gen_types.pop()}\n"
 
@@ -7280,7 +7403,7 @@ Could not extract account and character from URL.
             for i, mod in enumerate(tier_mods, 1):
                 tier_label = f"T{i}"
                 response += f"### {tier_label}: {mod['mod_id']}"
-                if mod.get('display_name'):
+                if mod.get("display_name"):
                     response += f" — *{mod['display_name']}*"
                 response += "\n"
                 response += f"- Level Requirement: {mod.get('level_requirement', 0)}\n"
@@ -7314,24 +7437,23 @@ Could not extract account and character from URL.
             item_level = args.get("item_level", 83)
 
             if not mod_ids:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: mod_ids list is required"
-                )]
+                return [types.TextContent(type="text", text="Error: mod_ids list is required")]
 
             # Load mods from JSON file
             mods_file = DATA_DIR / "poe2_mods_extracted.json"
             if not mods_file.exists():
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Mod database not found. File poe2_mods_extracted.json is missing."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Mod database not found. File poe2_mods_extracted.json is missing.",
+                    )
+                ]
 
-            with open(mods_file, 'r', encoding='utf-8') as f:
+            with open(mods_file, "r", encoding="utf-8") as f:
                 mods_data = json.load(f)
 
             # Create a lookup dictionary
-            mods_by_id = {m['mod_id']: m for m in mods_data.get('mods', [])}
+            mods_by_id = {m["mod_id"]: m for m in mods_data.get("mods", [])}
 
             # Validate mods and collect info
             errors = []
@@ -7354,24 +7476,30 @@ Could not extract account and character from URL.
             # Check mod family conflicts (can't have 2 tiers of same mod family)
             families_seen = {}
             for mod in found_mods:
-                mod_id = mod.get('mod_id', '')
+                mod_id = mod.get("mod_id", "")
                 # Extract family by removing trailing digits
-                family = mod_id.rstrip('0123456789')
+                family = mod_id.rstrip("0123456789")
                 if not family:
                     family = mod_id
 
                 if family in families_seen:
                     conflict_mod = families_seen[family]
                     conflicts.append((conflict_mod, mod_id))
-                    errors.append(f"Mod family conflict: {conflict_mod} and {mod_id} are both from '{family}' family")
+                    errors.append(
+                        f"Mod family conflict: {conflict_mod} and {mod_id} are both from '{family}' family"
+                    )
                 else:
                     families_seen[family] = mod_id
 
             # Check prefix/suffix counts
-            prefix_count = sum(1 for m in found_mods if m.get('generation_type_name') == 'PREFIX')
-            suffix_count = sum(1 for m in found_mods if m.get('generation_type_name') == 'SUFFIX')
-            implicit_count = sum(1 for m in found_mods if m.get('generation_type_name') == 'IMPLICIT')
-            corrupted_count = sum(1 for m in found_mods if m.get('generation_type_name') == 'CORRUPTED')
+            prefix_count = sum(1 for m in found_mods if m.get("generation_type_name") == "PREFIX")
+            suffix_count = sum(1 for m in found_mods if m.get("generation_type_name") == "SUFFIX")
+            implicit_count = sum(
+                1 for m in found_mods if m.get("generation_type_name") == "IMPLICIT"
+            )
+            corrupted_count = sum(
+                1 for m in found_mods if m.get("generation_type_name") == "CORRUPTED"
+            )
 
             MAX_PREFIXES = 3
             MAX_SUFFIXES = 3
@@ -7384,13 +7512,17 @@ Could not extract account and character from URL.
                 errors.append(f"Too many suffixes: {suffix_count} (max {MAX_SUFFIXES})")
 
             if implicit_count > MAX_IMPLICITS:
-                warnings.append(f"High implicit count: {implicit_count} (typical max {MAX_IMPLICITS})")
+                warnings.append(
+                    f"High implicit count: {implicit_count} (typical max {MAX_IMPLICITS})"
+                )
 
             # Check level requirements
             for mod in found_mods:
-                mod_level = mod.get('level_requirement', 0)
+                mod_level = mod.get("level_requirement", 0)
                 if mod_level > item_level:
-                    warnings.append(f"{mod.get('mod_id')} requires ilvl {mod_level}, item is ilvl {item_level}")
+                    warnings.append(
+                        f"{mod.get('mod_id')} requires ilvl {mod_level}, item is ilvl {item_level}"
+                    )
 
             # Determine overall validity
             is_valid = len(errors) == 0
@@ -7452,10 +7584,11 @@ Could not extract account and character from URL.
             item_class_raw = (args.get("item_class") or "").strip()
 
             if generation_type not in ["PREFIX", "SUFFIX"]:
-                return [types.TextContent(
-                    type="text",
-                    text="Error: generation_type must be 'PREFIX' or 'SUFFIX'"
-                )]
+                return [
+                    types.TextContent(
+                        type="text", text="Error: generation_type must be 'PREFIX' or 'SUFFIX'"
+                    )
+                ]
 
             # Resolve the optional item-class filter against the SpawnTags map.
             spawn_tags = {}
@@ -7463,67 +7596,96 @@ Could not extract account and character from URL.
             if item_class_raw:
                 spawn_tags = _load_spawn_tags(DATA_DIR)
                 if not spawn_tags:
-                    return [types.TextContent(
-                        type="text",
-                        text=(
-                            "Error: item_class filtering needs data/game/mods/"
-                            "spawn_tags.json, which is absent. Update to a data "
-                            "release that includes it (or run "
-                            "scripts/extract_mod_spawn_tags.py)."
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=(
+                                "Error: item_class filtering needs data/game/mods/"
+                                "spawn_tags.json, which is absent. Update to a data "
+                                "release that includes it (or run "
+                                "scripts/extract_mod_spawn_tags.py)."
+                            ),
                         )
-                    )]
+                    ]
                 item_class = _normalize_item_class(item_class_raw)
                 valid = set(_available_spawn_tags(DATA_DIR))
                 if item_class not in valid:
                     # Suggest the equipment-relevant tags rather than the full set.
-                    equip = [t for t in sorted(valid) if any(
-                        k in t for k in (
-                            "wand", "sceptre", "staff", "bow", "mace", "axe",
-                            "sword", "dagger", "claw", "spear", "flail",
-                            "crossbow", "quiver", "focus", "shield", "ring",
-                            "amulet", "belt", "helmet", "glove", "boot", "armour",
+                    equip = [
+                        t
+                        for t in sorted(valid)
+                        if any(
+                            k in t
+                            for k in (
+                                "wand",
+                                "sceptre",
+                                "staff",
+                                "bow",
+                                "mace",
+                                "axe",
+                                "sword",
+                                "dagger",
+                                "claw",
+                                "spear",
+                                "flail",
+                                "crossbow",
+                                "quiver",
+                                "focus",
+                                "shield",
+                                "ring",
+                                "amulet",
+                                "belt",
+                                "helmet",
+                                "glove",
+                                "boot",
+                                "armour",
+                            )
                         )
-                    )]
-                    return [types.TextContent(
-                        type="text",
-                        text=(
-                            f"Error: unknown item_class '{item_class_raw}'. "
-                            f"Try one of these spawn tags:\n" + ", ".join(equip)
+                    ]
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=(
+                                f"Error: unknown item_class '{item_class_raw}'. "
+                                f"Try one of these spawn tags:\n" + ", ".join(equip)
+                            ),
                         )
-                    )]
+                    ]
 
             # Load mods from JSON file
             mods_file = DATA_DIR / "poe2_mods_extracted.json"
             if not mods_file.exists():
-                return [types.TextContent(
-                    type="text",
-                    text="Error: Mod database not found. File poe2_mods_extracted.json is missing."
-                )]
+                return [
+                    types.TextContent(
+                        type="text",
+                        text="Error: Mod database not found. File poe2_mods_extracted.json is missing.",
+                    )
+                ]
 
-            with open(mods_file, 'r', encoding='utf-8') as f:
+            with open(mods_file, "r", encoding="utf-8") as f:
                 mods_data = json.load(f)
 
             # Filter mods
             available_mods = []
-            for mod in mods_data.get('mods', []):
-                if mod.get('generation_type_name') != generation_type:
+            for mod in mods_data.get("mods", []):
+                if mod.get("generation_type_name") != generation_type:
                     continue
-                if mod.get('level_requirement', 0) > max_level:
+                if mod.get("level_requirement", 0) > max_level:
                     continue
                 if item_class:
-                    tags = spawn_tags.get(mod.get('mod_id', ''))
+                    tags = spawn_tags.get(mod.get("mod_id", ""))
                     if not tags or item_class not in tags:
                         continue
                 available_mods.append(mod)
 
             # Sort by level requirement
-            available_mods.sort(key=lambda m: m.get('level_requirement', 0))
+            available_mods.sort(key=lambda m: m.get("level_requirement", 0))
 
             # Group by mod family for better presentation
             families = {}
             for mod in available_mods:
-                mod_id = mod.get('mod_id', '')
-                family = mod_id.rstrip('0123456789')
+                mod_id = mod.get("mod_id", "")
+                family = mod_id.rstrip("0123456789")
                 if not family:
                     family = mod_id
 
@@ -7598,7 +7760,9 @@ Could not extract account and character from URL.
             response = "# Live Game State\n\n"
             response += "*Source: local PoE2 client log (Client.txt) — no network*\n\n"
             response += f"- **Character:** {state.get('character') or '(unknown)'}\n"
-            response += f"- **Class / Ascendancy:** {state.get('ascendancy_or_class') or '(unknown)'}\n"
+            response += (
+                f"- **Class / Ascendancy:** {state.get('ascendancy_or_class') or '(unknown)'}\n"
+            )
             response += f"- **Level:** {state.get('level') if state.get('level') is not None else '(unknown)'}\n"
 
             area_code = state.get("area_code")
@@ -7625,8 +7789,9 @@ Could not extract account and character from URL.
                 response += f"\n## Recent events ({len(events)})\n\n"
                 for ev in events:
                     parts = [f"`{ev['timestamp']}`", f"**{ev['kind']}**"]
-                    detail = {k: v for k, v in ev.items()
-                              if k not in ("timestamp", "kind", "log_level")}
+                    detail = {
+                        k: v for k, v in ev.items() if k not in ("timestamp", "kind", "log_level")
+                    }
                     parts.append(", ".join(f"{k}={v}" for k, v in detail.items()))
                     response += "- " + " — ".join(p for p in parts if p) + "\n"
 
@@ -7673,7 +7838,9 @@ Could not extract account and character from URL.
 
             s = reader.get_summary()
             response = "# Game Config\n\n"
-            response += "*Source: local PoE2 client config (poe2_production_Config.ini) — no network*\n\n"
+            response += (
+                "*Source: local PoE2 client config (poe2_production_Config.ini) — no network*\n\n"
+            )
             response += f"- **Account name:** {s.get('account_name') or '(empty)'}\n"
             if s.get("account_name_note"):
                 response += f"  *({s['account_name_note']})*\n"
@@ -7691,7 +7858,9 @@ Could not extract account and character from URL.
             response += f"- **Framerate cap:** {fps_cap} ({'enabled' if fps_on == 'true' else 'disabled'})\n"
             response += f"- **GPU:** {s.get('gpu') or '(unknown)'}\n"
             response += f"\n*Config: `{s.get('config_path')}`*\n"
-            response += "\n*Tip: use `get_live_game_state` for live character identity (Client.txt).*\n"
+            response += (
+                "\n*Tip: use `get_live_game_state` for live character identity (Client.txt).*\n"
+            )
 
             return [types.TextContent(type="text", text=response)]
 
@@ -7715,10 +7884,12 @@ Could not extract account and character from URL.
 
     # Formatting Methods
 
-    def _format_character_analysis(self, character_data: dict, analysis: dict, recommendations: str, passive_analysis=None) -> str:
+    def _format_character_analysis(
+        self, character_data: dict, analysis: dict, recommendations: str, passive_analysis=None
+    ) -> str:
         """Format character analysis response"""
         # Format ascendancy display - show "Not Selected" if None
-        ascendancy = character_data.get('ascendancy')
+        ascendancy = character_data.get("ascendancy")
         ascendancy_display = ascendancy if ascendancy else "Not Selected"
 
         response = f"""# Character Analysis: {character_data.get('name', 'Unknown')}
@@ -7787,22 +7958,20 @@ Could not extract account and character from URL.
         # the caller having to fabricate 80+ integers. Rendered even when the
         # summary analysis above is unavailable — the ids come straight from
         # the fetched character data.
-        raw_tree = character_data.get('passive_tree')
+        raw_tree = character_data.get("passive_tree")
         raw_node_ids = (
-            raw_tree.get('allocated_nodes') if isinstance(raw_tree, dict) else raw_tree
+            raw_tree.get("allocated_nodes") if isinstance(raw_tree, dict) else raw_tree
         ) or []
         node_ids = sorted(
-            int(n) for n in raw_node_ids
+            int(n)
+            for n in raw_node_ids
             if isinstance(n, int) or (isinstance(n, str) and n.isdigit())
         )
         if node_ids:
             response += f"\n### Passive Node IDs ({len(node_ids)})\n"
             response += f"`passive_node_ids`: {node_ids}\n"
             if self.passive_tree_resolver:
-                unresolved = [
-                    n for n in node_ids
-                    if self.passive_tree_resolver.resolve(n) is None
-                ]
+                unresolved = [n for n in node_ids if self.passive_tree_resolver.resolve(n) is None]
                 response += f"`unresolved_node_ids` (absent from local tree): {unresolved}\n"
             response += "Feed `passive_node_ids` directly into `analyze_passive_tree`.\n"
 
@@ -7829,25 +7998,26 @@ Could not extract account and character from URL.
     @staticmethod
     def _format_item_entry(item: dict, slot_label: str) -> str:
         """Render one equipment item as a markdown block (header + key mods)."""
-        name = item.get('name', '') or item.get('type_line', 'Unknown Item')
-        type_line = item.get('type_line', '')
-        rarity = item.get('rarity', 'Normal')
-        corrupted = " (Corrupted)" if item.get('corrupted') else ""
+        name = item.get("name", "") or item.get("type_line", "Unknown Item")
+        type_line = item.get("type_line", "")
+        rarity = item.get("rarity", "Normal")
+        corrupted = " (Corrupted)" if item.get("corrupted") else ""
         if isinstance(rarity, int):
-            rarity = {0: 'Normal', 1: 'Magic', 2: 'Rare', 3: 'Unique'}.get(rarity, 'Unknown')
+            rarity = {0: "Normal", 1: "Magic", 2: "Rare", 3: "Unique"}.get(rarity, "Unknown")
 
         out = f"\n### {slot_label}: {name if rarity == 'Unique' else (name or type_line)}{corrupted}\n"
         if type_line and type_line != name:
             out += f"*{type_line}*\n"
 
         # mods shape varies: poe.ninja route = {implicit,explicit}; PoB route = flat list
-        mods = item.get('mods') or {}
+        mods = item.get("mods") or {}
         max_mods = 5
         if isinstance(mods, dict):
             shown = 0
-            for m in (mods.get('implicit') or [])[:2]:
-                out += f"- {m} (implicit)\n"; shown += 1
-            for m in (mods.get('explicit') or [])[:max_mods - shown]:
+            for m in (mods.get("implicit") or [])[:2]:
+                out += f"- {m} (implicit)\n"
+                shown += 1
+            for m in (mods.get("explicit") or [])[: max_mods - shown]:
                 out += f"- {m}\n"
         elif isinstance(mods, list):
             for m in mods[:max_mods]:
@@ -7865,15 +8035,15 @@ Could not extract account and character from URL.
         bug that produced wrong build analysis (a swap staff's chaos read
         as if active during set-1 casting).
         """
-        items = character_data.get('items', [])
+        items = character_data.get("items", [])
         if not items:
             return ""
 
         response = "\n## Equipment\n"
 
         # Partition swap-set (weapon_set == 2) weapons out of the active gear.
-        swap_items = [i for i in items if i.get('weapon_set') == 2]
-        active_items = [i for i in items if i.get('weapon_set') != 2]
+        swap_items = [i for i in items if i.get("weapon_set") == 2]
+        active_items = [i for i in items if i.get("weapon_set") != 2]
         if swap_items:
             response += (
                 "*This build uses weapon swap. Only one weapon set is active at "
@@ -7883,8 +8053,18 @@ Could not extract account and character from URL.
 
         # Define slot order for organized display
         slot_order = [
-            'Weapon', 'Offhand', 'Helm', 'BodyArmour', 'Gloves', 'Boots',
-            'Belt', 'Amulet', 'Ring', 'Ring2', 'Flask', 'Charm'
+            "Weapon",
+            "Offhand",
+            "Helm",
+            "BodyArmour",
+            "Gloves",
+            "Boots",
+            "Belt",
+            "Amulet",
+            "Ring",
+            "Ring2",
+            "Flask",
+            "Charm",
         ]
 
         # Group items by slot
@@ -7892,33 +8072,33 @@ Could not extract account and character from URL.
         for item in active_items:
             # `or` (not .get default): cached/older records carry an explicit
             # slot: null, which .get's default does not cover
-            slot = item.get('slot') or 'Unknown'
+            slot = item.get("slot") or "Unknown"
             # Normalize slot names
-            if 'weapon' in slot.lower():
-                slot = 'Weapon'
-            elif 'offhand' in slot.lower() or 'shield' in slot.lower():
-                slot = 'Offhand'
-            elif 'helm' in slot.lower():
-                slot = 'Helm'
-            elif 'body' in slot.lower() or 'armour' in slot.lower():
-                slot = 'BodyArmour'
-            elif 'glove' in slot.lower():
-                slot = 'Gloves'
-            elif 'boot' in slot.lower():
-                slot = 'Boots'
-            elif 'belt' in slot.lower():
-                slot = 'Belt'
-            elif 'amulet' in slot.lower():
-                slot = 'Amulet'
-            elif 'ring' in slot.lower():
-                if 'Ring' in by_slot:
-                    slot = 'Ring2'
+            if "weapon" in slot.lower():
+                slot = "Weapon"
+            elif "offhand" in slot.lower() or "shield" in slot.lower():
+                slot = "Offhand"
+            elif "helm" in slot.lower():
+                slot = "Helm"
+            elif "body" in slot.lower() or "armour" in slot.lower():
+                slot = "BodyArmour"
+            elif "glove" in slot.lower():
+                slot = "Gloves"
+            elif "boot" in slot.lower():
+                slot = "Boots"
+            elif "belt" in slot.lower():
+                slot = "Belt"
+            elif "amulet" in slot.lower():
+                slot = "Amulet"
+            elif "ring" in slot.lower():
+                if "Ring" in by_slot:
+                    slot = "Ring2"
                 else:
-                    slot = 'Ring'
-            elif 'flask' in slot.lower():
-                slot = 'Flask'
-            elif 'charm' in slot.lower():
-                slot = 'Charm'
+                    slot = "Ring"
+            elif "flask" in slot.lower():
+                slot = "Flask"
+            elif "charm" in slot.lower():
+                slot = "Charm"
 
             by_slot.setdefault(slot, []).append(item)
 
@@ -7933,7 +8113,7 @@ Could not extract account and character from URL.
         for slot, slot_items in by_slot.items():
             if slot not in slot_order:
                 for item in slot_items:
-                    name = item.get('name', '') or item.get('type_line', 'Unknown')
+                    name = item.get("name", "") or item.get("type_line", "Unknown")
                     response += f"\n### {slot}: {name}\n"
 
         # Weapon Set 2 (swap) — rendered separately so its stats are never
@@ -7941,14 +8121,14 @@ Could not extract account and character from URL.
         if swap_items:
             response += "\n## Weapon Set 2 (swap)\n"
             for item in swap_items:
-                slot = item.get('slot') or 'Weapon (swap)'
+                slot = item.get("slot") or "Weapon (swap)"
                 response += self._format_item_entry(item, slot)
 
         return response
 
     def _format_charms_section(self, character_data: dict) -> str:
         """Format equipped charms from character data (PoE2 triggered items)"""
-        charms = character_data.get('charms', [])
+        charms = character_data.get("charms", [])
         if not charms:
             return ""
 
@@ -7956,20 +8136,20 @@ Could not extract account and character from URL.
         response += "*Charms are triggered items that activate on specific conditions*\n"
 
         for i, charm in enumerate(charms, 1):
-            name = charm.get('name', '') or charm.get('type_line', 'Unknown Charm')
-            type_line = charm.get('type_line', '')
-            rarity = charm.get('rarity', 0)
-            corrupted = " (Corrupted)" if charm.get('corrupted') else ""
+            name = charm.get("name", "") or charm.get("type_line", "Unknown Charm")
+            type_line = charm.get("type_line", "")
+            rarity = charm.get("rarity", 0)
+            corrupted = " (Corrupted)" if charm.get("corrupted") else ""
 
             # Format rarity display
             if isinstance(rarity, int):
-                rarity_map = {0: 'Normal', 1: 'Magic', 2: 'Rare', 3: 'Unique'}
-                rarity_str = rarity_map.get(rarity, 'Unknown')
+                rarity_map = {0: "Normal", 1: "Magic", 2: "Rare", 3: "Unique"}
+                rarity_str = rarity_map.get(rarity, "Unknown")
             else:
                 rarity_str = str(rarity)
 
             # Build charm header
-            if rarity_str == 'Unique':
+            if rarity_str == "Unique":
                 response += f"\n### Charm {i}: {name}{corrupted}\n"
             else:
                 response += f"\n### Charm {i}: {name or type_line}{corrupted}\n"
@@ -7978,13 +8158,13 @@ Could not extract account and character from URL.
                 response += f"*{type_line}*\n"
 
             # Show mods
-            mods = charm.get('mods', {})
+            mods = charm.get("mods", {})
             if isinstance(mods, dict):
-                if mods.get('implicit'):
-                    for mod in mods['implicit']:
+                if mods.get("implicit"):
+                    for mod in mods["implicit"]:
                         response += f"- {mod} (implicit)\n"
-                if mods.get('explicit'):
-                    for mod in mods['explicit']:
+                if mods.get("explicit"):
+                    for mod in mods["explicit"]:
                         response += f"- {mod}\n"
             elif isinstance(mods, list):
                 # Handle case where mods is just a list
@@ -7997,7 +8177,7 @@ Could not extract account and character from URL.
         """Format gear recommendations"""
         response = "# Gear Optimization Recommendations\n\n"
 
-        priority_upgrades = recommendations.get('priority_upgrades', [])
+        priority_upgrades = recommendations.get("priority_upgrades", [])
         for i, upgrade in enumerate(priority_upgrades[:5], 1):
             response += f"{i}. **{upgrade['slot']}** (Priority: {upgrade['priority']})\n"
             response += f"   Current: {upgrade.get('current_item', 'Empty')}\n"
@@ -8011,13 +8191,13 @@ Could not extract account and character from URL.
         """Format passive tree recommendations"""
         response = "# Passive Tree Optimization\n\n"
 
-        allocations = recommendations.get('suggested_allocations', [])
+        allocations = recommendations.get("suggested_allocations", [])
         if allocations:
             response += "## Suggested Allocations\n"
             for node in allocations:
                 response += f"- {node['name']}: {node['benefit']}\n"
 
-        respecs = recommendations.get('suggested_respecs', [])
+        respecs = recommendations.get("suggested_respecs", [])
         if respecs:
             response += "\n## Suggested Respecs\n"
             for respec in respecs:
@@ -8030,7 +8210,7 @@ Could not extract account and character from URL.
         """Format skill recommendations"""
         response = "# Skill Setup Optimization\n\n"
 
-        setups = recommendations.get('suggested_setups', [])
+        setups = recommendations.get("suggested_setups", [])
         for i, setup in enumerate(setups, 1):
             response += f"## Setup {i}: {setup['skill_name']}\n"
             response += f"Links: {', '.join(setup['supports'])}\n"
@@ -8042,9 +8222,9 @@ Could not extract account and character from URL.
         """Format build comparison"""
         response = "# Build Comparison\n\n"
 
-        for metric in comparison.get('metrics', []):
+        for metric in comparison.get("metrics", []):
             response += f"## {metric['name']}\n"
-            for build_result in metric['results']:
+            for build_result in metric["results"]:
                 response += f"- {build_result['build_name']}: {build_result['value']}\n"
             response += "\n"
 
@@ -8058,8 +8238,10 @@ Could not extract account and character from URL.
 
 ## Damage by Type
 """
-        for dmg_type, amount in breakdown.get('by_type', {}).items():
-            response += f"- {dmg_type}: {amount:,.0f} ({amount/breakdown.get('total_dps', 1)*100:.1f}%)\n"
+        for dmg_type, amount in breakdown.get("by_type", {}).items():
+            response += (
+                f"- {dmg_type}: {amount:,.0f} ({amount/breakdown.get('total_dps', 1)*100:.1f}%)\n"
+            )
 
         response += f"""
 ## Modifiers Applied
@@ -8080,10 +8262,10 @@ Could not extract account and character from URL.
         if not resistances:
             return ""
 
-        fire = resistances.get('fire', 0)
-        cold = resistances.get('cold', 0)
-        lightning = resistances.get('lightning', 0)
-        chaos = resistances.get('chaos', 0)
+        fire = resistances.get("fire", 0)
+        cold = resistances.get("cold", 0)
+        lightning = resistances.get("lightning", 0)
+        chaos = resistances.get("chaos", 0)
 
         # Format with cap indicators
         def format_res(value, cap=75):
@@ -8104,8 +8286,8 @@ Could not extract account and character from URL.
 
     def _format_skills_section(self, character_data: dict) -> str:
         """Format skill gems and their support links from character data"""
-        skills = character_data.get('skills', [])
-        skill_dps = character_data.get('skill_dps', [])
+        skills = character_data.get("skills", [])
+        skill_dps = character_data.get("skill_dps", [])
 
         if not skills and not skill_dps:
             return ""
@@ -8115,7 +8297,7 @@ Could not extract account and character from URL.
         # Create a DPS lookup by skill name for quick reference
         dps_lookup = {}
         for dps_entry in skill_dps:
-            name = dps_entry.get('skill_name', '')
+            name = dps_entry.get("skill_name", "")
             if name:
                 dps_lookup[name.lower()] = dps_entry
 
@@ -8127,24 +8309,24 @@ Could not extract account and character from URL.
             # Structure 3: skill has 'name' directly
             # Structure 4: skill has 'dps' array with skill info
 
-            all_gems = skill.get('allGems', [])
-            gems = skill.get('gems', [])
-            skill_name = skill.get('name') or ''
-            slot = skill.get('slot') or skill.get('socketGroup') or ''
-            dps_entries = skill.get('dps', [])
+            all_gems = skill.get("allGems", [])
+            gems = skill.get("gems", [])
+            skill_name = skill.get("name") or ""
+            slot = skill.get("slot") or skill.get("socketGroup") or ""
+            dps_entries = skill.get("dps", [])
 
             # Structure 1: poe.ninja 'allGems' format (most common)
             if all_gems:
                 # First gem is the main skill, rest are supports
                 main_gem = all_gems[0] if all_gems else {}
-                main_name = main_gem.get('name', 'Unknown Skill')
-                support_gems = [g.get('name', '') for g in all_gems[1:] if g.get('name')]
+                main_name = main_gem.get("name", "Unknown Skill")
+                support_gems = [g.get("name", "") for g in all_gems[1:] if g.get("name")]
 
                 # Get DPS from the skill's dps array
                 dps_str = ""
                 if dps_entries:
                     for d in dps_entries:
-                        dps_val = d.get('dps', 0)
+                        dps_val = d.get("dps", 0)
                         if dps_val:
                             dps_str = f" ({dps_val:,.0f} DPS)"
                             break
@@ -8161,13 +8343,13 @@ Could not extract account and character from URL.
                 support_gems = []
 
                 for gem in gems:
-                    gem_name = gem.get('name', gem.get('skillGem', ''))
-                    gem_level = gem.get('level', gem.get('gemLevel', ''))
-                    gem_quality = gem.get('quality', gem.get('gemQuality', 0))
-                    is_support = gem.get('isSupport', gem.get('support', False))
+                    gem_name = gem.get("name", gem.get("skillGem", ""))
+                    gem_level = gem.get("level", gem.get("gemLevel", ""))
+                    gem_quality = gem.get("quality", gem.get("gemQuality", 0))
+                    is_support = gem.get("isSupport", gem.get("support", False))
 
                     # Detect support gems by name if not explicitly marked
-                    if not is_support and 'support' in gem_name.lower():
+                    if not is_support and "support" in gem_name.lower():
                         is_support = True
 
                     gem_info = gem_name
@@ -8192,10 +8374,10 @@ Could not extract account and character from URL.
 
                         # Add DPS if available
                         for main in main_gems:
-                            main_base = main.split(' (')[0].lower()
+                            main_base = main.split(" (")[0].lower()
                             if main_base in dps_lookup:
                                 dps_data = dps_lookup[main_base]
-                                total_dps = dps_data.get('total_dps', 0)
+                                total_dps = dps_data.get("total_dps", 0)
                                 if total_dps:
                                     response += f"**DPS:** {total_dps:,.0f}\n"
                                 break
@@ -8210,8 +8392,8 @@ Could not extract account and character from URL.
                 # Check for DPS data
                 if skill_name.lower() in dps_lookup:
                     dps_data = dps_lookup[skill_name.lower()]
-                    total_dps = dps_data.get('total_dps', 0)
-                    dot_dps = dps_data.get('dot_dps', 0)
+                    total_dps = dps_data.get("total_dps", 0)
+                    dot_dps = dps_data.get("dot_dps", 0)
                     if total_dps:
                         response += f"- Hit DPS: {total_dps:,.0f}\n"
                     if dot_dps:
@@ -8220,8 +8402,8 @@ Could not extract account and character from URL.
             # Structure 4: Only 'dps' entries
             elif dps_entries:
                 for dps_entry in dps_entries:
-                    dps_name = dps_entry.get('name', 'Unknown Skill')
-                    total_dps = dps_entry.get('dps', 0)
+                    dps_name = dps_entry.get("name", "Unknown Skill")
+                    total_dps = dps_entry.get("dps", 0)
                     response += f"\n### {dps_name}\n"
                     if total_dps:
                         response += f"- DPS: {total_dps:,.0f}\n"
@@ -8230,9 +8412,9 @@ Could not extract account and character from URL.
         if not skills and skill_dps:
             response += "\n### Calculated Skill DPS\n"
             for dps_entry in skill_dps:
-                name = dps_entry.get('skill_name', 'Unknown')
-                total = dps_entry.get('total_dps', 0)
-                dot = dps_entry.get('dot_dps', 0)
+                name = dps_entry.get("skill_name", "Unknown")
+                total = dps_entry.get("total_dps", 0)
+                dot = dps_entry.get("dot_dps", 0)
                 response += f"- **{name}**: "
                 if total:
                     response += f"{total:,.0f} DPS"
@@ -8280,7 +8462,7 @@ Could not extract account and character from URL.
 """
         popular_uniques = gear_comp.get("popular_uniques", {})
         for unique, count in list(popular_uniques.items())[:8]:
-            usage_pct = (count / pool.get('count', 1)) * 100
+            usage_pct = (count / pool.get("count", 1)) * 100
             response += f"- **{unique}**: Used by {usage_pct:.0f}% of top players\n"
 
         response += f"""
@@ -8294,7 +8476,7 @@ Could not extract account and character from URL.
 """
         common_supports = skill_comp.get("common_supports_in_top_players", {})
         for support, count in list(common_supports.items())[:8]:
-            usage_pct = (count / pool.get('count', 1)) * 100
+            usage_pct = (count / pool.get("count", 1)) * 100
             response += f"- **{support}**: {usage_pct:.0f}% usage rate\n"
 
         response += f"""
@@ -8307,7 +8489,14 @@ Could not extract account and character from URL.
 ### Key Stats vs Top Players
 """
 
-        important_stats = ["life", "energyShield", "mana", "fireResistance", "coldResistance", "lightningResistance"]
+        important_stats = [
+            "life",
+            "energyShield",
+            "mana",
+            "fireResistance",
+            "coldResistance",
+            "lightningResistance",
+        ]
         for stat in important_stats:
             if stat in stat_comp:
                 data = stat_comp[stat]
@@ -8347,7 +8536,9 @@ Could not extract account and character from URL.
 
         return response
 
-    def _format_trade_search_results(self, results: Dict[str, List[Dict]], character_needs: Dict, max_price: Optional[int]) -> str:
+    def _format_trade_search_results(
+        self, results: Dict[str, List[Dict]], character_needs: Dict, max_price: Optional[int]
+    ) -> str:
         """Format trade search results"""
         response = "# Trade Market Search Results\n\n"
 
@@ -8463,23 +8654,19 @@ Could not extract account and character from URL.
                     server_name="poe2-build-optimizer",
                     server_version="1.0.0",
                     capabilities=self.server.get_capabilities(
-                        notification_options=notification_opts,
-                        experimental_capabilities={}
-                    )
+                        notification_options=notification_opts, experimental_capabilities={}
+                    ),
                 )
 
                 debug_log("Running MCP server...")
-                await self.server.run(
-                    read_stream,
-                    write_stream,
-                    init_options
-                )
+                await self.server.run(read_stream, write_stream, init_options)
                 debug_log("MCP server run completed")
 
         except Exception as e:
             debug_log(f"SERVER ERROR: {e}")
             logger.error(f"Server error: {e}")
             import traceback
+
             debug_log(f"Traceback:\n{traceback.format_exc()}")
             raise
         finally:
@@ -8500,6 +8687,7 @@ async def main():
     except Exception as e:
         debug_log(f"MAIN ERROR: {e}")
         import traceback
+
         debug_log(f"Traceback:\n{traceback.format_exc()}")
         raise
 
@@ -8523,5 +8711,6 @@ if __name__ == "__main__":
     except Exception as e:
         debug_log(f"FATAL ERROR in __main__: {e}")
         import traceback
+
         debug_log(f"Traceback:\n{traceback.format_exc()}")
         sys.exit(1)

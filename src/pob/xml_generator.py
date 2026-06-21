@@ -150,8 +150,7 @@ class PoBXMLGenerator:
         character = data.get("name", "")
         if account and character:
             import_elem.set(
-                "importLink",
-                f"https://poe.ninja/poe2/builds/char/{account}/{character}"
+                "importLink", f"https://poe.ninja/poe2/builds/char/{account}/{character}"
             )
 
     def _add_spec_section(self, root: ET.Element, data: Dict[str, Any]):
@@ -360,13 +359,13 @@ https://github.com/HivemindOverlord/poe2-mcp"""
             Base64-encoded, compressed PoB code
         """
         # Compress with zlib
-        compressed = zlib.compress(xml_text.encode('utf-8'), 9)
+        compressed = zlib.compress(xml_text.encode("utf-8"), 9)
 
         # Encode to base64
-        encoded = base64.b64encode(compressed).decode('ascii')
+        encoded = base64.b64encode(compressed).decode("ascii")
 
         # Convert to URL-safe base64 (PoB format)
-        return encoded.replace('+', '-').replace('/', '_')
+        return encoded.replace("+", "-").replace("/", "_")
 
     def from_pob_code(self, code: str) -> str:
         """
@@ -379,13 +378,13 @@ https://github.com/HivemindOverlord/poe2-mcp"""
             XML string
         """
         # Reverse URL-safe base64
-        encoded = code.replace('-', '+').replace('_', '/')
+        encoded = code.replace("-", "+").replace("_", "/")
 
         # Decode base64
         compressed = base64.b64decode(encoded)
 
         # Decompress
-        return zlib.decompress(compressed).decode('utf-8')
+        return zlib.decompress(compressed).decode("utf-8")
 
     def generate_pob_code(self, character_data: Dict[str, Any]) -> str:
         """

@@ -77,10 +77,10 @@ class StatSourceIndex:
             if not isinstance(skill, dict):
                 continue
             name = skill.get("name") or skill_id
-            for stat_set in (skill.get("statSets") or []):
+            for stat_set in skill.get("statSets") or []:
                 if not isinstance(stat_set, dict):
                     continue
-                for stat_id in (stat_set.get("stats") or []):
+                for stat_id in stat_set.get("stats") or []:
                     index.setdefault(stat_id, set()).add(name)
         self._skill_index = {k: sorted(v) for k, v in index.items()}
 
@@ -106,7 +106,7 @@ class StatSourceIndex:
                 "generation_type": mod.get("generation_type_name"),
                 "domain": mod.get("domain"),
             }
-            for stat in (mod.get("stats") or []):
+            for stat in mod.get("stats") or []:
                 stat_id = stat.get("stat_id") if isinstance(stat, dict) else None
                 if stat_id:
                     self._mod_index.setdefault(stat_id, []).append(entry)
@@ -136,9 +136,7 @@ class StatSourceIndex:
                 kind = "ascendancy"
             else:
                 kind = "small"
-            self._passive_nodes.append(
-                {"name": name, "kind": kind, "stats": stats}
-            )
+            self._passive_nodes.append({"name": name, "kind": kind, "stats": stats})
 
     def _build_ascendancy_nodes(self):
         # Legacy local-only artifact — see module docstring. Optional.
@@ -163,12 +161,14 @@ class StatSourceIndex:
             for node in nodes:
                 if not isinstance(node, dict) or not node.get("name"):
                     continue
-                self._ascendancy_nodes.append({
-                    "ascendancy": asc_name,
-                    "base_class": rec.get("base_class"),
-                    "name": node["name"],
-                    "stats": node.get("stats") or [],
-                })
+                self._ascendancy_nodes.append(
+                    {
+                        "ascendancy": asc_name,
+                        "base_class": rec.get("base_class"),
+                        "name": node["name"],
+                        "stats": node.get("stats") or [],
+                    }
+                )
 
     # ------------------------------------------------------------------
     # Query
@@ -238,17 +238,13 @@ class StatSourceIndex:
                     break
 
         for node in self._passive_nodes:
-            if q in node["name"].lower() or any(
-                q in s.lower() for s in node["stats"]
-            ):
+            if q in node["name"].lower() or any(q in s.lower() for s in node["stats"]):
                 result["passive_nodes"].append(node)
                 if len(result["passive_nodes"]) >= limit_per_source:
                     break
 
         for node in self._ascendancy_nodes:
-            if q in node["name"].lower() or any(
-                q in s.lower() for s in node["stats"]
-            ):
+            if q in node["name"].lower() or any(q in s.lower() for s in node["stats"]):
                 result["ascendancy_nodes"].append(node)
                 if len(result["ascendancy_nodes"]) >= limit_per_source:
                     break

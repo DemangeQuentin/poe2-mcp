@@ -18,14 +18,16 @@ import struct
 
 class GenerationType(IntEnum):
     """Mod generation type enum (offset 106, 4 bytes)."""
-    PREFIX = 1      # Craftable prefix mods
-    SUFFIX = 2      # Craftable suffix mods
-    IMPLICIT = 3    # Implicit mods (synthesis, delve, base)
-    CORRUPTED = 5   # Corruption outcome mods
+
+    PREFIX = 1  # Craftable prefix mods
+    SUFFIX = 2  # Craftable suffix mods
+    IMPLICIT = 3  # Implicit mods (synthesis, delve, base)
+    CORRUPTED = 5  # Corruption outcome mods
 
 
 class DomainFlag(IntEnum):
     """Mod domain/type flag (offset 94, 4 bytes)."""
+
     DEFAULT = 0
     SPECIAL = 1
     UNIQUE = 41
@@ -45,8 +47,8 @@ class DomainFlag(IntEnum):
 #   - Nov 2025 / pre-0.5: 14,269 rows, 661 bytes/row → 9,432,201 bytes table
 #   - May 2026 / 0.5+:    16,788 rows, 677 bytes/row → 11,365,476 bytes table
 #   (mods.datc64 file size: 11.97 MB pre-0.5 → 13.63 MB in 0.5)
-MOD_ROW_SIZE = 661          # Minimum bytes required to parse documented fields
-MOD_ROW_COUNT = 14269       # Historical baseline; ACTUAL count comes from .datc64 header
+MOD_ROW_SIZE = 661  # Minimum bytes required to parse documented fields
+MOD_ROW_COUNT = 14269  # Historical baseline; ACTUAL count comes from .datc64 header
 
 # 0.5 reference values (informational only — DO NOT hardcode these in parsers;
 # extractors should always derive count + row size from the file header).
@@ -89,22 +91,22 @@ STAT_VALUE_OFFSETS = [126, 134, 142, 150]  # Stat1Value-4Value
 
 # Core field offsets
 FIELD_OFFSETS = {
-    'id_ptr': 0,           # String pointer (8 bytes)
-    'hash': 8,             # UInt16 (2 bytes)
-    'type_key': 10,        # Key reference (16 bytes)
-    'level': 26,           # Int (4 bytes) - level requirement
-    'stat1_key': 30,       # Key to Stats table (16 bytes)
-    'stat2_key': 46,       # Key to Stats table (16 bytes)
-    'stat3_key': 62,       # Key to Stats table (16 bytes)
-    'stat4_key': 78,       # Key to Stats table (16 bytes)
-    'domain': 94,          # Enum (4 bytes)
-    'name_ptr': 98,        # String pointer (8 bytes)
-    'generation_type': 106, # Enum (4 bytes)
-    'family_list': 110,    # List (16 bytes: 8-byte count + 8-byte offset)
-    'stat1_value': 126,    # Interval (8 bytes: min INT32 + max INT32)
-    'stat2_value': 134,    # Interval (8 bytes)
-    'stat3_value': 142,    # Interval (8 bytes)
-    'stat4_value': 150,    # Interval (8 bytes)
+    "id_ptr": 0,  # String pointer (8 bytes)
+    "hash": 8,  # UInt16 (2 bytes)
+    "type_key": 10,  # Key reference (16 bytes)
+    "level": 26,  # Int (4 bytes) - level requirement
+    "stat1_key": 30,  # Key to Stats table (16 bytes)
+    "stat2_key": 46,  # Key to Stats table (16 bytes)
+    "stat3_key": 62,  # Key to Stats table (16 bytes)
+    "stat4_key": 78,  # Key to Stats table (16 bytes)
+    "domain": 94,  # Enum (4 bytes)
+    "name_ptr": 98,  # String pointer (8 bytes)
+    "generation_type": 106,  # Enum (4 bytes)
+    "family_list": 110,  # List (16 bytes: 8-byte count + 8-byte offset)
+    "stat1_value": 126,  # Interval (8 bytes: min INT32 + max INT32)
+    "stat2_value": 134,  # Interval (8 bytes)
+    "stat3_value": 142,  # Interval (8 bytes)
+    "stat4_value": 150,  # Interval (8 bytes)
 }
 
 # Null key marker (used when stat slot is empty)
@@ -114,10 +116,11 @@ NULL_KEY_MARKER = 0xFEFEFEFEFEFEFEFE
 @dataclass
 class StatEntry:
     """A single stat modification with key reference and value range."""
-    stat_key: int          # Row index in stats.datc64 (0 = empty, else 1-based index)
-    stat_key_high: int     # High 8 bytes of Key (usually table reference or padding)
-    min_value: int         # Minimum roll value (INT32)
-    max_value: int         # Maximum roll value (INT32)
+
+    stat_key: int  # Row index in stats.datc64 (0 = empty, else 1-based index)
+    stat_key_high: int  # High 8 bytes of Key (usually table reference or padding)
+    min_value: int  # Minimum roll value (INT32)
+    max_value: int  # Maximum roll value (INT32)
 
     @property
     def is_empty(self) -> bool:
@@ -135,16 +138,17 @@ class StatEntry:
 @dataclass
 class ModRecord:
     """Parsed mod record from mods.datc64."""
+
     row_index: int
 
     # Core fields
-    mod_id_ptr: int           # Offset 0: String pointer to mod ID
-    hash_value: int           # Offset 8: UInt16 hash
-    type_key: int             # Offset 10: Key to ModType table
-    level_requirement: int    # Offset 26: Minimum item level required
-    domain: int               # Offset 94: Domain enum
-    name_ptr: int             # Offset 98: String pointer to display name
-    generation_type: int      # Offset 106: PREFIX/SUFFIX/IMPLICIT/CORRUPTED
+    mod_id_ptr: int  # Offset 0: String pointer to mod ID
+    hash_value: int  # Offset 8: UInt16 hash
+    type_key: int  # Offset 10: Key to ModType table
+    level_requirement: int  # Offset 26: Minimum item level required
+    domain: int  # Offset 94: Domain enum
+    name_ptr: int  # Offset 98: String pointer to display name
+    generation_type: int  # Offset 106: PREFIX/SUFFIX/IMPLICIT/CORRUPTED
 
     # Stat entries (up to 4 stats, Stat5/6 require additional parsing)
     stats: List[StatEntry] = field(default_factory=list)
@@ -197,8 +201,8 @@ def read_key(data: bytes, offset: int) -> Tuple[int, int]:
         - row_index: First 8 bytes as unsigned long (row reference)
         - high_bytes: Second 8 bytes (usually table ref or padding)
     """
-    low = struct.unpack('<Q', data[offset:offset+8])[0]
-    high = struct.unpack('<Q', data[offset+8:offset+16])[0]
+    low = struct.unpack("<Q", data[offset : offset + 8])[0]
+    high = struct.unpack("<Q", data[offset + 8 : offset + 16])[0]
     return (low, high)
 
 
@@ -209,8 +213,8 @@ def read_interval(data: bytes, offset: int) -> Tuple[int, int]:
     Returns:
         Tuple of (min_value, max_value) as signed INT32
     """
-    min_val = struct.unpack('<i', data[offset:offset+4])[0]
-    max_val = struct.unpack('<i', data[offset+4:offset+8])[0]
+    min_val = struct.unpack("<i", data[offset : offset + 4])[0]
+    max_val = struct.unpack("<i", data[offset + 4 : offset + 8])[0]
     return (min_val, max_val)
 
 
@@ -221,8 +225,8 @@ def read_list_header(data: bytes, offset: int) -> Tuple[int, int]:
     The data offset is relative to the file's data-section start (the magic
     separator). Returns (count, data_offset).
     """
-    count = struct.unpack('<Q', data[offset:offset + 8])[0]
-    data_off = struct.unpack('<Q', data[offset + 8:offset + 16])[0]
+    count = struct.unpack("<Q", data[offset : offset + 8])[0]
+    data_off = struct.unpack("<Q", data[offset + 8 : offset + 16])[0]
     return (count, data_off)
 
 
@@ -268,7 +272,7 @@ def parse_spawn_tag_indices(
     indices = []
     for i in range(count):
         koff = base + i * 16
-        indices.append(struct.unpack('<Q', full_data[koff:koff + 8])[0])
+        indices.append(struct.unpack("<Q", full_data[koff : koff + 8])[0])
     return indices
 
 
@@ -291,13 +295,13 @@ def parse_mod_row(data: bytes, row_index: int = 0) -> ModRecord:
         raise ValueError(f"Expected >= {MOD_ROW_SIZE} bytes, got {len(data)}")
 
     # Parse core fields
-    mod_id_ptr = struct.unpack('<Q', data[0:8])[0]
-    hash_value = struct.unpack('<H', data[8:10])[0]
+    mod_id_ptr = struct.unpack("<Q", data[0:8])[0]
+    hash_value = struct.unpack("<H", data[8:10])[0]
     type_key, _ = read_key(data, 10)
-    level_requirement = struct.unpack('<i', data[26:30])[0]
-    domain = struct.unpack('<i', data[94:98])[0]
-    name_ptr = struct.unpack('<Q', data[98:106])[0]
-    generation_type = struct.unpack('<i', data[106:110])[0]
+    level_requirement = struct.unpack("<i", data[26:30])[0]
+    domain = struct.unpack("<i", data[94:98])[0]
+    name_ptr = struct.unpack("<Q", data[98:106])[0]
+    generation_type = struct.unpack("<i", data[106:110])[0]
 
     # Parse stat entries (4 slots)
     stats = []
@@ -308,12 +312,11 @@ def parse_mod_row(data: bytes, row_index: int = 0) -> ModRecord:
         stat_key, stat_key_high = read_key(data, key_offset)
         min_val, max_val = read_interval(data, value_offset)
 
-        stats.append(StatEntry(
-            stat_key=stat_key,
-            stat_key_high=stat_key_high,
-            min_value=min_val,
-            max_value=max_val
-        ))
+        stats.append(
+            StatEntry(
+                stat_key=stat_key, stat_key_high=stat_key_high, min_value=min_val, max_value=max_val
+            )
+        )
 
     return ModRecord(
         row_index=row_index,
@@ -339,7 +342,8 @@ def extract_mod_family(mod_id: str) -> Tuple[str, int]:
         Tuple of (family_name, tier_number)
     """
     import re
-    match = re.match(r'^(.+?)(\d+)$', mod_id)
+
+    match = re.match(r"^(.+?)(\d+)$", mod_id)
     if match:
         return (match.group(1), int(match.group(2)))
     return (mod_id, 0)
@@ -348,6 +352,7 @@ def extract_mod_family(mod_id: str) -> Tuple[str, int]:
 # =============================================================================
 # VALIDATION UTILITIES
 # =============================================================================
+
 
 def validate_stat_key(stat_key: int) -> bool:
     """

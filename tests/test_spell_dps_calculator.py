@@ -40,6 +40,7 @@ def calc():
 # SpellStats dataclass
 # ---------------------------------------------------------------------------
 
+
 def test_spell_stats_default_damage_types_is_empty_list():
     """__post_init__ replaces None with []. Mutable-default-arg trap avoided."""
     s = SpellStats(name="X", base_damage_min=1, base_damage_max=2)
@@ -63,6 +64,7 @@ def test_spell_stats_defaults_match_documented_baseline():
 # CharacterModifiers
 # ---------------------------------------------------------------------------
 
+
 def test_character_modifiers_more_multipliers_defaults_to_empty_list():
     cm = CharacterModifiers()
     assert cm.more_multipliers == []
@@ -77,13 +79,21 @@ def test_character_modifiers_default_crit_bonus_is_poe2_baseline():
 # EnemyStats
 # ---------------------------------------------------------------------------
 
+
 def test_enemy_stats_default_zeros():
     e = EnemyStats()
     for attr in (
-        "fire_resistance", "cold_resistance", "lightning_resistance",
-        "chaos_resistance", "physical_resistance",
-        "fire_exposure", "cold_exposure", "lightning_exposure",
-        "fire_penetration", "cold_penetration", "lightning_penetration",
+        "fire_resistance",
+        "cold_resistance",
+        "lightning_resistance",
+        "chaos_resistance",
+        "physical_resistance",
+        "fire_exposure",
+        "cold_exposure",
+        "lightning_exposure",
+        "fire_penetration",
+        "cold_penetration",
+        "lightning_penetration",
     ):
         assert getattr(e, attr) == 0.0
     assert e.is_shocked is False
@@ -93,9 +103,12 @@ def test_enemy_stats_default_zeros():
 # _calculate_added_damage — docstring example: 64.0
 # ---------------------------------------------------------------------------
 
+
 def test_added_damage_docstring_example(calc):
     """(50 + 30 + 0 + 0 + 0) × 0.8 = 64.0"""
-    spell = SpellStats(name="Test", base_damage_min=10, base_damage_max=20, damage_effectiveness=0.8)
+    spell = SpellStats(
+        name="Test", base_damage_min=10, base_damage_max=20, damage_effectiveness=0.8
+    )
     cm = CharacterModifiers(added_fire=50, added_cold=30)
     assert calc._calculate_added_damage(spell, cm) == 64.0
 
@@ -103,7 +116,9 @@ def test_added_damage_docstring_example(calc):
 def test_added_damage_full_effectiveness(calc):
     """100% effectiveness → unchanged sum."""
     spell = SpellStats(name="X", base_damage_min=0, base_damage_max=0, damage_effectiveness=1.0)
-    cm = CharacterModifiers(added_fire=10, added_cold=20, added_lightning=30, added_chaos=15, added_physical=5)
+    cm = CharacterModifiers(
+        added_fire=10, added_cold=20, added_lightning=30, added_chaos=15, added_physical=5
+    )
     assert calc._calculate_added_damage(spell, cm) == 80.0
 
 
@@ -116,6 +131,7 @@ def test_added_damage_zero_with_no_added(calc):
 # ---------------------------------------------------------------------------
 # _calculate_archmage_bonus — docstring examples
 # ---------------------------------------------------------------------------
+
 
 def test_archmage_docstring_example(calc):
     """(2000 / 100) × 0.04 × 100 = 20 × 0.04 × 100 = 80.0"""
@@ -137,6 +153,7 @@ def test_archmage_scales_with_base_damage(calc):
 # ---------------------------------------------------------------------------
 # _calculate_more_multiplier — docstring examples
 # ---------------------------------------------------------------------------
+
 
 def test_more_multiplier_docstring_example(calc):
     """(1 + 25/100) × (1 + 30/100) = 1.25 × 1.30 = 1.625"""
@@ -164,6 +181,7 @@ def test_more_multiplier_stacks_multiplicatively_not_additively(calc):
 # _calculate_crit_multiplier — docstring examples
 # ---------------------------------------------------------------------------
 
+
 def test_crit_multiplier_docstring_no_increase(calc):
     """+100% base, +0% increased → 1 + (100/100)*(1+0) = 2.0"""
     assert calc._calculate_crit_multiplier(100, 0) == 2.0
@@ -182,6 +200,7 @@ def test_crit_multiplier_with_added_bonus(calc):
 # ---------------------------------------------------------------------------
 # _apply_resistances — docstring example: 55.0
 # ---------------------------------------------------------------------------
+
 
 def test_apply_resistances_docstring_example(calc):
     """75 res - 20 exposure - 10 pen = 45 effective. 100 × (1 - 0.45) = 55.0"""
@@ -242,6 +261,7 @@ def test_apply_resistances_handles_each_element(calc):
 # _calculate_cast_speed — docstring examples
 # ---------------------------------------------------------------------------
 
+
 def test_cast_speed_docstring_50_percent_inc(calc):
     """0.8s base / 1.5 = 0.5333s → 1.875 casts/sec."""
     assert calc._calculate_cast_speed(0.8, 50) == 1.875
@@ -260,6 +280,7 @@ def test_cast_speed_double_with_100_increased(calc):
 # ---------------------------------------------------------------------------
 # get_spell_by_name / add_spell_to_database
 # ---------------------------------------------------------------------------
+
 
 def test_get_spell_by_name_returns_known_spell():
     """SPELL_DATABASE has 'arc', 'spark', 'fireball' pre-loaded."""
@@ -286,7 +307,9 @@ def test_add_spell_to_database_then_lookup():
     calc = SpellDPSCalculator()
     custom = SpellStats(
         name="UnitTestCustomSpell",
-        base_damage_min=50, base_damage_max=100, damage_effectiveness=1.2,
+        base_damage_min=50,
+        base_damage_max=100,
+        damage_effectiveness=1.2,
     )
     try:
         calc.add_spell_to_database(custom)
@@ -302,10 +325,16 @@ def test_add_spell_to_database_then_lookup():
 # calculate_dps — full pipeline integration
 # ---------------------------------------------------------------------------
 
+
 def test_calculate_dps_returns_breakdown_shape(calc):
     """Result contains the documented top-level keys + a `breakdown` dict."""
-    spell = SpellStats(name="X", base_damage_min=100, base_damage_max=100,
-                       damage_types=["fire"], base_cast_time=1.0)
+    spell = SpellStats(
+        name="X",
+        base_damage_min=100,
+        base_damage_max=100,
+        damage_types=["fire"],
+        base_cast_time=1.0,
+    )
     result = calc.calculate_dps(spell, CharacterModifiers())
     assert "total_dps" in result
     assert "average_hit" in result
@@ -313,16 +342,28 @@ def test_calculate_dps_returns_breakdown_shape(calc):
     assert "crit_chance" in result
     assert "breakdown" in result
     bd = result["breakdown"]
-    for k in ("base_damage", "added_damage", "after_increased", "after_more",
-              "expected_hit", "after_resistance", "multipliers"):
+    for k in (
+        "base_damage",
+        "added_damage",
+        "after_increased",
+        "after_more",
+        "expected_hit",
+        "after_resistance",
+        "multipliers",
+    ):
         assert k in bd
 
 
 def test_calculate_dps_no_modifiers_no_enemy_yields_clean_base(calc):
     """100 base damage, no modifiers, no enemy → 100 expected hit, 100 dps at 1.0 cast/s."""
-    spell = SpellStats(name="X", base_damage_min=100, base_damage_max=100,
-                       damage_types=["fire"], base_cast_time=1.0,
-                       base_crit_chance=0.0)
+    spell = SpellStats(
+        name="X",
+        base_damage_min=100,
+        base_damage_max=100,
+        damage_types=["fire"],
+        base_cast_time=1.0,
+        base_crit_chance=0.0,
+    )
     result = calc.calculate_dps(spell, CharacterModifiers())
     assert result["total_dps"] == 100.0
     assert result["average_hit"] == 100.0
@@ -332,8 +373,13 @@ def test_calculate_dps_no_modifiers_no_enemy_yields_clean_base(calc):
 
 def test_calculate_dps_applies_increased_damage(calc):
     """+50% increased spell damage → 100 base × 1.5 = 150."""
-    spell = SpellStats(name="X", base_damage_min=100, base_damage_max=100,
-                       damage_types=["fire"], base_cast_time=1.0)
+    spell = SpellStats(
+        name="X",
+        base_damage_min=100,
+        base_damage_max=100,
+        damage_types=["fire"],
+        base_cast_time=1.0,
+    )
     cm = CharacterModifiers(increased_spell_damage=50)
     result = calc.calculate_dps(spell, cm)
     assert result["average_hit"] == 150.0
@@ -341,8 +387,13 @@ def test_calculate_dps_applies_increased_damage(calc):
 
 def test_calculate_dps_applies_more_multiplier(calc):
     """50% more on top of base → 100 × 1.5 = 150."""
-    spell = SpellStats(name="X", base_damage_min=100, base_damage_max=100,
-                       damage_types=["fire"], base_cast_time=1.0)
+    spell = SpellStats(
+        name="X",
+        base_damage_min=100,
+        base_damage_max=100,
+        damage_types=["fire"],
+        base_cast_time=1.0,
+    )
     cm = CharacterModifiers(more_multipliers=[50])
     result = calc.calculate_dps(spell, cm)
     assert result["average_hit"] == 150.0
@@ -350,8 +401,13 @@ def test_calculate_dps_applies_more_multiplier(calc):
 
 def test_calculate_dps_applies_resistance(calc):
     """50% fire res → half damage."""
-    spell = SpellStats(name="X", base_damage_min=100, base_damage_max=100,
-                       damage_types=["fire"], base_cast_time=1.0)
+    spell = SpellStats(
+        name="X",
+        base_damage_min=100,
+        base_damage_max=100,
+        damage_types=["fire"],
+        base_cast_time=1.0,
+    )
     enemy = EnemyStats(fire_resistance=50)
     result = calc.calculate_dps(spell, CharacterModifiers(), enemy)
     assert result["average_hit"] == 50.0
@@ -359,8 +415,13 @@ def test_calculate_dps_applies_resistance(calc):
 
 def test_calculate_dps_applies_shock_bonus(calc):
     """is_shocked → 1.2x damage taken."""
-    spell = SpellStats(name="X", base_damage_min=100, base_damage_max=100,
-                       damage_types=["fire"], base_cast_time=1.0)
+    spell = SpellStats(
+        name="X",
+        base_damage_min=100,
+        base_damage_max=100,
+        damage_types=["fire"],
+        base_cast_time=1.0,
+    )
     unshocked = calc.calculate_dps(spell, CharacterModifiers(), EnemyStats(is_shocked=False))
     shocked = calc.calculate_dps(spell, CharacterModifiers(), EnemyStats(is_shocked=True))
     assert math.isclose(shocked["average_hit"], unshocked["average_hit"] * 1.2)
@@ -368,9 +429,14 @@ def test_calculate_dps_applies_shock_bonus(calc):
 
 def test_calculate_dps_dps_equals_avg_hit_times_cast_speed(calc):
     """Identity check: total_dps == average_hit × casts_per_second (within rounding)."""
-    spell = SpellStats(name="X", base_damage_min=100, base_damage_max=200,
-                       damage_types=["lightning"], base_cast_time=0.8,
-                       base_crit_chance=10.0)
+    spell = SpellStats(
+        name="X",
+        base_damage_min=100,
+        base_damage_max=200,
+        damage_types=["lightning"],
+        base_cast_time=0.8,
+        base_crit_chance=10.0,
+    )
     cm = CharacterModifiers(increased_spell_damage=40, increased_cast_speed=20)
     result = calc.calculate_dps(spell, cm)
     expected_dps = result["average_hit"] * result["casts_per_second"]
@@ -380,8 +446,13 @@ def test_calculate_dps_dps_equals_avg_hit_times_cast_speed(calc):
 
 def test_calculate_dps_crit_chance_capped_at_100(calc):
     """Even with absurd +crit_chance, the cap is 100%."""
-    spell = SpellStats(name="X", base_damage_min=100, base_damage_max=100,
-                       damage_types=["fire"], base_crit_chance=50.0)
+    spell = SpellStats(
+        name="X",
+        base_damage_min=100,
+        base_damage_max=100,
+        damage_types=["fire"],
+        base_crit_chance=50.0,
+    )
     cm = CharacterModifiers(increased_crit_chance=200.0)  # 50 + 200 = 250 → capped to 100
     result = calc.calculate_dps(spell, cm)
     assert result["crit_chance"] == 100.0

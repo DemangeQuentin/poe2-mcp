@@ -34,9 +34,9 @@ SKILL_GEMS_META = SKILL_GEMS_DIR / "metadata.json"
 @pytest.fixture(scope="module")
 def dataset():
     """Loaded skill_gems.json payload."""
-    assert SKILL_GEMS_JSON.exists(), (
-        f"{SKILL_GEMS_JSON} missing — has data/game/skill_gems/ been re-extracted?"
-    )
+    assert (
+        SKILL_GEMS_JSON.exists()
+    ), f"{SKILL_GEMS_JSON} missing — has data/game/skill_gems/ been re-extracted?"
     return json.loads(SKILL_GEMS_JSON.read_text(encoding="utf-8"))
 
 
@@ -57,6 +57,7 @@ def gems(dataset):
 # File shape
 # ---------------------------------------------------------------------------
 
+
 def test_dataset_dir_exists():
     assert SKILL_GEMS_DIR.is_dir()
 
@@ -70,9 +71,15 @@ def test_dataset_top_level_shape(dataset):
 def test_metadata_top_level_shape(metadata):
     assert isinstance(metadata, dict)
     for field in (
-        "dataset", "filename", "patch_version", "extracted_at",
-        "source_repo", "source_commit", "extractor",
-        "record_count", "sha256",
+        "dataset",
+        "filename",
+        "patch_version",
+        "extracted_at",
+        "source_repo",
+        "source_commit",
+        "extractor",
+        "record_count",
+        "sha256",
     ):
         assert field in metadata, f"metadata.json missing required field '{field}'"
     assert metadata["dataset"] == "skill_gems"
@@ -90,9 +97,9 @@ def test_version_json_record_count_matches_data(gems):
     """version.json's per-dataset record_count must match the actual data."""
     v = get_version()
     assert v is not None
-    assert "skill_gems" in v["datasets"], (
-        "skill_gems must be registered in datasets, not datasets_pending_0_5_reextract"
-    )
+    assert (
+        "skill_gems" in v["datasets"]
+    ), "skill_gems must be registered in datasets, not datasets_pending_0_5_reextract"
     assert v["datasets"]["skill_gems"]["record_count"] == len(gems)
 
 
@@ -109,8 +116,14 @@ def test_version_json_skill_gems_no_longer_pending():
 # ---------------------------------------------------------------------------
 
 REQUIRED_GEM_FIELDS = {
-    "gem_id", "name", "gem_type", "tier", "natural_max_level",
-    "requirements", "tags", "additional_stat_sets",
+    "gem_id",
+    "name",
+    "gem_type",
+    "tier",
+    "natural_max_level",
+    "requirements",
+    "tags",
+    "additional_stat_sets",
 }
 
 
@@ -123,18 +136,18 @@ def test_every_gem_has_required_fields(gems):
 def test_every_gem_id_is_unique(gems):
     """No duplicates — would silently shadow lookups."""
     ids = [g["gem_id"] for g in gems]
-    assert len(ids) == len(set(ids)), (
-        f"duplicate gem_ids found: {len(ids) - len(set(ids))} duplicates"
-    )
+    assert len(ids) == len(
+        set(ids)
+    ), f"duplicate gem_ids found: {len(ids) - len(set(ids))} duplicates"
 
 
 def test_every_gem_id_has_metadata_prefix(gems):
     """gem_id format is 'Metadata/Items/Gems/<SkillGemX>' — locks the prefix
     convention from PoB2's Gems.lua."""
     for gem in gems:
-        assert gem["gem_id"].startswith("Metadata/Items/Gems/"), (
-            f"unexpected gem_id format: {gem['gem_id']!r}"
-        )
+        assert gem["gem_id"].startswith(
+            "Metadata/Items/Gems/"
+        ), f"unexpected gem_id format: {gem['gem_id']!r}"
 
 
 def test_requirements_shape(gems):
@@ -142,13 +155,13 @@ def test_requirements_shape(gems):
     for gem in gems:
         r = gem["requirements"]
         assert isinstance(r, dict)
-        assert set(r.keys()) == {"str", "dex", "int"}, (
-            f"gem {gem['gem_id']!r} requirements keys: {set(r.keys())}"
-        )
+        assert set(r.keys()) == {
+            "str",
+            "dex",
+            "int",
+        }, f"gem {gem['gem_id']!r} requirements keys: {set(r.keys())}"
         for k, v in r.items():
-            assert isinstance(v, int) and v >= 0, (
-                f"gem {gem['gem_id']!r} requirements[{k}] = {v!r}"
-            )
+            assert isinstance(v, int) and v >= 0, f"gem {gem['gem_id']!r} requirements[{k}] = {v!r}"
 
 
 def test_tags_is_string_list(gems):
@@ -162,21 +175,22 @@ def test_tags_is_string_list(gems):
 # Join health — granted_effect coverage
 # ---------------------------------------------------------------------------
 
+
 def test_join_rate_high(gems, metadata):
     """metadata claims a join rate; verify against actual data."""
     matched = sum(1 for g in gems if g.get("granted_effect") is not None)
-    assert matched == metadata["matched_effect_count"], (
-        f"actual matched count {matched} != metadata claim {metadata['matched_effect_count']}"
-    )
+    assert (
+        matched == metadata["matched_effect_count"]
+    ), f"actual matched count {matched} != metadata claim {metadata['matched_effect_count']}"
 
 
 def test_join_rate_is_total(gems):
     """PR #91 reported 100% join. Lock that as a regression — if a future
     extraction misses joins, surface it loudly."""
     matched = sum(1 for g in gems if g.get("granted_effect") is not None)
-    assert matched == len(gems), (
-        f"join rate dropped: {matched}/{len(gems)} ({100*matched/len(gems):.1f}%)"
-    )
+    assert matched == len(
+        gems
+    ), f"join rate dropped: {matched}/{len(gems)} ({100*matched/len(gems):.1f}%)"
 
 
 def test_granted_effect_shape_when_present(gems):
@@ -197,14 +211,13 @@ def test_granted_effect_shape_when_present(gems):
 # Gem type distribution — sanity vs PR #91 description
 # ---------------------------------------------------------------------------
 
+
 def test_gem_type_distribution_contains_core_categories(gems):
     """PR #91 reported these categories: Support, Attack, Spell, Buff,
     Minion, Warcry, Mark, Banner, Shapeshift, Totem. Verify all appear."""
     types = {g.get("gem_type") for g in gems}
     expected_min = {"Support", "Spell", "Attack", "Buff", "Minion"}
-    assert expected_min.issubset(types), (
-        f"missing core gem_types: {expected_min - types}"
-    )
+    assert expected_min.issubset(types), f"missing core gem_types: {expected_min - types}"
 
 
 def test_spell_count_matches_handler_expectation(gems):
@@ -222,6 +235,7 @@ def test_spell_count_matches_handler_expectation(gems):
 # Spot-check: Ice Nova (the canonical docstring/audit example)
 # ---------------------------------------------------------------------------
 
+
 def test_ice_nova_present_and_canonical(gems):
     """Ice Nova is the canonical example used in the audit (#85), the
     extractor's docstring, and the MCP handler smoke test. Spot-check it."""
@@ -236,9 +250,9 @@ def test_ice_nova_present_and_canonical(gems):
 
     # Tags must include the cold/spell signature
     for required_tag in ("spell", "cold", "area"):
-        assert required_tag in ice_nova["tags"], (
-            f"Ice Nova missing required tag {required_tag!r}: tags={ice_nova['tags']}"
-        )
+        assert (
+            required_tag in ice_nova["tags"]
+        ), f"Ice Nova missing required tag {required_tag!r}: tags={ice_nova['tags']}"
 
     # Has additional_stat_sets per audit (#85)
     assert "IceNovaPlayerOnFrostbolt" in ice_nova["additional_stat_sets"]
@@ -254,6 +268,7 @@ def test_ice_nova_present_and_canonical(gems):
 # ---------------------------------------------------------------------------
 # Spot-check: Wildfire (the documented Tier-2 fallback case)
 # ---------------------------------------------------------------------------
+
 
 def test_wildfire_present_as_support_gem(gems):
     """Wildfire is the canonical Tier-2 fallback example for
@@ -287,6 +302,5 @@ def test_wildfire_present_as_support_gem(gems):
     # "Tags: support, area, fire | Tier: 2 | Requirements: Int 100"
     for required_tag in ("support", "area", "fire"):
         assert required_tag in wildfire["tags"], (
-            f"Wildfire missing required tag {required_tag!r}: "
-            f"tags={wildfire['tags']}"
+            f"Wildfire missing required tag {required_tag!r}: " f"tags={wildfire['tags']}"
         )

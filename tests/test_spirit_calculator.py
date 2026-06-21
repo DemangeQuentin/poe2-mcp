@@ -13,7 +13,7 @@ import sys
 import os
 
 # Add src to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 from calculator.spirit_calculator import (
     SpiritCalculator,
@@ -24,7 +24,7 @@ from calculator.spirit_calculator import (
     SpiritReservationType,
     SpiritOptimization,
     calculate_support_gem_cost,
-    find_optimal_support_combinations
+    find_optimal_support_combinations,
 )
 
 
@@ -32,11 +32,7 @@ class TestSpiritSource(unittest.TestCase):
     """Test SpiritSource dataclass."""
 
     def test_valid_source(self):
-        source = SpiritSource(
-            name="Test Quest",
-            amount=30,
-            source_type=SpiritSourceType.QUEST
-        )
+        source = SpiritSource(name="Test Quest", amount=30, source_type=SpiritSourceType.QUEST)
         self.assertEqual(source.name, "Test Quest")
         self.assertEqual(source.amount, 30)
         self.assertEqual(source.source_type, SpiritSourceType.QUEST)
@@ -44,18 +40,11 @@ class TestSpiritSource(unittest.TestCase):
 
     def test_negative_amount_raises_error(self):
         with self.assertRaises(ValueError):
-            SpiritSource(
-                name="Invalid",
-                amount=-10,
-                source_type=SpiritSourceType.QUEST
-            )
+            SpiritSource(name="Invalid", amount=-10, source_type=SpiritSourceType.QUEST)
 
     def test_disabled_source(self):
         source = SpiritSource(
-            name="Test",
-            amount=20,
-            source_type=SpiritSourceType.GEAR,
-            enabled=False
+            name="Test", amount=20, source_type=SpiritSourceType.GEAR, enabled=False
         )
         self.assertFalse(source.enabled)
 
@@ -80,7 +69,7 @@ class TestSpiritReservation(unittest.TestCase):
         res = SpiritReservation(
             name="Raise Zombie",
             base_cost=25,
-            reservation_type=SpiritReservationType.PERMANENT_MINION
+            reservation_type=SpiritReservationType.PERMANENT_MINION,
         )
         self.assertEqual(res.calculate_cost(), 25)
 
@@ -89,7 +78,7 @@ class TestSpiritReservation(unittest.TestCase):
             name="Raise Zombie",
             base_cost=25,
             reservation_type=SpiritReservationType.PERMANENT_MINION,
-            support_gems=[SupportGem("Minion Damage", 1.5)]
+            support_gems=[SupportGem("Minion Damage", 1.5)],
         )
         # 25 * 1.5 = 37.5, rounds up to 38
         self.assertEqual(res.calculate_cost(), 38)
@@ -99,10 +88,7 @@ class TestSpiritReservation(unittest.TestCase):
             name="Raise Zombie",
             base_cost=25,
             reservation_type=SpiritReservationType.PERMANENT_MINION,
-            support_gems=[
-                SupportGem("Minion Damage", 1.5),
-                SupportGem("Minion Life", 1.3)
-            ]
+            support_gems=[SupportGem("Minion Damage", 1.5), SupportGem("Minion Life", 1.3)],
         )
         # 25 * 1.5 * 1.3 = 48.75, rounds up to 49
         self.assertEqual(res.calculate_cost(), 49)
@@ -113,7 +99,7 @@ class TestSpiritReservation(unittest.TestCase):
             base_cost=25,
             reservation_type=SpiritReservationType.PERMANENT_MINION,
             support_gems=[SupportGem("Minion Damage", 1.5)],
-            enabled=False
+            enabled=False,
         )
         self.assertEqual(res.calculate_cost(), 0)
 
@@ -123,14 +109,14 @@ class TestSpiritReservation(unittest.TestCase):
                 name="Test",
                 base_cost=25,
                 reservation_type=SpiritReservationType.AURA,
-                priority=11  # Invalid: must be 1-10
+                priority=11,  # Invalid: must be 1-10
             )
 
     def test_add_support_gem(self):
         res = SpiritReservation(
             name="Raise Zombie",
             base_cost=25,
-            reservation_type=SpiritReservationType.PERMANENT_MINION
+            reservation_type=SpiritReservationType.PERMANENT_MINION,
         )
         self.assertEqual(res.calculate_cost(), 25)
 
@@ -142,7 +128,7 @@ class TestSpiritReservation(unittest.TestCase):
             name="Raise Zombie",
             base_cost=25,
             reservation_type=SpiritReservationType.PERMANENT_MINION,
-            support_gems=[SupportGem("Minion Damage", 1.5)]
+            support_gems=[SupportGem("Minion Damage", 1.5)],
         )
         self.assertEqual(res.calculate_cost(), 38)
 
@@ -154,7 +140,7 @@ class TestSpiritReservation(unittest.TestCase):
         res = SpiritReservation(
             name="Raise Zombie",
             base_cost=25,
-            reservation_type=SpiritReservationType.PERMANENT_MINION
+            reservation_type=SpiritReservationType.PERMANENT_MINION,
         )
         removed = res.remove_support_gem("Nonexistent")
         self.assertFalse(removed)
@@ -164,16 +150,13 @@ class TestSpiritReservation(unittest.TestCase):
             name="Raise Zombie",
             base_cost=25,
             reservation_type=SpiritReservationType.PERMANENT_MINION,
-            support_gems=[
-                SupportGem("Minion Damage", 1.5),
-                SupportGem("Minion Life", 1.3)
-            ]
+            support_gems=[SupportGem("Minion Damage", 1.5), SupportGem("Minion Life", 1.3)],
         )
         breakdown = res.get_cost_breakdown()
-        self.assertEqual(breakdown['base_cost'], 25)
-        self.assertEqual(breakdown['final_cost'], 49)
-        self.assertAlmostEqual(breakdown['total_multiplier'], 1.95, places=10)
-        self.assertEqual(len(breakdown['support_gems']), 2)
+        self.assertEqual(breakdown["base_cost"], 25)
+        self.assertEqual(breakdown["final_cost"], 49)
+        self.assertAlmostEqual(breakdown["total_multiplier"], 1.95, places=10)
+        self.assertEqual(len(breakdown["support_gems"]), 2)
 
 
 class TestSpiritCalculator(unittest.TestCase):
@@ -254,11 +237,7 @@ class TestSpiritCalculator(unittest.TestCase):
     def test_add_reservation_no_supports(self):
         """Test adding a reservation without support gems."""
         self.calc.add_quest_spirit("Quest", 100)
-        res = self.calc.add_reservation(
-            "Purity of Fire",
-            30,
-            SpiritReservationType.AURA
-        )
+        res = self.calc.add_reservation("Purity of Fire", 30, SpiritReservationType.AURA)
 
         self.assertEqual(self.calc.get_spirit_reserved(), 30)
         self.assertEqual(self.calc.get_spirit_available(), 70)
@@ -270,7 +249,7 @@ class TestSpiritCalculator(unittest.TestCase):
             "Raise Zombie",
             25,
             SpiritReservationType.PERMANENT_MINION,
-            support_gems=[("Minion Damage", 1.5), ("Minion Life", 1.3)]
+            support_gems=[("Minion Damage", 1.5), ("Minion Life", 1.3)],
         )
 
         # 25 * 1.5 * 1.3 = 48.75, rounds up to 49
@@ -282,8 +261,12 @@ class TestSpiritCalculator(unittest.TestCase):
         self.calc.add_quest_spirit("Quest", 100)
 
         self.calc.add_reservation("Purity of Fire", 30, SpiritReservationType.AURA)
-        self.calc.add_reservation("Raise Zombie", 25, SpiritReservationType.PERMANENT_MINION,
-                                 support_gems=[("Minion Damage", 1.5)])
+        self.calc.add_reservation(
+            "Raise Zombie",
+            25,
+            SpiritReservationType.PERMANENT_MINION,
+            support_gems=[("Minion Damage", 1.5)],
+        )
 
         # 30 + 38 = 68
         self.assertEqual(self.calc.get_spirit_reserved(), 68)
@@ -352,12 +335,12 @@ class TestSpiritCalculator(unittest.TestCase):
         self.calc.add_reservation("Purity of Fire", 30, SpiritReservationType.AURA)
 
         summary = self.calc.get_spirit_summary()
-        self.assertEqual(summary['maximum_spirit'], 150)
-        self.assertEqual(summary['reserved_spirit'], 30)
-        self.assertEqual(summary['available_spirit'], 120)
-        self.assertFalse(summary['is_overflowing'])
-        self.assertEqual(summary['overflow_amount'], 0)
-        self.assertEqual(summary['active_reservations'], 1)
+        self.assertEqual(summary["maximum_spirit"], 150)
+        self.assertEqual(summary["reserved_spirit"], 30)
+        self.assertEqual(summary["available_spirit"], 120)
+        self.assertFalse(summary["is_overflowing"])
+        self.assertEqual(summary["overflow_amount"], 0)
+        self.assertEqual(summary["active_reservations"], 1)
 
     def test_auto_resolve_overflow(self):
         """Test automatic overflow resolution."""
@@ -382,7 +365,7 @@ class TestSpiritCalculator(unittest.TestCase):
             25,
             SpiritReservationType.PERMANENT_MINION,
             support_gems=[("Minion Damage", 1.5), ("Minion Life", 1.3)],
-            priority=5
+            priority=5,
         )
         self.calc.add_reservation("Purity of Fire", 80, SpiritReservationType.AURA, priority=8)
 
@@ -391,10 +374,7 @@ class TestSpiritCalculator(unittest.TestCase):
 
         # First suggestion should save the most Spirit
         if len(suggestions) > 1:
-            self.assertGreaterEqual(
-                suggestions[0].spirit_saved,
-                suggestions[1].spirit_saved
-            )
+            self.assertGreaterEqual(suggestions[0].spirit_saved, suggestions[1].spirit_saved)
 
     def test_suggest_optimal_configuration(self):
         """Test optimal configuration suggestion."""
@@ -404,9 +384,9 @@ class TestSpiritCalculator(unittest.TestCase):
         self.calc.add_reservation("Res3", 40, SpiritReservationType.AURA, priority=9)
 
         optimal = self.calc.suggest_optimal_configuration()
-        self.assertEqual(optimal['maximum_spirit'], 100)
-        self.assertLessEqual(optimal['optimal_spirit_used'], 100)
-        self.assertGreaterEqual(len(optimal['enabled_reservations']), 2)
+        self.assertEqual(optimal["maximum_spirit"], 100)
+        self.assertLessEqual(optimal["optimal_spirit_used"], 100)
+        self.assertGreaterEqual(len(optimal["enabled_reservations"]), 2)
 
     def test_validate_configuration_valid(self):
         """Test validation of valid configuration."""
@@ -441,14 +421,14 @@ class TestSpiritCalculator(unittest.TestCase):
             "Raise Zombie",
             25,
             SpiritReservationType.PERMANENT_MINION,
-            support_gems=[("Minion Damage", 1.5)]
+            support_gems=[("Minion Damage", 1.5)],
         )
 
         # Export
         config = self.calc.export_configuration()
-        self.assertIn('sources', config)
-        self.assertIn('reservations', config)
-        self.assertIn('summary', config)
+        self.assertIn("sources", config)
+        self.assertIn("reservations", config)
+        self.assertIn("summary", config)
 
         # Import to new calculator
         calc2 = SpiritCalculator()
@@ -476,11 +456,7 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_find_optimal_support_combinations(self):
         """Test finding optimal support combinations."""
-        available_supports = [
-            ("Support1", 1.5),
-            ("Support2", 1.3),
-            ("Support3", 1.2)
-        ]
+        available_supports = [("Support1", 1.5), ("Support2", 1.3), ("Support3", 1.2)]
 
         combos = find_optimal_support_combinations(20, available_supports, 40)
 
@@ -496,5 +472,5 @@ class TestHelperFunctions(unittest.TestCase):
             self.assertGreaterEqual(combos[0][1], combos[1][1])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

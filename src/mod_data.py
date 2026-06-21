@@ -63,12 +63,14 @@ def iter_resolved_stats(
         sid = resolve_stat_id(s, stat_lookup)
         if sid is None:
             continue
-        out.append({
-            "stat_id": sid,
-            "min_value": s.get("min_value", 0),
-            "max_value": s.get("max_value", 0),
-            "from_inline": bool(s.get("stat_id")),
-        })
+        out.append(
+            {
+                "stat_id": sid,
+                "min_value": s.get("min_value", 0),
+                "max_value": s.get("max_value", 0),
+                "from_inline": bool(s.get("stat_id")),
+            }
+        )
     return out
 
 

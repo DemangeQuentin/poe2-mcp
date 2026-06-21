@@ -19,6 +19,7 @@ OutputFormat = Literal["markdown", "compact"]
 @dataclass
 class PaginationMeta:
     """Pagination metadata for list responses"""
+
     total: int
     limit: int
     offset: int
@@ -34,7 +35,7 @@ class PaginationMeta:
             "limit": self.limit,
             "offset": self.offset,
             "showing": self.showing,
-            "has_more": self.has_more
+            "has_more": self.has_more,
         }
 
 
@@ -47,42 +48,34 @@ FIELD_ABBREVIATIONS = {
     "level": "lvl",
     "level_requirement": "lvl",
     "required_level": "lvl",
-
     # Spirit/Mana
     "spirit_cost": "sc",
     "mana_cost": "mc",
-
     # Tags
     "tags": "tg",
-
     # Effects
     "effects": "fx",
     "effect_summary": "fx",
-
     # Stats
     "stats": "st",
     "base_damage": "bd",
     "cast_time": "ct",
-
     # Items
     "item_class": "cls",
     "base_type": "bt",
     "drop_level": "dl",
-
     # Mods
     "mod_id": "id",
     "generation_type": "gt",
     "generation_type_name": "gtn",
     "min_value": "min",
     "max_value": "max",
-
     # Passive nodes
     "node_id": "id",
     "is_keystone": "ks",
     "is_notable": "nt",
     "is_mastery": "ms",
     "ascendancy_name": "asc",
-
     # Character
     "class": "cls",
     "ascendancy": "asc",
@@ -103,10 +96,7 @@ ABBREVIATION_TO_FIELD = {v: k for k, v in FIELD_ABBREVIATIONS.items()}
 def abbreviate_keys(data: Any) -> Any:
     """Recursively abbreviate dictionary keys for compact output"""
     if isinstance(data, dict):
-        return {
-            FIELD_ABBREVIATIONS.get(k, k): abbreviate_keys(v)
-            for k, v in data.items()
-        }
+        return {FIELD_ABBREVIATIONS.get(k, k): abbreviate_keys(v) for k, v in data.items()}
     elif isinstance(data, list):
         return [abbreviate_keys(item) for item in data]
     return data
@@ -115,7 +105,7 @@ def abbreviate_keys(data: Any) -> Any:
 def compact_json(data: Any, include_legend: bool = False) -> str:
     """Format data as compact JSON with abbreviated keys"""
     abbreviated = abbreviate_keys(data)
-    result = json.dumps(abbreviated, separators=(',', ':'))
+    result = json.dumps(abbreviated, separators=(",", ":"))
 
     if include_legend:
         # Add legend on first use
@@ -126,10 +116,10 @@ def compact_json(data: Any, include_legend: bool = False) -> str:
                 "lvl": "level",
                 "sc": "spirit_cost",
                 "tg": "tags",
-                "fx": "effects"
+                "fx": "effects",
             }
         }
-        result = json.dumps({**legend, **abbreviated}, separators=(',', ':'))
+        result = json.dumps({**legend, **abbreviated}, separators=(",", ":"))
 
     return result
 
@@ -152,7 +142,7 @@ def format_list_response(
     meta: PaginationMeta,
     title: str,
     format: OutputFormat = "markdown",
-    item_formatter: Optional[callable] = None
+    item_formatter: Optional[callable] = None,
 ) -> str:
     """
     Format a list response with pagination.
@@ -165,10 +155,7 @@ def format_list_response(
         item_formatter: Optional function to format each item for markdown
     """
     if format == "compact":
-        return compact_json({
-            "results": items,
-            "meta": meta.to_dict()
-        })
+        return compact_json({"results": items, "meta": meta.to_dict()})
 
     # Markdown format
     response = f"# {title} ({meta.showing} of {meta.total})\n"
@@ -184,7 +171,7 @@ def format_list_response(
     else:
         # Default formatting
         for item in items:
-            name = item.get('name') or item.get('display_name') or item.get('mod_id', 'Unknown')
+            name = item.get("name") or item.get("display_name") or item.get("mod_id", "Unknown")
             response += f"- {name}\n"
 
     return response
@@ -194,35 +181,37 @@ def format_list_response(
 SUPPORT_GEM_FIELDS = {
     "summary": ["name", "tier"],
     "standard": ["name", "tier", "tags", "spirit_cost", "effect_summary"],
-    "full": None  # All fields
+    "full": None,  # All fields
 }
 
 SPELL_GEM_FIELDS = {
     "summary": ["name", "element"],
     "standard": ["name", "element", "base_multiplier", "cast_time", "mana_cost", "tags"],
-    "full": None  # All fields
+    "full": None,  # All fields
 }
 
 MOD_FIELDS = {
     "summary": ["mod_id", "generation_type_name"],
     "standard": ["mod_id", "generation_type_name", "level_requirement", "min_value", "max_value"],
-    "full": None  # All fields
+    "full": None,  # All fields
 }
 
 KEYSTONE_FIELDS = {
     "summary": ["name"],
     "standard": ["name", "stats", "ascendancy_name"],
-    "full": None  # All fields
+    "full": None,  # All fields
 }
 
 BASE_ITEM_FIELDS = {
     "summary": ["name", "item_class"],
     "standard": ["name", "item_class", "drop_level", "tags"],
-    "full": None  # All fields
+    "full": None,  # All fields
 }
 
 
-def filter_fields(item: Dict[str, Any], detail: DetailLevel, field_mapping: Dict[str, List[str]]) -> Dict[str, Any]:
+def filter_fields(
+    item: Dict[str, Any], detail: DetailLevel, field_mapping: Dict[str, List[str]]
+) -> Dict[str, Any]:
     """Filter item fields based on detail level"""
     fields = field_mapping.get(detail)
     if fields is None:  # full detail = all fields
@@ -231,9 +220,7 @@ def filter_fields(item: Dict[str, Any], detail: DetailLevel, field_mapping: Dict
 
 
 def filter_items_by_detail(
-    items: List[Dict[str, Any]],
-    detail: DetailLevel,
-    field_mapping: Dict[str, List[str]]
+    items: List[Dict[str, Any]], detail: DetailLevel, field_mapping: Dict[str, List[str]]
 ) -> List[Dict[str, Any]]:
     """Filter all items to specified detail level"""
     return [filter_fields(item, detail, field_mapping) for item in items]
@@ -248,7 +235,7 @@ CHARACTER_SECTIONS = {
     "passives": ["passive_tree"],
     "skills": ["skill_gems", "links"],
     "recommendations": ["ai_recommendations"],
-    "all": None  # All sections
+    "all": None,  # All sections
 }
 
 

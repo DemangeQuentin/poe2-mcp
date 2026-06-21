@@ -27,19 +27,14 @@ class PoEAPIClient:
     def __init__(
         self,
         cache_manager: Optional[CacheManager] = None,
-        rate_limiter: Optional[RateLimiter] = None
+        rate_limiter: Optional[RateLimiter] = None,
     ):
         self.base_url = settings.POE_OFFICIAL_API
         self.cache_manager = cache_manager
-        self.rate_limiter = rate_limiter or RateLimiter(
-            rate_limit=settings.POE_API_RATE_LIMIT
-        )
+        self.rate_limiter = rate_limiter or RateLimiter(rate_limit=settings.POE_API_RATE_LIMIT)
 
         self.client = httpx.AsyncClient(
-            timeout=settings.REQUEST_TIMEOUT,
-            headers={
-                "User-Agent": "PoE2-Build-Optimizer/1.0"
-            }
+            timeout=settings.REQUEST_TIMEOUT, headers={"User-Agent": "PoE2-Build-Optimizer/1.0"}
         )
 
         self.oauth_token: Optional[str] = None
@@ -60,9 +55,7 @@ class PoEAPIClient:
         # For now, we'll use public API endpoints that don't require auth
 
     async def get_character(
-        self,
-        account_name: str,
-        character_name: str
+        self, account_name: str, character_name: str
     ) -> Optional[Dict[str, Any]]:
         """
         Fetch character data from the official API
@@ -100,11 +93,7 @@ class PoEAPIClient:
 
             # Cache the result
             if self.cache_manager:
-                await self.cache_manager.set(
-                    cache_key,
-                    character_data,
-                    ttl=settings.CACHE_TTL
-                )
+                await self.cache_manager.set(cache_key, character_data, ttl=settings.CACHE_TTL)
 
             logger.info(f"Successfully fetched character {character_name}")
             return character_data
@@ -122,10 +111,7 @@ class PoEAPIClient:
             logger.error(f"Error fetching character {character_name}: {e}")
             return None
 
-    async def get_account_characters(
-        self,
-        account_name: str
-    ) -> List[Dict[str, Any]]:
+    async def get_account_characters(self, account_name: str) -> List[Dict[str, Any]]:
         """
         Fetch all characters for an account
 
@@ -157,11 +143,7 @@ class PoEAPIClient:
 
             # Cache the result
             if self.cache_manager:
-                await self.cache_manager.set(
-                    cache_key,
-                    characters,
-                    ttl=settings.CACHE_TTL
-                )
+                await self.cache_manager.set(cache_key, characters, ttl=settings.CACHE_TTL)
 
             return characters
 
@@ -194,11 +176,7 @@ class PoEAPIClient:
 
             # Cache for 24 hours (passive tree rarely changes)
             if self.cache_manager:
-                await self.cache_manager.set(
-                    cache_key,
-                    tree_data,
-                    ttl=86400
-                )
+                await self.cache_manager.set(cache_key, tree_data, ttl=86400)
 
             return tree_data
 
@@ -229,11 +207,7 @@ class PoEAPIClient:
 
             # Cache for 24 hours
             if self.cache_manager:
-                await self.cache_manager.set(
-                    cache_key,
-                    items_data,
-                    ttl=86400
-                )
+                await self.cache_manager.set(cache_key, items_data, ttl=86400)
 
             return items_data
 

@@ -7,6 +7,7 @@ Formula anchors come straight from the local knowledge base
   - Poison: 20%/s of phys+chaos, 2s, stack limit ("1500 -> 300/s/stack")
   - Bleed: 15%/s of phys, 5s; 30%/s moving ("2000 phys -> 300 / 600")
 """
+
 from __future__ import annotations
 
 import sys
@@ -34,6 +35,7 @@ calc = DoTCalculator()
 # ---------------------------------------------------------------------------
 # Knowledge-base anchor values
 # ---------------------------------------------------------------------------
+
 
 def test_ignite_knowledge_base_example():
     """1500 fire hit -> 300/s ignite (20%), 4s duration."""
@@ -102,6 +104,7 @@ def test_bleed_aggravated_counts_as_moving():
 # ---------------------------------------------------------------------------
 # Modifier and mitigation layers
 # ---------------------------------------------------------------------------
+
 
 def test_increased_and_more_stack_correctly():
     """+50% increased and [20, 25] more: 300 x 1.5 x 1.2 x 1.25 = 675."""
@@ -215,6 +218,7 @@ def test_unknown_ailment_returns_error():
 # Skill DoT (Essence Drain style)
 # ---------------------------------------------------------------------------
 
+
 def test_skill_dot_basic():
     r = calc.calculate_skill_dot(SkillDoTInput(base_dps=500.0))
     assert r["sustained_dps"] == 500.0
@@ -252,6 +256,7 @@ def test_skill_dot_fire_uses_fire_resistance():
 # Combination
 # ---------------------------------------------------------------------------
 
+
 def test_combine_totals():
     ailments = [
         calc.calculate_ailment_dot(
@@ -278,6 +283,7 @@ def test_combine_without_skill_dot():
 # ---------------------------------------------------------------------------
 # Hit-by-type attribution helper
 # ---------------------------------------------------------------------------
+
 
 def test_split_attributes_base_to_primary_and_added_to_own_types():
     """Base 100 fire + added 50 chaos (eff 1.0), expected hit 300 ->
@@ -314,6 +320,7 @@ def test_split_empty_when_nothing_to_attribute():
 # Rules sanity — lock the PoE2 constants against accidental edits
 # ---------------------------------------------------------------------------
 
+
 def test_ailment_rule_constants_match_knowledge_base():
     assert AILMENT_RULES["ignite"].hit_fraction == 0.20
     assert AILMENT_RULES["ignite"].base_duration == 4.0
@@ -329,6 +336,7 @@ def test_ailment_rule_constants_match_knowledge_base():
 # Handler integration — the `dot` block on calculate_character_dps
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_handler_dot_block_end_to_end():
     """calculate_character_dps with a dot block renders the DoT section
@@ -336,19 +344,21 @@ async def test_handler_dot_block_end_to_end():
     from src.mcp_server import PoE2BuildOptimizerMCP
 
     server = PoE2BuildOptimizerMCP()
-    result = await server._handle_calculate_character_dps({
-        "spell_stats": {
-            "name": "DoT Test Spell",
-            "base_damage_min": 100,
-            "base_damage_max": 200,
-            "base_cast_time": 1.0,
-            "damage_types": ["fire"],
-        },
-        "dot": {
-            "ailments": [{"type": "ignite", "chance": 100}],
-            "skill_dot": {"base_dps": 250, "damage_type": "chaos"},
-        },
-    })
+    result = await server._handle_calculate_character_dps(
+        {
+            "spell_stats": {
+                "name": "DoT Test Spell",
+                "base_damage_min": 100,
+                "base_damage_max": 200,
+                "base_cast_time": 1.0,
+                "damage_types": ["fire"],
+            },
+            "dot": {
+                "ailments": [{"type": "ignite", "chance": 100}],
+                "skill_dot": {"base_dps": 250, "damage_type": "chaos"},
+            },
+        }
+    )
     text = result[0].text
     assert "Damage over Time" in text
     assert "Ignite" in text
@@ -362,15 +372,17 @@ async def test_handler_without_dot_block_unchanged():
     from src.mcp_server import PoE2BuildOptimizerMCP
 
     server = PoE2BuildOptimizerMCP()
-    result = await server._handle_calculate_character_dps({
-        "spell_stats": {
-            "name": "Plain Spell",
-            "base_damage_min": 100,
-            "base_damage_max": 200,
-            "base_cast_time": 1.0,
-            "damage_types": ["fire"],
-        },
-    })
+    result = await server._handle_calculate_character_dps(
+        {
+            "spell_stats": {
+                "name": "Plain Spell",
+                "base_damage_min": 100,
+                "base_damage_max": 200,
+                "base_cast_time": 1.0,
+                "damage_types": ["fire"],
+            },
+        }
+    )
     text = result[0].text
     assert "Damage over Time" not in text
     assert "Total DPS" in text

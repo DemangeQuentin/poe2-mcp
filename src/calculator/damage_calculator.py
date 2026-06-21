@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 class DamageType(Enum):
     """Enumeration of damage types in Path of Exile 2."""
+
     PHYSICAL = "physical"
     FIRE = "fire"
     COLD = "cold"
@@ -35,6 +36,7 @@ class DamageType(Enum):
 
 class ModifierType(Enum):
     """Enumeration of modifier types."""
+
     INCREASED = "increased"  # Additive
     MORE = "more"  # Multiplicative
     REDUCED = "reduced"  # Negative increased (additive)
@@ -57,6 +59,7 @@ class DamageRange:
         >>> damage.is_valid()
         True
     """
+
     min_damage: float
     max_damage: float
 
@@ -91,13 +94,9 @@ class DamageRange:
         Returns:
             True if valid, False otherwise
         """
-        return (
-            self.min_damage >= 0 and
-            self.max_damage >= 0 and
-            self.min_damage <= self.max_damage
-        )
+        return self.min_damage >= 0 and self.max_damage >= 0 and self.min_damage <= self.max_damage
 
-    def scale(self, multiplier: float) -> 'DamageRange':
+    def scale(self, multiplier: float) -> "DamageRange":
         """
         Scale the damage range by a multiplier.
 
@@ -112,8 +111,7 @@ class DamageRange:
             DamageRange(min_damage=20.0, max_damage=40.0)
         """
         return DamageRange(
-            min_damage=self.min_damage * multiplier,
-            max_damage=self.max_damage * multiplier
+            min_damage=self.min_damage * multiplier, max_damage=self.max_damage * multiplier
         )
 
 
@@ -132,6 +130,7 @@ class Modifier:
         >>> mod.get_multiplier()
         0.5
     """
+
     value: float
     modifier_type: ModifierType
     source: Optional[str] = None
@@ -171,6 +170,7 @@ class DamageComponents:
         >>> components.total_average_damage()
         187.5
     """
+
     damage_by_type: Dict[DamageType, DamageRange] = field(default_factory=dict)
 
     def total_average_damage(self) -> float:
@@ -214,7 +214,7 @@ class DamageComponents:
             existing = self.damage_by_type[damage_type]
             self.damage_by_type[damage_type] = DamageRange(
                 min_damage=existing.min_damage + damage_range.min_damage,
-                max_damage=existing.max_damage + damage_range.max_damage
+                max_damage=existing.max_damage + damage_range.max_damage,
             )
         else:
             self.damage_by_type[damage_type] = damage_range
@@ -234,6 +234,7 @@ class CriticalStrikeConfig:
         >>> config.effective_damage_multiplier()
         1.75
     """
+
     crit_chance: float = 0.0
     crit_multiplier: float = 100.0  # PoE2 default: +100% damage on crit
 
@@ -297,7 +298,7 @@ class DamageCalculator:
         self,
         weapon_damage: Optional[DamageRange] = None,
         spell_base_damage: Optional[DamageRange] = None,
-        added_flat_damage: Optional[List[Tuple[DamageType, DamageRange]]] = None
+        added_flat_damage: Optional[List[Tuple[DamageType, DamageRange]]] = None,
     ) -> DamageComponents:
         """
         Calculate base damage from weapon or spell with added flat damage.
@@ -343,11 +344,7 @@ class DamageCalculator:
 
         return components
 
-    def apply_increased_modifiers(
-        self,
-        base_value: float,
-        modifiers: List[Modifier]
-    ) -> float:
+    def apply_increased_modifiers(self, base_value: float, modifiers: List[Modifier]) -> float:
         """
         Apply increased/reduced modifiers (additive).
 
@@ -376,7 +373,8 @@ class DamageCalculator:
         """
         # Filter only increased/reduced modifiers
         relevant_mods = [
-            m for m in modifiers
+            m
+            for m in modifiers
             if m.modifier_type in (ModifierType.INCREASED, ModifierType.REDUCED)
         ]
 
@@ -393,11 +391,7 @@ class DamageCalculator:
 
         return result
 
-    def apply_more_modifiers(
-        self,
-        base_value: float,
-        modifiers: List[Modifier]
-    ) -> float:
+    def apply_more_modifiers(self, base_value: float, modifiers: List[Modifier]) -> float:
         """
         Apply more/less modifiers (multiplicative).
 
@@ -425,8 +419,7 @@ class DamageCalculator:
         """
         # Filter only more/less modifiers
         relevant_mods = [
-            m for m in modifiers
-            if m.modifier_type in (ModifierType.MORE, ModifierType.LESS)
+            m for m in modifiers if m.modifier_type in (ModifierType.MORE, ModifierType.LESS)
         ]
 
         # Apply each more/less modifier multiplicatively
@@ -447,9 +440,7 @@ class DamageCalculator:
         return result
 
     def apply_damage_conversion(
-        self,
-        components: DamageComponents,
-        conversions: Dict[DamageType, Dict[DamageType, float]]
+        self, components: DamageComponents, conversions: Dict[DamageType, Dict[DamageType, float]]
     ) -> DamageComponents:
         """
         Apply damage conversion between types.
@@ -509,7 +500,7 @@ class DamageCalculator:
         self,
         base_damage: DamageRange,
         increased_modifiers: Optional[List[Modifier]] = None,
-        more_modifiers: Optional[List[Modifier]] = None
+        more_modifiers: Optional[List[Modifier]] = None,
     ) -> DamageRange:
         """
         Calculate final damage after applying all modifiers.
@@ -541,12 +532,10 @@ class DamageCalculator:
 
         # Apply increased modifiers to min and max
         min_after_increased = self.apply_increased_modifiers(
-            base_damage.min_damage,
-            increased_modifiers
+            base_damage.min_damage, increased_modifiers
         )
         max_after_increased = self.apply_increased_modifiers(
-            base_damage.max_damage,
-            increased_modifiers
+            base_damage.max_damage, increased_modifiers
         )
 
         # Apply more modifiers to min and max
@@ -556,9 +545,7 @@ class DamageCalculator:
         return DamageRange(min_damage=final_min, max_damage=final_max)
 
     def calculate_critical_damage(
-        self,
-        base_damage: DamageRange,
-        crit_config: CriticalStrikeConfig
+        self, base_damage: DamageRange, crit_config: CriticalStrikeConfig
     ) -> DamageRange:
         """
         Calculate damage with critical strike multiplier applied.
@@ -593,9 +580,7 @@ class DamageCalculator:
         return base_damage.scale(multiplier)
 
     def calculate_attack_speed(
-        self,
-        base_attack_time: float,
-        increased_speed_modifiers: List[Modifier]
+        self, base_attack_time: float, increased_speed_modifiers: List[Modifier]
     ) -> float:
         """
         Calculate attacks per second from base attack time and modifiers.
@@ -628,16 +613,12 @@ class DamageCalculator:
         # Apply increased attack speed modifiers
         final_aps = self.apply_increased_modifiers(base_aps, increased_speed_modifiers)
 
-        logger.debug(
-            f"Attack speed: {base_attack_time}s base -> {final_aps:.2f} attacks/sec"
-        )
+        logger.debug(f"Attack speed: {base_attack_time}s base -> {final_aps:.2f} attacks/sec")
 
         return final_aps
 
     def calculate_cast_speed(
-        self,
-        base_cast_time: float,
-        increased_speed_modifiers: List[Modifier]
+        self, base_cast_time: float, increased_speed_modifiers: List[Modifier]
     ) -> float:
         """
         Calculate casts per second from base cast time and modifiers.
@@ -670,9 +651,7 @@ class DamageCalculator:
         # Apply increased cast speed modifiers
         final_cps = self.apply_increased_modifiers(base_cps, increased_speed_modifiers)
 
-        logger.debug(
-            f"Cast speed: {base_cast_time}s base -> {final_cps:.2f} casts/sec"
-        )
+        logger.debug(f"Cast speed: {base_cast_time}s base -> {final_cps:.2f} casts/sec")
 
         return final_cps
 
@@ -680,7 +659,7 @@ class DamageCalculator:
         self,
         damage_per_hit: DamageRange,
         actions_per_second: float,
-        crit_config: Optional[CriticalStrikeConfig] = None
+        crit_config: Optional[CriticalStrikeConfig] = None,
     ) -> float:
         """
         Calculate damage per second (DPS).
@@ -728,7 +707,7 @@ class DamageCalculator:
         base_action_time: float = 1.0,
         increased_speed_modifiers: Optional[List[Modifier]] = None,
         crit_config: Optional[CriticalStrikeConfig] = None,
-        is_spell: bool = False
+        is_spell: bool = False,
     ) -> Dict[str, Union[float, DamageComponents]]:
         """
         Calculate complete DPS with all modifiers for all damage types.
@@ -772,13 +751,11 @@ class DamageCalculator:
         # Calculate action speed
         if is_spell:
             actions_per_second = self.calculate_cast_speed(
-                base_action_time,
-                increased_speed_modifiers
+                base_action_time, increased_speed_modifiers
             )
         else:
             actions_per_second = self.calculate_attack_speed(
-                base_action_time,
-                increased_speed_modifiers
+                base_action_time, increased_speed_modifiers
             )
 
         # Process each damage type
@@ -789,9 +766,7 @@ class DamageCalculator:
         for damage_type, damage_range in base_damage_components.damage_by_type.items():
             # Apply damage modifiers
             final_damage = self.calculate_final_damage(
-                damage_range,
-                increased_damage_modifiers,
-                more_damage_modifiers
+                damage_range, increased_damage_modifiers, more_damage_modifiers
             )
 
             final_components.add_damage(damage_type, final_damage)
@@ -801,15 +776,13 @@ class DamageCalculator:
             dps_by_type[damage_type.value] = type_dps
             total_dps += type_dps
 
-            logger.debug(
-                f"{damage_type.value.capitalize()} DPS: {type_dps:.2f}"
-            )
+            logger.debug(f"{damage_type.value.capitalize()} DPS: {type_dps:.2f}")
 
         result = {
-            'total_dps': total_dps,
-            'dps_by_type': dps_by_type,
-            'final_damage': final_components,
-            'actions_per_second': actions_per_second
+            "total_dps": total_dps,
+            "dps_by_type": dps_by_type,
+            "final_damage": final_components,
+            "actions_per_second": actions_per_second,
         }
 
         logger.info(f"Total DPS: {total_dps:.2f}")
@@ -819,12 +792,13 @@ class DamageCalculator:
 
 # Convenience functions for quick calculations
 
+
 def quick_dps_calculation(
     min_damage: float,
     max_damage: float,
     attacks_per_second: float,
     crit_chance: float = 0.0,
-    crit_multiplier: float = 100.0
+    crit_multiplier: float = 100.0,
 ) -> float:
     """
     Quick DPS calculation without creating full objects.
@@ -893,11 +867,9 @@ if __name__ == "__main__":
     weapon_damage = DamageRange(50, 100)
     increased_mods = [
         Modifier(50, ModifierType.INCREASED, "Passive Tree"),
-        Modifier(30, ModifierType.INCREASED, "Gear")
+        Modifier(30, ModifierType.INCREASED, "Gear"),
     ]
-    more_mods = [
-        Modifier(40, ModifierType.MORE, "Support Gem")
-    ]
+    more_mods = [Modifier(40, ModifierType.MORE, "Support Gem")]
 
     final_damage = calc.calculate_final_damage(weapon_damage, increased_mods, more_mods)
     print(f"Base damage: {weapon_damage.min_damage}-{weapon_damage.max_damage}")
@@ -917,15 +889,9 @@ if __name__ == "__main__":
 
     # Example 3: Multi-damage type with conversion
     print("Example 3: Damage Conversion")
-    base_components = DamageComponents({
-        DamageType.PHYSICAL: DamageRange(100, 200)
-    })
+    base_components = DamageComponents({DamageType.PHYSICAL: DamageRange(100, 200)})
 
-    conversions = {
-        DamageType.PHYSICAL: {
-            DamageType.FIRE: 50  # Convert 50% physical to fire
-        }
-    }
+    conversions = {DamageType.PHYSICAL: {DamageType.FIRE: 50}}  # Convert 50% physical to fire
 
     converted = calc.apply_damage_conversion(base_components, conversions)
     print("After 50% physical to fire conversion:")
@@ -939,28 +905,22 @@ if __name__ == "__main__":
         weapon_damage=DamageRange(80, 150),
         added_flat_damage=[
             (DamageType.FIRE, DamageRange(20, 30)),
-            (DamageType.LIGHTNING, DamageRange(10, 40))
-        ]
+            (DamageType.LIGHTNING, DamageRange(10, 40)),
+        ],
     )
 
     result = calc.calculate_full_dps(
         base_damage_components=base_components,
-        increased_damage_modifiers=[
-            Modifier(100, ModifierType.INCREASED, "Tree + Gear")
-        ],
-        more_damage_modifiers=[
-            Modifier(50, ModifierType.MORE, "Support Gems")
-        ],
+        increased_damage_modifiers=[Modifier(100, ModifierType.INCREASED, "Tree + Gear")],
+        more_damage_modifiers=[Modifier(50, ModifierType.MORE, "Support Gems")],
         base_action_time=1.2,
-        increased_speed_modifiers=[
-            Modifier(40, ModifierType.INCREASED, "Attack Speed")
-        ],
+        increased_speed_modifiers=[Modifier(40, ModifierType.INCREASED, "Attack Speed")],
         crit_config=CriticalStrikeConfig(60, 120),
-        is_spell=False
+        is_spell=False,
     )
 
     print(f"Total DPS: {result['total_dps']:.2f}")
     print(f"Actions per second: {result['actions_per_second']:.2f}")
     print("DPS by type:")
-    for damage_type, dps_value in result['dps_by_type'].items():
+    for damage_type, dps_value in result["dps_by_type"].items():
         print(f"  {damage_type.capitalize()}: {dps_value:.2f}")

@@ -7,6 +7,7 @@ Tests for the post-#164 issue batch:
   #154 — reconcile_defensive_stats handler was never registered
   #149 — analyze_character response exposes raw passive_node_ids
 """
+
 from __future__ import annotations
 
 import sys
@@ -30,9 +31,7 @@ async def mcp():
 
 
 async def _validate(mcp_instance, character_data):
-    r = await mcp_instance._handle_validate_build_constraints(
-        {"character_data": character_data}
-    )
+    r = await mcp_instance._handle_validate_build_constraints({"character_data": character_data})
     return r[0].text
 
 
@@ -40,18 +39,22 @@ async def _validate(mcp_instance, character_data):
 # #152 — resistance schema shapes
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_flat_resistance_shape_parsed(mcp):
     """The exact flat shape from the #152 repro must be read, not zeroed."""
-    text = await _validate(mcp, {
-        "fire_resistance": -24,
-        "cold_resistance": -38,
-        "lightning_resistance": 0,
-        "chaos_resistance": 19,
-        "life_plus_es": 1199,
-        "level": 59,
-    })
-    assert "-24%" in text            # the actual value, not 0
+    text = await _validate(
+        mcp,
+        {
+            "fire_resistance": -24,
+            "cold_resistance": -38,
+            "lightning_resistance": 0,
+            "chaos_resistance": 19,
+            "life_plus_es": 1199,
+            "level": 59,
+        },
+    )
+    assert "-24%" in text  # the actual value, not 0
     assert "-38%" in text
     assert "Fire Res (not provided)" not in text
     assert "Skipped" not in text or "Res (not provided)" not in text
@@ -60,12 +63,15 @@ async def test_flat_resistance_shape_parsed(mcp):
 @pytest.mark.asyncio
 async def test_nested_resistance_shape_parsed(mcp):
     """The nested shape from the #152 repro must also be read."""
-    text = await _validate(mcp, {
-        "resistances": {"fire": -24, "cold": 80, "lightning": 95},
-        "level": 59,
-    })
-    assert "-24%" in text            # fire below cap, real value shown
-    assert "95%" in text             # lightning over 90 hard cap
+    text = await _validate(
+        mcp,
+        {
+            "resistances": {"fire": -24, "cold": 80, "lightning": 95},
+            "level": 59,
+        },
+    )
+    assert "-24%" in text  # fire below cap, real value shown
+    assert "95%" in text  # lightning over 90 hard cap
     assert "exceeds hard cap" in text
 
 
@@ -82,7 +88,7 @@ async def test_absent_resistances_skipped_not_zeroed(mcp):
     text = await _validate(mcp, {"life": 2000, "level": 30})
     assert "Fire Res (not provided)" in text
     assert "Cold Res (not provided)" in text
-    assert "0%" not in text          # nothing validated as zero
+    assert "0%" not in text  # nothing validated as zero
 
 
 @pytest.mark.asyncio
@@ -98,27 +104,36 @@ async def test_chaos_res_only_floor_checked(mcp):
 # #153 — null tolerance
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_explicit_nulls_do_not_crash(mcp):
     """The exact failure shape from the #153 repro: explicit nulls."""
-    text = await _validate(mcp, {
-        "level": 59,
-        "spirit": None,
-        "mana_reservation": None,
-        "fire_resistance": None,
-        "life": None,
-    })
+    text = await _validate(
+        mcp,
+        {
+            "level": 59,
+            "spirit": None,
+            "mana_reservation": None,
+            "fire_resistance": None,
+            "life": None,
+        },
+    )
     assert "TypeError" not in text
     assert "Error:" not in text
-    assert "Spirit allocation" in text       # reported skipped
+    assert "Spirit allocation" in text  # reported skipped
     assert "(not provided)" in text
 
 
 @pytest.mark.asyncio
 async def test_spirit_overflow_still_detected(mcp):
-    text = await _validate(mcp, {
-        "spirit": 100, "spirit_reserved": 130, "level": 50,
-    })
+    text = await _validate(
+        mcp,
+        {
+            "spirit": 100,
+            "spirit_reserved": 130,
+            "level": 50,
+        },
+    )
     assert "Spirit overflow" in text
 
 
@@ -142,6 +157,7 @@ async def test_numeric_strings_accepted(mcp):
 # #154 — reconcile_defensive_stats registration
 # ---------------------------------------------------------------------------
 
+
 def test_reconcile_tool_registered():
     """Registration + dispatch wiring exist in the server source (#154's
     whole complaint was the handler existing without either). Same
@@ -154,17 +170,24 @@ def test_reconcile_tool_registered():
 @pytest.mark.asyncio
 async def test_reconcile_handler_runs(mcp):
     """Handler wires to the #139 harness and renders the delta table."""
-    r = await mcp._handle_reconcile_defensive_stats({
-        "char_model": {
-            "name": "FixtureChar",
-            "defensiveStats": {
-                "life": 3000, "energyShield": 0, "armour": 10000,
-                "evasion": 0, "fireResistance": 75, "coldResistance": 75,
-                "lightningResistance": 75, "chaosResistance": 0,
-                "effectiveHealthPool": 9000,
-            },
+    r = await mcp._handle_reconcile_defensive_stats(
+        {
+            "char_model": {
+                "name": "FixtureChar",
+                "defensiveStats": {
+                    "life": 3000,
+                    "energyShield": 0,
+                    "armour": 10000,
+                    "evasion": 0,
+                    "fireResistance": 75,
+                    "coldResistance": 75,
+                    "lightningResistance": 75,
+                    "chaosResistance": 0,
+                    "effectiveHealthPool": 9000,
+                },
+            }
         }
-    })
+    )
     text = r[0].text
     assert "Defensive Stats Reconciliation" in text
     assert "Verdict" in text
@@ -181,6 +204,7 @@ async def test_reconcile_requires_char_model(mcp):
 # ---------------------------------------------------------------------------
 # #149 — passive_node_ids in the analyze_character response
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_passive_node_ids_rendered(mcp):
@@ -224,8 +248,12 @@ async def test_passive_node_ids_handles_pob_tree_dict(mcp):
 @pytest.mark.asyncio
 async def test_no_node_ids_no_section(mcp):
     character_data = {
-        "name": "Bare", "class": "Witch", "level": 1,
-        "passive_tree": [], "items": [], "skills": [],
+        "name": "Bare",
+        "class": "Witch",
+        "level": 1,
+        "passive_tree": [],
+        "items": [],
+        "skills": [],
     }
     text = mcp._format_character_analysis(
         character_data, analysis={}, recommendations="", passive_analysis=None
@@ -237,6 +265,7 @@ async def test_no_node_ids_no_section(mcp):
 # Regression: items with explicit slot: null (cached/older records) must not
 # crash the equipment formatter — .get('slot', default) does not cover None
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_equipment_formatter_tolerates_null_slot(mcp):
@@ -255,4 +284,4 @@ async def test_equipment_formatter_tolerates_null_slot(mcp):
         character_data, analysis={}, recommendations="", passive_analysis=None
     )
     assert "Real Wand" in text
-    assert "Mystery Item" in text   # rendered under Unknown, not crashed
+    assert "Mystery Item" in text  # rendered under Unknown, not crashed

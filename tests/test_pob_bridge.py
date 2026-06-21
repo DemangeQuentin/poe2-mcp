@@ -54,21 +54,50 @@ MOCK_RESPONSES = {
     "load_build": {"success": True, "name": "Mock Import", "note": "queued"},
     "set_main_skill_group": {"success": True, "main_socket_group": 7},
     "set_displayed_skill": {"success": True, "group": 6, "mainActiveSkill": 2},
-    "get_skill_parts": {"group": 6, "mainActiveSkill": 1,
-                         "skills": [{"index": 1, "name": "Cast on Minion Death", "is_main": True, "parts": []},
-                                    {"index": 2, "name": "Bitter Dead", "is_main": False, "parts": []}]},
-    "set_group_gems": {"success": True, "index": 7,
-                        "gems": [{"name": "Detonate Dead", "valid": True}]},
+    "get_skill_parts": {
+        "group": 6,
+        "mainActiveSkill": 1,
+        "skills": [
+            {"index": 1, "name": "Cast on Minion Death", "is_main": True, "parts": []},
+            {"index": 2, "name": "Bitter Dead", "is_main": False, "parts": []},
+        ],
+    },
+    "set_group_gems": {
+        "success": True,
+        "index": 7,
+        "gems": [{"name": "Detonate Dead", "valid": True}],
+    },
     "set_config_input": {"success": True, "key": "detonateDeadCorpseLife", "value": 34963},
     "get_output": {"TotalDPS": 56530.0, "AverageDamage": 60299.0},
-    "get_stat_breakdown": {"stat": "Life", "found": True,
-                            "lines": ["1915 (base)", "x 1.05 (increased)", "= 1910"]},
-    "list_config_options": {"count": 1,
-                             "options": [{"var": "detonateDeadCorpseLife", "type": "count",
-                                          "label": "Enemy Corpse Life:", "value": 34963}]},
-    "search_tree_nodes": {"count": 1,
-                           "nodes": [{"id": 51184, "name": "Raw Destruction", "reachable": True,
-                                      "allocated": False, "distance": 3, "stats": ["16% increased Spell Damage"]}]},
+    "get_stat_breakdown": {
+        "stat": "Life",
+        "found": True,
+        "lines": ["1915 (base)", "x 1.05 (increased)", "= 1910"],
+    },
+    "list_config_options": {
+        "count": 1,
+        "options": [
+            {
+                "var": "detonateDeadCorpseLife",
+                "type": "count",
+                "label": "Enemy Corpse Life:",
+                "value": 34963,
+            }
+        ],
+    },
+    "search_tree_nodes": {
+        "count": 1,
+        "nodes": [
+            {
+                "id": 51184,
+                "name": "Raw Destruction",
+                "reachable": True,
+                "allocated": False,
+                "distance": 3,
+                "stats": ["16% increased Spell Damage"],
+            }
+        ],
+    },
 }
 
 
@@ -110,11 +139,17 @@ class MockBridgeServer:
                 self.last_request = req
                 method = req.get("method")
                 if method in MOCK_RESPONSES:
-                    payload = {"jsonrpc": "2.0", "id": req.get("id"),
-                               "result": MOCK_RESPONSES[method]}
+                    payload = {
+                        "jsonrpc": "2.0",
+                        "id": req.get("id"),
+                        "result": MOCK_RESPONSES[method],
+                    }
                 else:
-                    payload = {"jsonrpc": "2.0", "id": req.get("id"),
-                               "error": {"code": -32601, "message": f"Method not found: {method}"}}
+                    payload = {
+                        "jsonrpc": "2.0",
+                        "id": req.get("id"),
+                        "error": {"code": -32601, "message": f"Method not found: {method}"},
+                    }
                 client.sendall((json.dumps(payload) + "\n").encode("utf-8"))
             except Exception:
                 pass
@@ -141,6 +176,7 @@ def mock_bridge():
 # ---------------------------------------------------------------------------
 # PoBClient round-trip tests
 # ---------------------------------------------------------------------------
+
 
 def test_client_ping(mock_bridge):
     client = PoBClient(port=mock_bridge.port, timeout=2.0)
@@ -340,6 +376,7 @@ def test_ensure_installed_noop_when_already_ok(fake_pob):
 # Client wrappers for the build-editing / introspection commands
 # ---------------------------------------------------------------------------
 
+
 def test_client_set_displayed_skill(mock_bridge):
     client = PoBClient(port=mock_bridge.port, timeout=2.0)
     r = client.set_displayed_skill(group_index=6, skill_index=2)
@@ -403,6 +440,7 @@ def test_client_get_output_default_and_keys(mock_bridge):
 # ---------------------------------------------------------------------------
 # Review fixes: port discovery (#1) and encode robustness (#2)
 # ---------------------------------------------------------------------------
+
 
 def test_find_bridge_discovers_running_port(mock_bridge):
     # find_bridge across an explicit port list locates the live bridge

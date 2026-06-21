@@ -26,7 +26,7 @@ from src.calculator.stun_calculator import (
     HeavyStunResult,
     HeavyStunMeter,
     CompleteStunResult,
-    quick_stun_calculation
+    quick_stun_calculation,
 )
 
 
@@ -75,7 +75,7 @@ class TestLightStunCalculation(unittest.TestCase):
             damage=1000,
             target_max_life=5000,
             damage_type=DamageType.FIRE,
-            attack_type=AttackType.SPELL
+            attack_type=AttackType.SPELL,
         )
 
         # Base chance = (1000 / 5000) * 100 = 20%
@@ -91,7 +91,7 @@ class TestLightStunCalculation(unittest.TestCase):
             damage=1000,
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
-            attack_type=AttackType.RANGED
+            attack_type=AttackType.RANGED,
         )
 
         # Base chance = 20%, with physical bonus = 20% * 1.5 = 30%
@@ -107,7 +107,7 @@ class TestLightStunCalculation(unittest.TestCase):
             damage=1000,
             target_max_life=5000,
             damage_type=DamageType.COLD,
-            attack_type=AttackType.MELEE
+            attack_type=AttackType.MELEE,
         )
 
         # Base chance = 20%, with melee bonus = 20% * 1.5 = 30%
@@ -123,7 +123,7 @@ class TestLightStunCalculation(unittest.TestCase):
             damage=1000,
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
-            attack_type=AttackType.MELEE
+            attack_type=AttackType.MELEE,
         )
 
         # Base chance = 20%, with both bonuses = 20% * 1.5 * 1.5 = 45%
@@ -139,7 +139,7 @@ class TestLightStunCalculation(unittest.TestCase):
             damage=500,
             target_max_life=5000,
             damage_type=DamageType.FIRE,
-            attack_type=AttackType.SPELL
+            attack_type=AttackType.SPELL,
         )
 
         # Base chance = (500 / 5000) * 100 = 10%
@@ -157,7 +157,7 @@ class TestLightStunCalculation(unittest.TestCase):
             damage=333.4,
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
-            attack_type=AttackType.MELEE
+            attack_type=AttackType.MELEE,
         )
 
         # Base = 6.668%, final = 6.668% * 2.25 = 15.003%
@@ -170,7 +170,7 @@ class TestLightStunCalculation(unittest.TestCase):
             damage=10000,
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
-            attack_type=AttackType.MELEE
+            attack_type=AttackType.MELEE,
         )
 
         # Base = 200%, with bonuses = 450%, should cap at 100%
@@ -186,7 +186,7 @@ class TestLightStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         # Base = 20%, with +50% increased = 20% * 1.5 = 30%
@@ -201,7 +201,7 @@ class TestLightStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         # Base = 20%, with 50% more = 20% * 1.5 = 30%
@@ -216,7 +216,7 @@ class TestLightStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
             attack_type=AttackType.MELEE,
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         self.assertAlmostEqual(result.final_chance, 0.0)
@@ -229,7 +229,7 @@ class TestLightStunCalculation(unittest.TestCase):
                 damage=-100,
                 target_max_life=5000,
                 damage_type=DamageType.FIRE,
-                attack_type=AttackType.SPELL
+                attack_type=AttackType.SPELL,
             )
 
     def test_light_stun_invalid_life(self):
@@ -239,7 +239,7 @@ class TestLightStunCalculation(unittest.TestCase):
                 damage=1000,
                 target_max_life=0,
                 damage_type=DamageType.FIRE,
-                attack_type=AttackType.SPELL
+                attack_type=AttackType.SPELL,
             )
 
 
@@ -262,7 +262,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id="test_entity"
+            entity_id="test_entity",
         )
 
         self.assertIsNotNone(result.meter)
@@ -276,7 +276,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id="test1"
+            entity_id="test1",
         )
 
         # Buildup = damage (no bonuses) = 1000
@@ -293,7 +293,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
             attack_type=AttackType.RANGED,
-            entity_id="test2"
+            entity_id="test2",
         )
 
         # Buildup = 1000 * 1.5 = 1500
@@ -308,7 +308,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.COLD,
             attack_type=AttackType.MELEE,
-            entity_id="test3"
+            entity_id="test3",
         )
 
         # Buildup = 1000 * 1.5 = 1500
@@ -323,7 +323,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
             attack_type=AttackType.MELEE,
-            entity_id="test4"
+            entity_id="test4",
         )
 
         # Buildup = 1000 * 1.5 * 1.5 = 2250
@@ -339,7 +339,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id="test5"
+            entity_id="test5",
         )
 
         self.assertAlmostEqual(result.meter.buildup_percentage, 50.0)
@@ -357,7 +357,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id=entity_id
+            entity_id=entity_id,
         )
         self.assertEqual(result1.meter.state, StunState.PRIMED)
         self.assertFalse(result1.triggered_heavy_stun)
@@ -368,7 +368,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id=entity_id
+            entity_id=entity_id,
         )
 
         self.assertTrue(result2.meter.buildup_percentage >= 100.0)
@@ -386,7 +386,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id=entity_id
+            entity_id=entity_id,
         )
 
         # Second hit: Primed + Light Stun = Crushing Blow
@@ -396,7 +396,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
             entity_id=entity_id,
-            light_stun_would_occur=True
+            light_stun_would_occur=True,
         )
 
         self.assertTrue(result.triggered_crushing_blow)
@@ -412,15 +412,11 @@ class TestHeavyStunCalculation(unittest.TestCase):
                 target_max_life=5000,
                 damage_type=DamageType.FIRE,
                 attack_type=AttackType.SPELL,
-                entity_id=entity_id
+                entity_id=entity_id,
             )
 
             expected_percentage = (i + 1) * 16.0  # 800/5000 = 16% per hit
-            self.assertAlmostEqual(
-                result.meter.buildup_percentage,
-                expected_percentage,
-                places=1
-            )
+            self.assertAlmostEqual(result.meter.buildup_percentage, expected_percentage, places=1)
 
         # Verify final state
         meter = self.calculator.get_heavy_stun_meter(entity_id)
@@ -438,7 +434,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id=entity_id
+            entity_id=entity_id,
         )
 
         meter = self.calculator.get_heavy_stun_meter(entity_id)
@@ -462,7 +458,7 @@ class TestHeavyStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id=entity_id
+            entity_id=entity_id,
         )
 
         # Need 4000 more, so 4 more hits
@@ -488,7 +484,7 @@ class TestCompleteStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
             attack_type=AttackType.MELEE,
-            entity_id="test1"
+            entity_id="test1",
         )
 
         self.assertIsInstance(result, CompleteStunResult)
@@ -507,7 +503,7 @@ class TestCompleteStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
             attack_type=AttackType.MELEE,
-            entity_id=entity_id
+            entity_id=entity_id,
         )
 
         # Second hit: Should trigger Crushing Blow if Light Stun occurs
@@ -518,7 +514,7 @@ class TestCompleteStunCalculation(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
             attack_type=AttackType.MELEE,
-            entity_id=entity_id
+            entity_id=entity_id,
         )
 
         # Light Stun should occur (500/5000*100*2.25 = 22.5%)
@@ -530,10 +526,7 @@ class TestCompleteStunCalculation(unittest.TestCase):
 
     def test_complete_stun_with_modifiers(self):
         """Test complete stun with modifiers."""
-        modifiers = StunModifiers(
-            increased_stun_chance=50.0,
-            more_stun_chance=1.3
-        )
+        modifiers = StunModifiers(increased_stun_chance=50.0, more_stun_chance=1.3)
 
         result = self.calculator.calculate_complete_stun(
             damage=1000,
@@ -541,7 +534,7 @@ class TestCompleteStunCalculation(unittest.TestCase):
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
             entity_id="test3",
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         # Both Light and Heavy should use modifiers
@@ -562,7 +555,7 @@ class TestHitsToStunCalculation(unittest.TestCase):
             damage_per_hit=1000,
             target_max_life=5000,
             damage_type=DamageType.FIRE,
-            attack_type=AttackType.SPELL
+            attack_type=AttackType.SPELL,
         )
 
         # Light: Base 20% per hit, need 15%, so 1 hit
@@ -576,7 +569,7 @@ class TestHitsToStunCalculation(unittest.TestCase):
             damage_per_hit=1000,
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
-            attack_type=AttackType.MELEE
+            attack_type=AttackType.MELEE,
         )
 
         # Light: Base 20% * 2.25 = 45% per hit, need 15%, so 1 hit
@@ -590,7 +583,7 @@ class TestHitsToStunCalculation(unittest.TestCase):
             damage_per_hit=200,
             target_max_life=5000,
             damage_type=DamageType.FIRE,
-            attack_type=AttackType.SPELL
+            attack_type=AttackType.SPELL,
         )
 
         # Light: Base 4% per hit, need 15%, so 15/4 = 3.75 hits
@@ -615,7 +608,7 @@ class TestStunModifiers(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         # Base 10% * (1 + 100%) = 20%
@@ -631,7 +624,7 @@ class TestStunModifiers(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         # Base 10%, with 50% reduced threshold = 10% / 0.5 = 20%
@@ -648,7 +641,7 @@ class TestStunModifiers(unittest.TestCase):
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
             entity_id="test1",
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         # Buildup = 1000 * 2.0 = 2000
@@ -663,7 +656,7 @@ class TestStunModifiers(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            modifiers=modifiers
+            modifiers=modifiers,
         )
 
         # Base 6%, with 5% minimum threshold
@@ -691,7 +684,7 @@ class TestEntityTracking(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id="enemy1"
+            entity_id="enemy1",
         )
 
         # Hit entity 2
@@ -700,7 +693,7 @@ class TestEntityTracking(unittest.TestCase):
             target_max_life=3000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id="enemy2"
+            entity_id="enemy2",
         )
 
         entities = self.calculator.get_all_tracked_entities()
@@ -721,7 +714,7 @@ class TestEntityTracking(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.FIRE,
             attack_type=AttackType.SPELL,
-            entity_id="enemy1"
+            entity_id="enemy1",
         )
 
         self.assertIn("enemy1", self.calculator.get_all_tracked_entities())
@@ -738,10 +731,7 @@ class TestQuickStunCalculation(unittest.TestCase):
     def test_quick_calculation_basic(self):
         """Test quick stun calculation."""
         result_str = quick_stun_calculation(
-            damage=1000,
-            target_max_life=5000,
-            is_physical=False,
-            is_melee=False
+            damage=1000, target_max_life=5000, is_physical=False, is_melee=False
         )
 
         self.assertIsInstance(result_str, str)
@@ -751,10 +741,7 @@ class TestQuickStunCalculation(unittest.TestCase):
     def test_quick_calculation_physical_melee(self):
         """Test quick stun calculation with bonuses."""
         result_str = quick_stun_calculation(
-            damage=1000,
-            target_max_life=5000,
-            is_physical=True,
-            is_melee=True
+            damage=1000, target_max_life=5000, is_physical=True, is_melee=True
         )
 
         self.assertIsInstance(result_str, str)
@@ -774,7 +761,7 @@ class TestEdgeCases(unittest.TestCase):
             damage=0,
             target_max_life=5000,
             damage_type=DamageType.FIRE,
-            attack_type=AttackType.SPELL
+            attack_type=AttackType.SPELL,
         )
 
         self.assertEqual(result.base_chance, 0.0)
@@ -788,7 +775,7 @@ class TestEdgeCases(unittest.TestCase):
             target_max_life=5000,
             damage_type=DamageType.PHYSICAL,
             attack_type=AttackType.MELEE,
-            entity_id="test1"
+            entity_id="test1",
         )
 
         self.assertEqual(result.light_stun.final_chance, 100.0)
@@ -801,7 +788,7 @@ class TestEdgeCases(unittest.TestCase):
             damage=1,
             target_max_life=10000,
             damage_type=DamageType.FIRE,
-            attack_type=AttackType.SPELL
+            attack_type=AttackType.SPELL,
         )
 
         # 1/10000 * 100 = 0.01%, below threshold
@@ -810,5 +797,5 @@ class TestEdgeCases(unittest.TestCase):
         self.assertFalse(result.will_stun)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main(verbosity=2)

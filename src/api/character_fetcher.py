@@ -46,21 +46,23 @@ class CharacterFetcher:
     def __init__(
         self,
         cache_manager: Optional[CacheManager] = None,
-        rate_limiter: Optional[RateLimiter] = None
+        rate_limiter: Optional[RateLimiter] = None,
     ):
         self.cache_manager = cache_manager
-        self.rate_limiter = rate_limiter or RateLimiter(rate_limit=5)  # Be gentle with third-party APIs
+        self.rate_limiter = rate_limiter or RateLimiter(
+            rate_limit=5
+        )  # Be gentle with third-party APIs
 
         self.client = httpx.AsyncClient(
             timeout=settings.REQUEST_TIMEOUT,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            },
-            follow_redirects=True
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
+            follow_redirects=True,
         )
 
         # Initialize poe.ninja API client
-        self.ninja_api = PoeNinjaAPI(rate_limiter=self.rate_limiter, cache_manager=self.cache_manager)
+        self.ninja_api = PoeNinjaAPI(
+            rate_limiter=self.rate_limiter, cache_manager=self.cache_manager
+        )
 
         # Track last error message for debugging
         self.last_error_message: str = ""
@@ -113,10 +115,7 @@ class CharacterFetcher:
         return league.replace(" ", "").lower()
 
     async def get_character(
-        self,
-        account_name: str,
-        character_name: str,
-        league: str = "Standard"
+        self, account_name: str, character_name: str, league: str = "Standard"
     ) -> Optional[Dict[str, Any]]:
         """
         Fetch character data using all available sources with intelligent fallback
@@ -135,7 +134,9 @@ class CharacterFetcher:
         Returns:
             Character data dictionary or None if not found
         """
-        logger.info(f"Fetching character {character_name} for account {account_name} (league: {league})")
+        logger.info(
+            f"Fetching character {character_name} for account {account_name} (league: {league})"
+        )
 
         # NOTE (#133): the former tier 1 (PoeNinjaAPI.get_character — snapshot
         # endpoint + HTML scrape) is retired; both its endpoints are dead
@@ -143,7 +144,9 @@ class CharacterFetcher:
 
         # poe.ninja profile API (SSE events -> model) — the working 0.5 path
         try:
-            char_data = await self.get_character_from_poe_ninja(account_name, character_name, league)
+            char_data = await self.get_character_from_poe_ninja(
+                account_name, character_name, league
+            )
             if char_data and char_data.get("level", 0) > 0:
                 logger.info("Successfully fetched from poe.ninja SSE API")
                 self.last_error_message = ""  # Clear error on success
@@ -184,9 +187,7 @@ class CharacterFetcher:
         return None
 
     async def _scrape_character_direct(
-        self,
-        account_name: str,
-        character_name: str
+        self, account_name: str, character_name: str
     ) -> Optional[Dict[str, Any]]:
         """
         Direct web scraping as last resort
@@ -206,26 +207,34 @@ class CharacterFetcher:
                 response = await self.client.get(url)
                 if response.status_code == 200:
                     # Try to parse any character data we can find
-                    soup = BeautifulSoup(response.text, 'html.parser')
+                    soup = BeautifulSoup(response.text, "html.parser")
 
                     char_data = {
                         "name": character_name,
                         "account": account_name,
                         "class": "Unknown",
                         "level": 0,
-                        "source": "web_scraping"
+                        "source": "web_scraping",
                     }
 
                     # Try to extract basic info
                     # Look for common patterns
-                    level_patterns = [r'Level:\s*(\d+)', r'level":\s*(\d+)', r'<span.*?level.*?>(\d+)</span>']
+                    level_patterns = [
+                        r"Level:\s*(\d+)",
+                        r'level":\s*(\d+)',
+                        r"<span.*?level.*?>(\d+)</span>",
+                    ]
                     for pattern in level_patterns:
                         match = re.search(pattern, response.text, re.IGNORECASE)
                         if match:
                             char_data["level"] = int(match.group(1))
                             break
 
-                    class_patterns = [r'Class:\s*(\w+)', r'class":\s*"([^"]+)"', r'<span.*?class.*?>([^<]+)</span>']
+                    class_patterns = [
+                        r"Class:\s*(\w+)",
+                        r'class":\s*"([^"]+)"',
+                        r"<span.*?class.*?>([^<]+)</span>",
+                    ]
                     for pattern in class_patterns:
                         match = re.search(pattern, response.text, re.IGNORECASE)
                         if match:
@@ -249,10 +258,7 @@ class CharacterFetcher:
         return None
 
     async def get_character_from_poe_ninja(
-        self,
-        account_name: str,
-        character_name: str,
-        league: str = "Standard"
+        self, account_name: str, character_name: str, league: str = "Standard"
     ) -> Optional[Dict[str, Any]]:
         """
         Fetch character data from poe.ninja profile page
@@ -293,11 +299,7 @@ class CharacterFetcher:
             if character_data:
                 # Cache the result
                 if self.cache_manager:
-                    await self.cache_manager.set(
-                        cache_key,
-                        character_data,
-                        ttl=settings.CACHE_TTL
-                    )
+                    await self.cache_manager.set(cache_key, character_data, ttl=settings.CACHE_TTL)
 
                 logger.info(f"Successfully fetched character {character_name} from poe.ninja")
                 return character_data
@@ -329,11 +331,7 @@ class CharacterFetcher:
             return None
 
     async def _parse_poe_ninja_page(
-        self,
-        html: str,
-        account_name: str,
-        character_name: str,
-        league: str = "Standard"
+        self, html: str, account_name: str, character_name: str, league: str = "Standard"
     ) -> Optional[Dict[str, Any]]:
         """
         Parse poe.ninja character page HTML to extract character data
@@ -342,15 +340,15 @@ class CharacterFetcher:
         look for embedded JSON data or API calls
         """
         try:
-            soup = BeautifulSoup(html, 'html.parser')
+            soup = BeautifulSoup(html, "html.parser")
 
             # poe.ninja uses client-side rendering with Astro/React
             # Look for embedded JSON data in script tags or meta tags
-            scripts = soup.find_all('script')
+            scripts = soup.find_all("script")
 
             # Try to find JSON data embedded in the page
             for script in scripts:
-                if script.string and 'character' in script.string.lower():
+                if script.string and "character" in script.string.lower():
                     # Look for JSON data patterns
                     import json
                     import re
@@ -362,9 +360,11 @@ class CharacterFetcher:
                     for match in matches:
                         try:
                             data = json.loads(match)
-                            if 'character' in data or 'characterName' in data:
+                            if "character" in data or "characterName" in data:
                                 logger.info("Found embedded character data in script tag")
-                                return self._normalize_character_data(data, account_name, character_name)
+                                return self._normalize_character_data(
+                                    data, account_name, character_name
+                                )
                         except:
                             continue
 
@@ -379,10 +379,7 @@ class CharacterFetcher:
             return None
 
     async def _fetch_from_poe_ninja_api(
-        self,
-        account_name: str,
-        character_name: str,
-        league: str = "Standard"
+        self, account_name: str, character_name: str, league: str = "Standard"
     ) -> Optional[Dict[str, Any]]:
         """
         Fetch character data from poe.ninja's internal API
@@ -413,7 +410,7 @@ class CharacterFetcher:
             await self.rate_limiter.acquire()
 
             # Stream the SSE response and extract the model ID
-            async with self.client.stream('GET', events_url) as response:
+            async with self.client.stream("GET", events_url) as response:
                 if response.status_code != 200:
                     logger.warning(f"Events API returned status: {response.status_code}")
                     return None
@@ -421,22 +418,21 @@ class CharacterFetcher:
                 # Read the first SSE message
                 model_id = None
                 async for line in response.aiter_lines():
-                    if line.startswith('data:'):
+                    if line.startswith("data:"):
                         import json
+
                         # Parse the SSE data line
                         data_str = line[5:].strip()  # Remove "data:" prefix
                         try:
                             data = json.loads(data_str)
-                            model_id = data.get('version')
+                            model_id = data.get("version")
                             logger.info(f"Got model ID: {model_id}")
                             break  # We only need the first message
                         except:
                             continue
 
                 if not model_id:
-                    self.last_error_message = (
-                        f"Could not extract model ID from poe.ninja events stream for {character_name}"
-                    )
+                    self.last_error_message = f"Could not extract model ID from poe.ninja events stream for {character_name}"
                     logger.warning(self.last_error_message)
                     return None
 
@@ -462,14 +458,14 @@ class CharacterFetcher:
                 return None
 
         except Exception as e:
-            self.last_error_message = f"Error fetching from poe.ninja internal API for {character_name}: {e}"
+            self.last_error_message = (
+                f"Error fetching from poe.ninja internal API for {character_name}: {e}"
+            )
             logger.error(self.last_error_message, exc_info=True)
             return None
 
     async def get_character_from_ladder(
-        self,
-        character_name: str,
-        league: str = "Standard"
+        self, character_name: str, league: str = "Standard"
     ) -> Optional[Dict[str, Any]]:
         """
         Fetch character data from official PoE ladder API (public, no auth required)
@@ -509,23 +505,25 @@ class CharacterFetcher:
                 data = response.json()
 
                 # Search for the character in the ladder
-                for entry in data.get('entries', []):
-                    char = entry.get('character', {})
-                    if char.get('name') == character_name:
+                for entry in data.get("entries", []):
+                    char = entry.get("character", {})
+                    if char.get("name") == character_name:
                         logger.info(f"Found character {character_name} in ladder")
 
                         char_data = {
-                            'name': char.get('name'),
-                            'level': char.get('level'),
-                            'class': char.get('class'),
-                            'league': league,
-                            'account': entry.get('account', {}).get('name'),
-                            'experience': char.get('experience'),
-                            'rank': entry.get('rank'),
+                            "name": char.get("name"),
+                            "level": char.get("level"),
+                            "class": char.get("class"),
+                            "league": league,
+                            "account": entry.get("account", {}).get("name"),
+                            "experience": char.get("experience"),
+                            "rank": entry.get("rank"),
                         }
 
                         if self.cache_manager:
-                            await self.cache_manager.set(cache_key, char_data, ttl=settings.CACHE_TTL)
+                            await self.cache_manager.set(
+                                cache_key, char_data, ttl=settings.CACHE_TTL
+                            )
 
                         return char_data
 
@@ -545,7 +543,7 @@ class CharacterFetcher:
         league: str = "Standard",
         limit: int = 100,
         min_level: int = 1,
-        class_filter: Optional[str] = None
+        class_filter: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
         Get top characters from the ladder
@@ -585,17 +583,17 @@ class CharacterFetcher:
                 response.raise_for_status()
 
                 data = response.json()
-                entries = data.get('entries', [])
+                entries = data.get("entries", [])
 
                 if not entries:
                     break  # No more entries
 
                 for entry in entries:
-                    char = entry.get('character', {})
-                    account = entry.get('account', {})
+                    char = entry.get("character", {})
+                    account = entry.get("account", {})
 
-                    char_level = char.get('level', 0)
-                    char_class = char.get('class', '')
+                    char_level = char.get("level", 0)
+                    char_class = char.get("class", "")
 
                     # Apply filters
                     if char_level < min_level:
@@ -604,15 +602,17 @@ class CharacterFetcher:
                     if class_filter and char_class != class_filter:
                         continue
 
-                    top_characters.append({
-                        'account': account.get('name', ''),
-                        'character': char.get('name', ''),
-                        'level': char_level,
-                        'class': char_class,
-                        'rank': entry.get('rank', 0),
-                        'dead': entry.get('dead', False),
-                        'online': entry.get('online', False),
-                    })
+                    top_characters.append(
+                        {
+                            "account": account.get("name", ""),
+                            "character": char.get("name", ""),
+                            "level": char_level,
+                            "class": char_class,
+                            "rank": entry.get("rank", 0),
+                            "dead": entry.get("dead", False),
+                            "online": entry.get("online", False),
+                        }
+                    )
 
                     if len(top_characters) >= limit:
                         break
@@ -632,10 +632,7 @@ class CharacterFetcher:
             return []
 
     def _normalize_character_data(
-        self,
-        raw_data: Dict[str, Any],
-        account_name: str,
-        character_name: str
+        self, raw_data: Dict[str, Any], account_name: str, character_name: str
     ) -> Dict[str, Any]:
         """
         Normalize character data from various sources into a standard format.
@@ -653,8 +650,8 @@ class CharacterFetcher:
         field-based normalization of ``charModel`` (the pre-#132 path).
         """
         # Check if this is poe.ninja format with charModel
-        char_model = raw_data.get('charModel', raw_data)
-        pob_export = char_model.get('pathOfBuildingExport', '') or ''
+        char_model = raw_data.get("charModel", raw_data)
+        pob_export = char_model.get("pathOfBuildingExport", "") or ""
 
         # ------------------------------------------------------------------
         # Primary route (#132): decode pob_export via the PoB importer.
@@ -663,7 +660,7 @@ class CharacterFetcher:
         # tree/config/stats/notes/version.
         # ------------------------------------------------------------------
         pob_data: Optional[Dict[str, Any]] = None
-        if pob_export and pob_export.startswith(('eNr', 'eJx', 'eJw', 'eNo')):
+        if pob_export and pob_export.startswith(("eNr", "eJx", "eJw", "eNo")):
             try:
                 pob_data = PoBImporter().import_build_sync(pob_export)
                 logger.info(
@@ -679,30 +676,30 @@ class CharacterFetcher:
 
         # Passive tree data - poe.ninja uses 'passiveSelection' (list of node IDs)
         passive_data = (
-            char_model.get('passiveSelection') or  # poe.ninja format: list of node IDs
-            char_model.get('passives') or          # Alternative format
-            char_model.get('passiveTree') or       # Another alternative
-            char_model.get('hashes') or            # Official API format
-            []
+            char_model.get("passiveSelection")  # poe.ninja format: list of node IDs
+            or char_model.get("passives")  # Alternative format
+            or char_model.get("passiveTree")  # Another alternative
+            or char_model.get("hashes")  # Official API format
+            or []
         )
 
         normalised: Dict[str, Any] = {
-            'name': char_model.get('name', character_name),
-            'account': char_model.get('account', account_name),
-            'level': char_model.get('level', 0),
-            'class': char_model.get('class', 'Unknown'),
-            'league': char_model.get('league', 'Standard'),
-            'experience': char_model.get('experience', 0),
-            'items': char_model.get('items', char_model.get('equipment', [])),
-            'skills': char_model.get('skills', []),
-            'passive_tree': passive_data,
-            'keystones': char_model.get('keystones', []),
-            'jewels': char_model.get('jewels', []),
-            'flasks': char_model.get('flasks', []),
-            'charms': char_model.get('charms', []),
-            'stats': char_model.get('defensiveStats', {}),
-            'pob_export': pob_export,
-            'raw_data': raw_data  # Keep original data for reference
+            "name": char_model.get("name", character_name),
+            "account": char_model.get("account", account_name),
+            "level": char_model.get("level", 0),
+            "class": char_model.get("class", "Unknown"),
+            "league": char_model.get("league", "Standard"),
+            "experience": char_model.get("experience", 0),
+            "items": char_model.get("items", char_model.get("equipment", [])),
+            "skills": char_model.get("skills", []),
+            "passive_tree": passive_data,
+            "keystones": char_model.get("keystones", []),
+            "jewels": char_model.get("jewels", []),
+            "flasks": char_model.get("flasks", []),
+            "charms": char_model.get("charms", []),
+            "stats": char_model.get("defensiveStats", {}),
+            "pob_export": pob_export,
+            "raw_data": raw_data,  # Keep original data for reference
         }
 
         # ------------------------------------------------------------------
@@ -714,28 +711,28 @@ class CharacterFetcher:
         # ------------------------------------------------------------------
         if pob_data:
             # PoB items/skills/tree are richer and structurally-complete; prefer them.
-            if pob_data.get('items'):
-                normalised['items'] = pob_data['items']
-            if pob_data.get('skills'):
-                normalised['skills'] = pob_data['skills']
-            if pob_data.get('tree'):
-                normalised['passive_tree'] = pob_data['tree']
+            if pob_data.get("items"):
+                normalised["items"] = pob_data["items"]
+            if pob_data.get("skills"):
+                normalised["skills"] = pob_data["skills"]
+            if pob_data.get("tree"):
+                normalised["passive_tree"] = pob_data["tree"]
             # PoB-only enrichment fields - retained alongside poe.ninja stats.
-            normalised['ascendancy'] = pob_data.get('ascendancy')
-            normalised['pob_config'] = pob_data.get('config', {})
-            normalised['pob_stats'] = pob_data.get('stats', {})
-            normalised['pob_notes'] = pob_data.get('notes', '')
-            normalised['pob_version'] = pob_data.get('version', 'Unknown')
-            normalised['parse_source'] = 'pob_export'
+            normalised["ascendancy"] = pob_data.get("ascendancy")
+            normalised["pob_config"] = pob_data.get("config", {})
+            normalised["pob_stats"] = pob_data.get("stats", {})
+            normalised["pob_notes"] = pob_data.get("notes", "")
+            normalised["pob_version"] = pob_data.get("version", "Unknown")
+            normalised["parse_source"] = "pob_export"
             # Honor PoB level/class only if the poe.ninja record didn't supply them.
             # (poe.ninja is the source of truth for the live snapshot; PoB's copy
             # is what the character last exported.)
-            if normalised['level'] == 0 and pob_data.get('level'):
-                normalised['level'] = pob_data['level']
-            if normalised['class'] == 'Unknown' and pob_data.get('class'):
-                normalised['class'] = pob_data['class']
+            if normalised["level"] == 0 and pob_data.get("level"):
+                normalised["level"] = pob_data["level"]
+            if normalised["class"] == "Unknown" and pob_data.get("class"):
+                normalised["class"] = pob_data["class"]
         else:
-            normalised['parse_source'] = 'field_normalize'
+            normalised["parse_source"] = "field_normalize"
 
         # ------------------------------------------------------------------
         # Class/ascendancy disambiguation (#151 regression guard): poe.ninja's
@@ -744,18 +741,17 @@ class CharacterFetcher:
         # The mapping previously lived in the retired snapshot-tier normalizer
         # (#166) — apply it here so every route gets Witch/Infernalist split.
         # ------------------------------------------------------------------
-        raw_class = normalised.get('class')
+        raw_class = normalised.get("class")
         if raw_class and raw_class in ASCENDANCY_TO_BASE_CLASS:
-            if not normalised.get('ascendancy') or normalised['ascendancy'] == raw_class:
-                normalised['ascendancy'] = raw_class
-            normalised['class'] = ASCENDANCY_TO_BASE_CLASS[raw_class]
-        elif (
-            normalised.get('ascendancy')
-            and normalised.get('class') == normalised.get('ascendancy')
+            if not normalised.get("ascendancy") or normalised["ascendancy"] == raw_class:
+                normalised["ascendancy"] = raw_class
+            normalised["class"] = ASCENDANCY_TO_BASE_CLASS[raw_class]
+        elif normalised.get("ascendancy") and normalised.get("class") == normalised.get(
+            "ascendancy"
         ):
-            base = ASCENDANCY_TO_BASE_CLASS.get(normalised['ascendancy'])
+            base = ASCENDANCY_TO_BASE_CLASS.get(normalised["ascendancy"])
             if base:
-                normalised['class'] = base
+                normalised["class"] = base
 
         return normalised
 

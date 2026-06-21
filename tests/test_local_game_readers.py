@@ -9,6 +9,7 @@ skipped when those aren't present.
 Author: HivemindMinion
 Date: 2026-06-04
 """
+
 import sys
 from pathlib import Path
 
@@ -62,7 +63,7 @@ current_act_environment=6
 # ---------------------------------------------------------------------------
 class TestClientLogReaderParsing:
     def test_parse_level_up(self):
-        line = '2026/06/04 10:51:25 77406656 3ef23347 [INFO Client 29396] : TomawarTheSeventh (Infernalist) is now level 66'
+        line = "2026/06/04 10:51:25 77406656 3ef23347 [INFO Client 29396] : TomawarTheSeventh (Infernalist) is now level 66"
         ev = ClientLogReader.parse_line(line)
         assert ev["kind"] == "level_up"
         assert ev["character"] == "TomawarTheSeventh"
@@ -79,13 +80,13 @@ class TestClientLogReaderParsing:
         assert ev["seed"] == 3720906296
 
     def test_parse_instance_connect(self):
-        line = '2026/06/04 10:50:32 77352984 91c6ccf [INFO Client 29396] Connecting to instance server at 64.87.33.204:21360 '
+        line = "2026/06/04 10:50:32 77352984 91c6ccf [INFO Client 29396] Connecting to instance server at 64.87.33.204:21360 "
         ev = ClientLogReader.parse_line(line)
         assert ev["kind"] == "instance_connect"
         assert ev["server"] == "64.87.33.204:21360"
 
     def test_parse_death(self):
-        line = '2026/06/04 10:50:29 77350296 3ef23347 [INFO Client 29396] : TomawarTheSeventh has been slain.'
+        line = "2026/06/04 10:50:29 77350296 3ef23347 [INFO Client 29396] : TomawarTheSeventh has been slain."
         ev = ClientLogReader.parse_line(line)
         assert ev["kind"] == "death"
         assert ev["character"] == "TomawarTheSeventh"
@@ -97,7 +98,7 @@ class TestClientLogReaderParsing:
         assert ev["afk_state"] == "ON"
 
     def test_parse_whisper(self):
-        line = '2026/06/01 12:31:39 270979734 3ef23347 [INFO Client 18640] @From blightblot: hello there'
+        line = "2026/06/01 12:31:39 270979734 3ef23347 [INFO Client 18640] @From blightblot: hello there"
         ev = ClientLogReader.parse_line(line)
         assert ev["kind"] == "whisper"
         assert ev["direction"] == "From"
@@ -106,9 +107,12 @@ class TestClientLogReaderParsing:
 
     def test_parse_non_event_returns_none(self):
         # NPC dialogue / engine spam should not match a tracked event.
-        assert ClientLogReader.parse_line(
-            '2026/06/04 15:38:46 94647421 3ef23347 [INFO Client 6124] Incarnation of Death: Take their head or I take YOURS!'
-        ) is None
+        assert (
+            ClientLogReader.parse_line(
+                "2026/06/04 15:38:46 94647421 3ef23347 [INFO Client 6124] Incarnation of Death: Take their head or I take YOURS!"
+            )
+            is None
+        )
         assert ClientLogReader.parse_line("not a log line at all") is None
         assert ClientLogReader.parse_line("") is None
 
@@ -152,7 +156,7 @@ class TestClientLogReaderState:
         # No level-up in window — character should come from the death line.
         p = tmp_path / "Client.txt"
         p.write_text(
-            '2026/06/04 10:50:29 77350296 3ef23347 [INFO Client 29396] : SomeHero has been slain.\n',
+            "2026/06/04 10:50:29 77350296 3ef23347 [INFO Client 29396] : SomeHero has been slain.\n",
             encoding="utf-8",
         )
         state = ClientLogReader(log_path=p).get_current_state()

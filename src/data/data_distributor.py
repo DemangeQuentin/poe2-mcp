@@ -107,12 +107,21 @@ def needs_update() -> Tuple[bool, str]:
     remote = get_latest_release_info()
 
     if not local and remote:
-        return True, f"no local data/version.json (fresh install) — latest is {remote.get('tag_name')}"
+        return (
+            True,
+            f"no local data/version.json (fresh install) — latest is {remote.get('tag_name')}",
+        )
     if not local and not remote:
         # Project hasn't published any data-* releases yet; nothing to do
-        return False, "no local data/version.json and no data-* releases published yet — using whatever is in data/"
+        return (
+            False,
+            "no local data/version.json and no data-* releases published yet — using whatever is in data/",
+        )
     if local and not remote:
-        return False, f"keeping local data {local.get('release_tag', '?')!r} (no newer data-* release found upstream)"
+        return (
+            False,
+            f"keeping local data {local.get('release_tag', '?')!r} (no newer data-* release found upstream)",
+        )
 
     local_tag = local.get("release_tag")
     remote_tag = remote.get("tag_name")
@@ -157,8 +166,9 @@ def download_and_install(release: Dict[str, Any]) -> bool:
         tmp_path.unlink(missing_ok=True)
 
 
-def ensure_data_current(allow_network: bool = True,
-                        consent: Optional[bool] = None) -> Tuple[bool, str]:
+def ensure_data_current(
+    allow_network: bool = True, consent: Optional[bool] = None
+) -> Tuple[bool, str]:
     """Top-level entry: check freshness, download if needed.
 
     Returns (success: bool, status_msg: str). `success=True` means data is

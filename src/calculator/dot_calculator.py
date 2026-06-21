@@ -44,11 +44,12 @@ logger = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class AilmentRule:
     """Game constants for one ailment type."""
+
     name: str
-    hit_fraction: float          # portion of basis damage dealt per second
-    base_duration: float         # seconds
-    basis_types: tuple           # which hit damage types feed the ailment
-    damage_type: str             # damage type the DoT itself deals
+    hit_fraction: float  # portion of basis damage dealt per second
+    base_duration: float  # seconds
+    basis_types: tuple  # which hit damage types feed the ailment
+    damage_type: str  # damage type the DoT itself deals
     moving_multiplier: float = 1.0  # bleed: 2.0 while target moves
 
 
@@ -81,25 +82,27 @@ AILMENT_RULES: Dict[str, AilmentRule] = {
 @dataclass
 class AilmentInput:
     """Caller-aggregated modifiers for one ailment calculation."""
-    ailment: str                       # "ignite" | "poison" | "bleed"
-    chance_pct: float = 100.0          # chance to apply on hit (0-100)
-    increased_magnitude: float = 0.0   # sum of %increased DoT/ailment magnitude
+
+    ailment: str  # "ignite" | "poison" | "bleed"
+    chance_pct: float = 100.0  # chance to apply on hit (0-100)
+    increased_magnitude: float = 0.0  # sum of %increased DoT/ailment magnitude
     more_multipliers: List[float] = field(default_factory=list)
-    increased_duration: float = 0.0    # sum of %increased ailment duration
-    stack_limit: int = 1               # poison: raised by Escalating Poison etc.
-    enemy_moving: bool = False         # bleed: 100% more while moving
-    aggravated: bool = False           # bleed: always counts as moving
+    increased_duration: float = 0.0  # sum of %increased ailment duration
+    stack_limit: int = 1  # poison: raised by Escalating Poison etc.
+    enemy_moving: bool = False  # bleed: 100% more while moving
+    aggravated: bool = False  # bleed: always counts as moving
 
 
 @dataclass
 class SkillDoTInput:
     """Caller-supplied skill DoT (e.g. Essence Drain) — see module docstring
     for why base DPS comes from the caller."""
-    base_dps: float                    # base DoT damage per second at gem level
+
+    base_dps: float  # base DoT damage per second at gem level
     damage_type: str = "chaos"
-    increased: float = 0.0             # sum of %increased applicable to the DoT
+    increased: float = 0.0  # sum of %increased applicable to the DoT
     more_multipliers: List[float] = field(default_factory=list)
-    uptime: float = 1.0                # 0..1 — fraction of fight the DoT is ticking
+    uptime: float = 1.0  # 0..1 — fraction of fight the DoT is ticking
 
 
 class DoTCalculator:
@@ -141,9 +144,7 @@ class DoTCalculator:
         enemy = enemy or EnemyStats()
 
         # Base: fraction of the relevant hit damage per second
-        basis_damage = sum(
-            hit_damage_by_type.get(t, 0.0) for t in rule.basis_types
-        )
+        basis_damage = sum(hit_damage_by_type.get(t, 0.0) for t in rule.basis_types)
         dps_per_stack = basis_damage * rule.hit_fraction
 
         # Bleed's moving/aggravated state is 100% MORE
@@ -164,8 +165,7 @@ class DoTCalculator:
         resistance_mult = 1.0
         if rule.damage_type == "fire":
             effective_res = max(
-                (enemy.fire_resistance - enemy.fire_exposure)
-                - enemy.fire_penetration,
+                (enemy.fire_resistance - enemy.fire_exposure) - enemy.fire_penetration,
                 0.0,
             )
             resistance_mult = 1.0 - effective_res / 100.0
@@ -178,12 +178,10 @@ class DoTCalculator:
 
         # Duration and expected active stacks. Non-stacking ailments
         # (limit 1) cap at full uptime once applications x duration >= 1.
-        duration = rule.base_duration * (
-            1.0 + ailment_input.increased_duration / 100.0
+        duration = rule.base_duration * (1.0 + ailment_input.increased_duration / 100.0)
+        applications_per_second = (
+            hits_per_second * max(min(ailment_input.chance_pct, 100.0), 0.0) / 100.0
         )
-        applications_per_second = hits_per_second * max(
-            min(ailment_input.chance_pct, 100.0), 0.0
-        ) / 100.0
         expected_active_stacks = min(
             applications_per_second * duration,
             float(max(ailment_input.stack_limit, 0)),
@@ -232,15 +230,13 @@ class DoTCalculator:
         resistance_mult = 1.0
         if damage_type == "fire":
             effective_res = max(
-                (enemy.fire_resistance - enemy.fire_exposure)
-                - enemy.fire_penetration,
+                (enemy.fire_resistance - enemy.fire_exposure) - enemy.fire_penetration,
                 0.0,
             )
             resistance_mult = 1.0 - effective_res / 100.0
         elif damage_type == "cold":
             effective_res = max(
-                (enemy.cold_resistance - enemy.cold_exposure)
-                - enemy.cold_penetration,
+                (enemy.cold_resistance - enemy.cold_exposure) - enemy.cold_penetration,
                 0.0,
             )
             resistance_mult = 1.0 - effective_res / 100.0
@@ -283,11 +279,7 @@ class DoTCalculator:
         skill_dot_result: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Combine hit DPS with all DoT layers into sustained totals."""
-        ailment_dps = sum(
-            r.get("sustained_dps", 0.0)
-            for r in ailment_results
-            if "error" not in r
-        )
+        ailment_dps = sum(r.get("sustained_dps", 0.0) for r in ailment_results if "error" not in r)
         skill_dot_dps = (
             skill_dot_result.get("sustained_dps", 0.0)
             if skill_dot_result and "error" not in skill_dot_result

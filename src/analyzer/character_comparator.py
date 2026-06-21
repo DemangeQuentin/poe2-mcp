@@ -24,7 +24,7 @@ class CharacterComparator:
         self,
         user_character: Dict[str, Any],
         top_characters: List[Dict[str, Any]],
-        comparison_focus: str = "dps"
+        comparison_focus: str = "dps",
     ) -> Dict[str, Any]:
         """
         Compare user's character to top ladder players
@@ -43,12 +43,12 @@ class CharacterComparator:
             "user_character": {
                 "name": user_character.get("name"),
                 "level": user_character.get("level", 0),
-                "class": user_character.get("class")
+                "class": user_character.get("class"),
             },
             "comparison_pool": {
                 "count": len(top_characters),
                 "avg_level": self._avg_level(top_characters),
-                "level_range": self._level_range(top_characters)
+                "level_range": self._level_range(top_characters),
             },
             "skill_comparison": self._compare_skills(user_character, top_characters),
             "gear_comparison": self._compare_gear(user_character, top_characters),
@@ -56,11 +56,13 @@ class CharacterComparator:
             "passive_comparison": self._compare_passives(user_character, top_characters),
             "key_differences": [],
             "recommendations": [],
-            "top_performers": self._identify_top_performers(top_characters, comparison_focus)
+            "top_performers": self._identify_top_performers(top_characters, comparison_focus),
         }
 
         # Generate insights
-        comparison["key_differences"] = self._identify_key_differences(user_character, top_characters)
+        comparison["key_differences"] = self._identify_key_differences(
+            user_character, top_characters
+        )
         comparison["recommendations"] = self._generate_recommendations(comparison)
 
         return comparison
@@ -100,17 +102,26 @@ class CharacterComparator:
     def _is_support_gem(self, name: str) -> str:
         """Check if gem is a support gem"""
         support_keywords = [
-            "support", "increased", "additional", "concentrated", "faster",
-            "multiple", "greater", "efficacy", "controlled", "elemental",
-            "awakened", "enlighten", "empower", "enhance"
+            "support",
+            "increased",
+            "additional",
+            "concentrated",
+            "faster",
+            "multiple",
+            "greater",
+            "efficacy",
+            "controlled",
+            "elemental",
+            "awakened",
+            "enlighten",
+            "empower",
+            "enhance",
         ]
         name_lower = name.lower()
         return any(keyword in name_lower for keyword in support_keywords)
 
     def _compare_skills(
-        self,
-        user_char: Dict[str, Any],
-        top_chars: List[Dict[str, Any]]
+        self, user_char: Dict[str, Any], top_chars: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Compare skill setups"""
 
@@ -144,17 +155,13 @@ class CharacterComparator:
         return {
             "user_main_skills": list(user_skills),
             "user_skill_count": len(user_skill_groups),
-            "common_supports_in_top_players": dict(sorted(
-                common_support_gems.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:10]),
+            "common_supports_in_top_players": dict(
+                sorted(common_support_gems.items(), key=lambda x: x[1], reverse=True)[:10]
+            ),
             "avg_gem_levels": dict(avg_gem_levels),
             "recommendations": self._generate_skill_recommendations(
-                user_char,
-                common_support_gems,
-                avg_gem_levels
-            )
+                user_char, common_support_gems, avg_gem_levels
+            ),
         }
 
     def _extract_gem_level(self, gem: Dict[str, Any]) -> Optional[int]:
@@ -169,15 +176,14 @@ class CharacterComparator:
                     level_str = str(values[0][0])
                     # Extract number from strings like "20 (Max)"
                     import re
-                    match = re.search(r'(\d+)', level_str)
+
+                    match = re.search(r"(\d+)", level_str)
                     if match:
                         return int(match.group(1))
         return None
 
     def _compare_gear(
-        self,
-        user_char: Dict[str, Any],
-        top_chars: List[Dict[str, Any]]
+        self, user_char: Dict[str, Any], top_chars: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Compare gear choices"""
 
@@ -209,21 +215,17 @@ class CharacterComparator:
 
         return {
             "user_uniques": dict(user_uniques),
-            "popular_uniques": dict(sorted(
-                unique_usage.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:15]),
+            "popular_uniques": dict(
+                sorted(unique_usage.items(), key=lambda x: x[1], reverse=True)[:15]
+            ),
             "popular_uniques_by_slot": {
                 slot: dict(sorted(items.items(), key=lambda x: x[1], reverse=True)[:5])
                 for slot, items in unique_by_slot.items()
             },
-            "most_important_mods": dict(sorted(
-                mod_priorities.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[:20]),
-            "differences": self._find_gear_differences(user_uniques, unique_usage)
+            "most_important_mods": dict(
+                sorted(mod_priorities.items(), key=lambda x: x[1], reverse=True)[:20]
+            ),
+            "differences": self._find_gear_differences(user_uniques, unique_usage),
         }
 
     def _extract_unique_items(self, items: List[Dict]) -> Dict[str, str]:
@@ -280,9 +282,7 @@ class CharacterComparator:
         return None
 
     def _compare_stats(
-        self,
-        user_char: Dict[str, Any],
-        top_chars: List[Dict[str, Any]]
+        self, user_char: Dict[str, Any], top_chars: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Compare character stats"""
 
@@ -317,7 +317,7 @@ class CharacterComparator:
                 "p25": p25,
                 "median": p50,
                 "p75": p75,
-                "percentile": self._calculate_percentile(user_value, sorted_values)
+                "percentile": self._calculate_percentile(user_value, sorted_values),
             }
 
         return stat_comparison
@@ -331,9 +331,7 @@ class CharacterComparator:
         return int((count_below / len(sorted_values)) * 100)
 
     def _compare_passives(
-        self,
-        user_char: Dict[str, Any],
-        top_chars: List[Dict[str, Any]]
+        self, user_char: Dict[str, Any], top_chars: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Compare passive tree allocations"""
 
@@ -366,37 +364,28 @@ class CharacterComparator:
 
         for node, count in node_usage.items():
             if count >= threshold and node not in user_nodes:
-                missing_popular_nodes.append({
-                    "node": node,
-                    "usage_rate": count / len(top_chars)
-                })
+                missing_popular_nodes.append({"node": node, "usage_rate": count / len(top_chars)})
 
         return {
             "user_node_count": len(user_nodes),
-            "avg_node_count": sum(
-                len(char.get("passive_tree", {}).get("hashes", []))
-                for char in top_chars
-            ) / len(top_chars) if top_chars else 0,
+            "avg_node_count": (
+                sum(len(char.get("passive_tree", {}).get("hashes", [])) for char in top_chars)
+                / len(top_chars)
+                if top_chars
+                else 0
+            ),
             "missing_popular_nodes": sorted(
-                missing_popular_nodes,
-                key=lambda x: x["usage_rate"],
-                reverse=True
-            )[:20]
+                missing_popular_nodes, key=lambda x: x["usage_rate"], reverse=True
+            )[:20],
         }
 
     def _identify_top_performers(
-        self,
-        characters: List[Dict[str, Any]],
-        focus: str
+        self, characters: List[Dict[str, Any]], focus: str
     ) -> List[Dict[str, Any]]:
         """Identify top performing characters based on focus"""
 
         # Sort by level (proxy for success)
-        sorted_chars = sorted(
-            characters,
-            key=lambda x: x.get("level", 0),
-            reverse=True
-        )
+        sorted_chars = sorted(characters, key=lambda x: x.get("level", 0), reverse=True)
 
         return [
             {
@@ -406,15 +395,13 @@ class CharacterComparator:
                 "stats": {
                     "life": char.get("stats", {}).get("life", 0),
                     "es": char.get("stats", {}).get("energyShield", 0),
-                }
+                },
             }
             for char in sorted_chars[:5]
         ]
 
     def _identify_key_differences(
-        self,
-        user_char: Dict[str, Any],
-        top_chars: List[Dict[str, Any]]
+        self, user_char: Dict[str, Any], top_chars: List[Dict[str, Any]]
     ) -> List[str]:
         """Identify key differences that matter"""
 
@@ -424,15 +411,25 @@ class CharacterComparator:
         user_level = user_char.get("level", 0)
         avg_level = self._avg_level(top_chars)
         if user_level < avg_level - 5:
-            differences.append(f"Level gap: You're level {user_level}, top players average {avg_level:.0f}")
+            differences.append(
+                f"Level gap: You're level {user_level}, top players average {avg_level:.0f}"
+            )
 
         # Stats differences
         user_stats = user_char.get("stats", {})
         life = user_stats.get("life", 0)
         es = user_stats.get("energyShield", 0)
 
-        avg_life = sum(c.get("stats", {}).get("life", 0) for c in top_chars) / len(top_chars) if top_chars else 0
-        avg_es = sum(c.get("stats", {}).get("energyShield", 0) for c in top_chars) / len(top_chars) if top_chars else 0
+        avg_life = (
+            sum(c.get("stats", {}).get("life", 0) for c in top_chars) / len(top_chars)
+            if top_chars
+            else 0
+        )
+        avg_es = (
+            sum(c.get("stats", {}).get("energyShield", 0) for c in top_chars) / len(top_chars)
+            if top_chars
+            else 0
+        )
 
         if life < avg_life * 0.7:
             differences.append(f"Low Life: {life} vs average {avg_life:.0f}")
@@ -464,37 +461,31 @@ class CharacterComparator:
         differences = gear_comp.get("differences", [])
 
         for diff in differences[:3]:
-            recommendations.append({
-                "category": "Gear",
-                "priority": "High",
-                "recommendation": diff
-            })
+            recommendations.append({"category": "Gear", "priority": "High", "recommendation": diff})
 
         # Skill recommendations
         skill_comp = comparison.get("skill_comparison", {})
         skill_recs = skill_comp.get("recommendations", [])
 
         for rec in skill_recs[:2]:
-            recommendations.append({
-                "category": "Skills",
-                "priority": "Medium",
-                "recommendation": rec
-            })
+            recommendations.append(
+                {"category": "Skills", "priority": "Medium", "recommendation": rec}
+            )
 
         # Stat recommendations from key differences
         for diff in comparison.get("key_differences", [])[:3]:
-            recommendations.append({
-                "category": "Stats",
-                "priority": "Critical" if "Resistance" in diff else "High",
-                "recommendation": diff
-            })
+            recommendations.append(
+                {
+                    "category": "Stats",
+                    "priority": "Critical" if "Resistance" in diff else "High",
+                    "recommendation": diff,
+                }
+            )
 
         return recommendations
 
     def _find_gear_differences(
-        self,
-        user_uniques: Dict[str, str],
-        popular_uniques: Dict[str, int]
+        self, user_uniques: Dict[str, str], popular_uniques: Dict[str, int]
     ) -> List[str]:
         """Find gear differences worth mentioning"""
 
@@ -514,7 +505,7 @@ class CharacterComparator:
         self,
         user_char: Dict[str, Any],
         common_supports: Dict[str, int],
-        avg_levels: Dict[str, float]
+        avg_levels: Dict[str, float],
     ) -> List[str]:
         """Generate skill setup recommendations"""
 

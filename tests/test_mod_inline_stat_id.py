@@ -36,6 +36,7 @@ from src.mod_data import (  # noqa: E402
 # Helper-direct mode — no MCP init
 # ---------------------------------------------------------------------------
 
+
 def test_resolve_inline_stat_id_is_preferred():
     """Inline stat_id wins even when stat_lookup has a different value."""
     entry = {"stat_id": "from_inline", "stat_key": 42, "is_empty": False}
@@ -151,6 +152,7 @@ def test_canonical_and_legacy_paths_differ():
 # Real-data sanity — verifies the canonical extraction has inline stat_id
 # ---------------------------------------------------------------------------
 
+
 def test_real_mods_have_inline_stat_id_on_active_stats():
     """At least one record in the canonical file has inline stat_id."""
     p = canonical_mods_path(PROJECT_ROOT / "data")
@@ -176,9 +178,11 @@ def test_real_mods_have_inline_stat_id_on_active_stats():
 # Handler mode — methodology-rule lazy fixture
 # ---------------------------------------------------------------------------
 
+
 @pytest_asyncio.fixture(scope="module")
 async def mcp():
     from src.mcp_server import PoE2BuildOptimizerMCP
+
     instance = PoE2BuildOptimizerMCP()
     await instance.initialize()
     return instance

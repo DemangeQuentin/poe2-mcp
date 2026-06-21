@@ -25,8 +25,7 @@ from src.api.poe_ninja_api import PoeNinjaAPI
 from src.api.rate_limiter import RateLimiter
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -62,8 +61,10 @@ class DatabasePopulator:
             # Check if data already exists
             if await self._check_existing_data():
                 logger.info("Database already contains data")
-                response = input("Do you want to re-populate? This will clear existing data. (y/N): ")
-                if response.lower() != 'y':
+                response = input(
+                    "Do you want to re-populate? This will clear existing data. (y/N): "
+                )
+                if response.lower() != "y":
                     logger.info("Skipping population")
                     return
 
@@ -129,7 +130,7 @@ class DatabasePopulator:
                             stats={},
                             mods={},
                             description=f"Source: {item_data.get('source', 'unknown')}",
-                            flavor_text=""
+                            flavor_text="",
                         )
 
                         session.add(unique_item)
@@ -166,7 +167,7 @@ class DatabasePopulator:
                             item_class=item_data.get("item_class", "Other"),
                             level_requirement=item_data.get("level_requirement", 0),
                             stats={},
-                            mods={}
+                            mods={},
                         )
 
                         session.add(item)
@@ -202,7 +203,7 @@ class DatabasePopulator:
                             tags=skill_data.get("tags", []),
                             description="",
                             level_requirement=1,
-                            stats={}
+                            stats={},
                         )
 
                         session.add(skill)
@@ -238,7 +239,7 @@ class DatabasePopulator:
                             tags=support_data.get("tags", []),
                             description="",
                             level_requirement=1,
-                            stats={}
+                            stats={},
                         )
 
                         session.add(support)
@@ -265,7 +266,7 @@ class DatabasePopulator:
                 "UniqueArmour",
                 "UniqueAccessory",
                 "UniqueFlask",
-                "UniqueJewel"
+                "UniqueJewel",
             ]
 
             total_prices = 0
@@ -273,8 +274,7 @@ class DatabasePopulator:
             for item_type in item_types:
                 try:
                     items = await self.ninja_api.get_item_prices(
-                        league="Standard",
-                        item_type=item_type
+                        league="Standard", item_type=item_type
                     )
 
                     if items:
@@ -305,7 +305,9 @@ class DatabasePopulator:
                                         total_prices += 1
 
                                 except Exception as e:
-                                    logger.debug(f"Failed to update price for {item.get('name')}: {e}")
+                                    logger.debug(
+                                        f"Failed to update price for {item.get('name')}: {e}"
+                                    )
                                     continue
 
                             await session.commit()
@@ -328,7 +330,7 @@ class DatabasePopulator:
                 version = GameDataVersion(
                     version=datetime.utcnow().strftime("%Y%m%d_%H%M%S"),
                     source="poe2db.tw + poe.ninja",
-                    notes="Automated population via scraper"
+                    notes="Automated population via scraper",
                 )
                 session.add(version)
                 await session.commit()
@@ -368,7 +370,8 @@ async def main():
 
 
 if __name__ == "__main__":
-    print("""
+    print(
+        """
 ╔══════════════════════════════════════════════════════════════╗
 ║    PoE2 MCP Server - Database Population Script             ║
 ║                                                              ║
@@ -382,6 +385,7 @@ if __name__ == "__main__":
 ║  Note: This process may take 5-10 minutes depending on      ║
 ║        network speed and rate limiting.                      ║
 ╚══════════════════════════════════════════════════════════════╝
-    """)
+    """
+    )
 
     asyncio.run(main())

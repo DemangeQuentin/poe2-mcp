@@ -26,9 +26,7 @@ class QueryHandler:
             self.client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
     async def handle_query(
-        self,
-        query: str,
-        character_context: Optional[Dict[str, Any]] = None
+        self, query: str, character_context: Optional[Dict[str, Any]] = None
     ) -> str:
         """
         Handle a natural language query
@@ -60,9 +58,7 @@ Focus on practical recommendations that can be implemented immediately."""
                 max_tokens=settings.AI_MAX_TOKENS,
                 temperature=settings.AI_TEMPERATURE,
                 system=system_prompt,
-                messages=[
-                    {"role": "user", "content": user_message}
-                ]
+                messages=[{"role": "user", "content": user_message}],
             )
 
             return response.content[0].text

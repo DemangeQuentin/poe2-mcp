@@ -10,6 +10,7 @@ Locks in:
   - Hardcoded ASCENDANCY_TO_CLASS gets augmented from fresh data so
     ``get_base_class`` is correct for the new ascendancies.
 """
+
 from __future__ import annotations
 
 import json
@@ -27,6 +28,7 @@ if str(PROJECT_ROOT) not in sys.path:
 def resolver():
     """Construct a resolver pointed at the repo's real data/ dir."""
     from src.parsers.ascendancy_resolver import AscendancyResolver
+
     return AscendancyResolver(data_dir=PROJECT_ROOT / "data")
 
 
@@ -36,9 +38,9 @@ def test_loads_fresh_data_with_new_ascendancies(resolver):
     asc_dict = resolver._all_ascendancies.get("ascendancies", {})
     # The four 0.5 ascendancies the legacy all_ascendancies.json was missing.
     for name in ["Spirit Walker", "Martial Artist", "Abyssal Lich", "Disciple of Varashta"]:
-        assert name in asc_dict, (
-            f"missing {name!r} — migration to data/game/ascendancies/ didn't take effect"
-        )
+        assert (
+            name in asc_dict
+        ), f"missing {name!r} — migration to data/game/ascendancies/ didn't take effect"
 
 
 def test_active_count_matches_fresh_extraction(resolver):
@@ -85,15 +87,30 @@ def test_unused_placeholder_rows_excluded(resolver):
 def test_schema_adapter_is_static_and_pure(tmp_path):
     """The adapter should work on synthetic input without touching disk."""
     from src.parsers.ascendancy_resolver import AscendancyResolver
+
     synthetic = {
         "metadata": {"source": "test"},
         "ascendancies": [
-            {"row_index": 0, "id": "X1", "display_name": "[DNT-UNUSED] foo",
-             "base_class": "Warrior", "is_unused": True},
-            {"row_index": 1, "id": "X2", "display_name": "Real Asc",
-             "base_class": "Warrior", "is_unused": False},
-            {"row_index": 2, "id": "X3", "display_name": "Other",
-             "base_class": "Witch"},  # no is_unused → treated as active
+            {
+                "row_index": 0,
+                "id": "X1",
+                "display_name": "[DNT-UNUSED] foo",
+                "base_class": "Warrior",
+                "is_unused": True,
+            },
+            {
+                "row_index": 1,
+                "id": "X2",
+                "display_name": "Real Asc",
+                "base_class": "Warrior",
+                "is_unused": False,
+            },
+            {
+                "row_index": 2,
+                "id": "X3",
+                "display_name": "Other",
+                "base_class": "Witch",
+            },  # no is_unused → treated as active
         ],
     }
     result = AscendancyResolver._adapt_fresh_schema(synthetic)
@@ -108,13 +125,18 @@ def test_legacy_fallback_when_fresh_missing(tmp_path):
     """If data/game/ascendancies/ doesn't exist, resolver must fall back to
     data/complete_models/ — graceful degradation, not a crash."""
     from src.parsers.ascendancy_resolver import AscendancyResolver
+
     # Stub data tree: no game/ascendancies, just legacy complete_models
     (tmp_path / "complete_models").mkdir()
-    (tmp_path / "complete_models" / "all_ascendancies.json").write_text(json.dumps({
-        "ascendancies": {
-            "Titan": {"base_class": "Warrior", "notable_nodes": {}},
-        }
-    }))
+    (tmp_path / "complete_models" / "all_ascendancies.json").write_text(
+        json.dumps(
+            {
+                "ascendancies": {
+                    "Titan": {"base_class": "Warrior", "notable_nodes": {}},
+                }
+            }
+        )
+    )
     r = AscendancyResolver(data_dir=tmp_path)
     r._ensure_loaded()
     assert "Titan" in r._all_ascendancies.get("ascendancies", {})
@@ -123,6 +145,7 @@ def test_legacy_fallback_when_fresh_missing(tmp_path):
 def test_no_data_at_all_does_not_crash(tmp_path):
     """If neither dataset is available, resolver loads empty without raising."""
     from src.parsers.ascendancy_resolver import AscendancyResolver
+
     r = AscendancyResolver(data_dir=tmp_path)
     r._ensure_loaded()
     # Hardcoded ASCENDANCY_TO_CLASS still answers for known names

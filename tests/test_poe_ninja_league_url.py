@@ -14,6 +14,7 @@ The helper test uses ``CharacterFetcher.__new__`` to bypass ``__init__``
 because the full constructor opens an httpx client we don't want in unit
 scope.
 """
+
 from __future__ import annotations
 
 import sys
@@ -29,6 +30,7 @@ if str(PROJECT_ROOT) not in sys.path:
 def _bare_fetcher():
     """Construct a CharacterFetcher without firing __init__ (no httpx client)."""
     from src.api.character_fetcher import CharacterFetcher
+
     return CharacterFetcher.__new__(CharacterFetcher)
 
 
@@ -74,6 +76,7 @@ def test_league_slug_previous_leagues_still_resolve():
 # URL construction — verify the slug lands in the right path segment
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_fetch_builds_url_with_league_slug(monkeypatch):
     """
@@ -92,11 +95,14 @@ async def test_fetch_builds_url_with_league_slug(monkeypatch):
 
     class _FakeStreamResponse:
         status_code = 404
+
         async def aiter_lines(self):
             if False:
                 yield
+
         async def __aenter__(self):
             return self
+
         async def __aexit__(self, *a):
             return False
 
@@ -104,8 +110,10 @@ async def test_fetch_builds_url_with_league_slug(monkeypatch):
         def __init__(self, url):
             captured_urls.append(url)
             self._resp = _FakeStreamResponse()
+
         async def __aenter__(self):
             return self._resp
+
         async def __aexit__(self, *a):
             return False
 

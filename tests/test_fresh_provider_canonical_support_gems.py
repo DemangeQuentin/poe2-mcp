@@ -45,6 +45,7 @@ def provider():
 # Path + load-source preconditions
 # ---------------------------------------------------------------------------
 
+
 def test_canonical_path_exists():
     """The canonical extracted file must be present in the repo."""
     assert SUPPORT_GEMS_CANONICAL.exists(), (
@@ -67,6 +68,7 @@ def test_load_count_matches_canonical(provider):
 # ---------------------------------------------------------------------------
 # Wildfire (the headline fix)
 # ---------------------------------------------------------------------------
+
 
 def test_wildfire_present_by_id(provider):
     """Wildfire is present in canonical extraction under SupportWildfirePlayer."""
@@ -106,6 +108,7 @@ def test_wildfire_display_name_mirrored(provider):
 # Regression: pre-0.5 gems still resolve
 # ---------------------------------------------------------------------------
 
+
 def test_wildshards_still_resolves(provider):
     """Wildshards existed in BOTH complete_models AND the canonical extraction.
     It must keep resolving after the switch."""
@@ -127,12 +130,13 @@ def test_tempestuous_tempo_still_resolves(provider):
 # Search surface
 # ---------------------------------------------------------------------------
 
+
 def test_search_finds_wildfire(provider):
     """Substring search surfaces Wildfire under 'wild' query."""
     results = provider.search_support_gems("wild")
     names = {r.get("display_name") or r.get("name") for r in results}
-    assert "Wildfire Support" in names, (
-        f"search('wild') failed to surface Wildfire. Got: {sorted(names)}"
-    )
+    assert (
+        "Wildfire Support" in names
+    ), f"search('wild') failed to surface Wildfire. Got: {sorted(names)}"
     # Sanity: also returns Wildshards variants
     assert any("Wildshards" in n for n in names if n)

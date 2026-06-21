@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class MechanicCategory(Enum):
     """Categories of game mechanics"""
+
     DAMAGE = "damage"
     DEFENSE = "defense"
     AILMENTS = "ailments"
@@ -32,6 +33,7 @@ class MechanicCategory(Enum):
 @dataclass
 class MechanicExplanation:
     """Explanation of a game mechanic"""
+
     name: str
     category: MechanicCategory
     short_description: str
@@ -81,7 +83,7 @@ class PoE2MechanicsKnowledgeBase:
         # DAMAGING AILMENTS
         # =====================================================================
 
-        self.mechanics['poison'] = MechanicExplanation(
+        self.mechanics["poison"] = MechanicExplanation(
             name="Poison",
             category=MechanicCategory.AILMENTS,
             short_description="Chaos DoT based on physical and chaos damage - DEFAULT STACK LIMIT OF 1",
@@ -124,23 +126,23 @@ Example (with Escalating Poison - stack limit 2):
                 "Default: 5 poison applications = only 1 deals damage (strongest)",
                 "With Escalating Poison: 5 applications = 2 deal damage",
                 "Pathfinder ascendancy and passives can increase stack limit further",
-                "Poison bypasses ES - great against ES-heavy enemies"
+                "Poison bypasses ES - great against ES-heavy enemies",
             ],
             common_questions={
                 "Does poison stack in PoE2?": "By default NO - you have a stack limit of 1. You need Escalating Poison Support or other sources to increase the limit.",
                 "What increases poison stack limit?": "Escalating Poison Support (+1), certain passives, Pathfinder ascendancy nodes, and some unique items.",
                 "Can all damage types poison?": "By default, only physical and chaos damage contribute to poison. Special modifiers can allow other damage types.",
                 "Does poison work with Energy Shield builds?": "Yes! Poison bypasses ES entirely, making it effective against ES-heavy enemies.",
-                "Is poison good in PoE2?": "Poison builds require investment in stack limit to be effective. With proper scaling, they can deal massive damage."
+                "Is poison good in PoE2?": "Poison builds require investment in stack limit to be effective. With proper scaling, they can deal massive damage.",
             },
-            related_mechanics=['bleed', 'ignite', 'chaos_damage', 'escalating_poison'],
+            related_mechanics=["bleed", "ignite", "chaos_damage", "escalating_poison"],
             important_notes=[
                 "DEFAULT STACK LIMIT OF 1 - This is NOT like PoE1!",
                 "Escalating Poison Support is almost mandatory for poison builds",
                 "Poison damage = 20% of phys+chaos per second (not 30% like PoE1)",
                 "Duration is 2 seconds base",
                 "Bypasses Energy Shield completely",
-                "Multiple instances can exist but only strongest up to limit deals damage"
+                "Multiple instances can exist but only strongest up to limit deals damage",
             ],
             changed_from_poe1="""
 MAJOR CHANGES from PoE1:
@@ -149,10 +151,10 @@ MAJOR CHANGES from PoE1:
 - Duration is 2 seconds (was 2 seconds in PoE1 - unchanged)
 - Need Escalating Poison or other sources to stack effectively
 - Poison builds require different gear/passive choices than PoE1
-"""
+""",
         )
 
-        self.mechanics['chaos_damage'] = MechanicExplanation(
+        self.mechanics["chaos_damage"] = MechanicExplanation(
             name="Chaos Damage",
             category=MechanicCategory.DAMAGE,
             short_description="The fifth damage type - mitigated only by Chaos Resistance, end of the conversion chain",
@@ -191,7 +193,7 @@ Chaos Damage Taken = Chaos Damage x (1 - Chaos Resistance / 100)
                 "Can I convert chaos damage to fire?": "No. Chaos is the end of the conversion chain - it cannot be converted to anything else.",
                 "What amplifies chaos damage?": "Withered stacks (increased chaos damage taken), curses like Despair, and reducing enemy chaos resistance.",
             },
-            related_mechanics=['wither', 'poison', 'damage_conversion', 'resistances'],
+            related_mechanics=["wither", "poison", "damage_conversion", "resistances"],
             important_notes=[
                 "Mitigated ONLY by chaos resistance - armor does nothing",
                 "End of the conversion chain - cannot be converted away",
@@ -200,7 +202,7 @@ Chaos Damage Taken = Chaos Damage x (1 - Chaos Resistance / 100)
             ],
         )
 
-        self.mechanics['wither'] = MechanicExplanation(
+        self.mechanics["wither"] = MechanicExplanation(
             name="Wither",
             category=MechanicCategory.INTERACTION,
             short_description="Stacking debuff that makes enemies take increased chaos damage",
@@ -239,7 +241,7 @@ percentage and stack cap are balance-sensitive; verify in-game. Query
                 "Does Withered stack?": "Yes - it is a stacking debuff; each stack further amplifies chaos damage taken (per-stack value and cap are patch-dependent).",
                 "Does Withered affect poison?": "Poison deals chaos damage, so chaos-damage-taken amplification from Withered applies to it.",
             },
-            related_mechanics=['chaos_damage', 'poison', 'curses'],
+            related_mechanics=["chaos_damage", "poison", "curses"],
             important_notes=[
                 "Core amplifier for every chaos/DoT archetype",
                 "Canonical stat_ids: withered_on_hit_for_2_seconds_%_chance, wither_duration_+%, wither_radius_+%",
@@ -247,7 +249,7 @@ percentage and stack cap are balance-sensitive; verify in-game. Query
             ],
         )
 
-        self.mechanics['bleed'] = MechanicExplanation(
+        self.mechanics["bleed"] = MechanicExplanation(
             name="Bleed",
             category=MechanicCategory.AILMENTS,
             short_description="Physical DoT that deals more damage when target moves",
@@ -288,23 +290,23 @@ NOTE: PoE2 does NOT have the Crimson Dance keystone. Bleed does not stack.
                 "Single big hit bleed is the only viable approach in PoE2 (no stacking)",
                 "Moving enemies take double bleed damage - use knockback/terrain",
                 "Aggravated Bleed makes bleed always deal 'moving' damage",
-                "Bleed bypasses both Energy Shield AND Armor"
+                "Bleed bypasses both Energy Shield AND Armor",
             ],
             common_questions={
                 "Does bleed stack in PoE2?": "NO! PoE2 does not have Crimson Dance. Only the strongest bleed deals damage.",
                 "Why doesn't my bleed apply through ES?": "Bleed only applies when hits damage Life. ES must be depleted first.",
                 "Is Aggravated Bleed worth it?": "Yes for consistent damage, especially against stationary bosses.",
                 "Does armor reduce bleed damage?": "No! Armor only affects hits. Bleed bypasses armor entirely.",
-                "What happened to Crimson Dance?": "Crimson Dance does NOT exist in PoE2. Bleed cannot stack."
+                "What happened to Crimson Dance?": "Crimson Dance does NOT exist in PoE2. Bleed cannot stack.",
             },
-            related_mechanics=['poison', 'ignite', 'physical_damage', 'aggravated_bleed'],
+            related_mechanics=["poison", "ignite", "physical_damage", "aggravated_bleed"],
             important_notes=[
                 "Only applies from hits that damage LIFE",
                 "Bypasses Energy Shield AND Armor for the DoT",
                 "100% more damage while target moves - huge damage boost",
                 "Does NOT stack - only strongest bleed deals damage",
                 "Crimson Dance does NOT exist in PoE2",
-                "Aggravated Bleed = always 'moving' damage"
+                "Aggravated Bleed = always 'moving' damage",
             ],
             changed_from_poe1="""
 MAJOR CHANGES from PoE1:
@@ -314,10 +316,10 @@ MAJOR CHANGES from PoE1:
 - Moving bonus is 100% more (doubles to 30%/s)
 - Still requires hitting Life to apply
 - Focus on big single hits, not attack speed
-"""
+""",
         )
 
-        self.mechanics['ignite'] = MechanicExplanation(
+        self.mechanics["ignite"] = MechanicExplanation(
             name="Ignite",
             category=MechanicCategory.AILMENTS,
             short_description="Fire DoT based on fire damage dealt",
@@ -356,22 +358,22 @@ Critical strikes increase the fire damage dealt, indirectly increasing ignite da
                 "Big fire hits work best for ignite (no stacking)",
                 "Flameblast charged up = massive single ignite",
                 "Chance scales with damage dealt vs enemy threshold",
-                "Boss with high threshold = lower ignite chance per hit"
+                "Boss with high threshold = lower ignite chance per hit",
             ],
             common_questions={
                 "Does ignite stack?": "No. Only the highest damage ignite deals damage. Use big hits.",
                 "Why does my ignite chance vary?": "Ignite chance depends on damage dealt vs enemy ailment threshold. Bigger hits = higher chance.",
                 "Do crits guarantee ignite?": "NO! In PoE2, crits do NOT guarantee ailments. They just deal more damage, which increases chance.",
                 "Is ignite good for bossing?": "Can be, but bosses have high thresholds. Need big damage investment.",
-                "What affects ignite damage?": "Fire damage, DoT multipliers, ignite effect modifiers. NOT spell damage after the hit."
+                "What affects ignite damage?": "Fire damage, DoT multipliers, ignite effect modifiers. NOT spell damage after the hit.",
             },
-            related_mechanics=['poison', 'bleed', 'fire_damage', 'ailment_threshold'],
+            related_mechanics=["poison", "bleed", "fire_damage", "ailment_threshold"],
             important_notes=[
                 "Does NOT stack - only strongest ignite deals damage",
                 "Crits do NOT guarantee ignite in PoE2",
                 "Chance based on damage vs ailment threshold (usually enemy max life)",
                 "20% of fire damage per second for 4 seconds = 80% of hit as DoT",
-                "Big single hits are better than many small hits for ignite"
+                "Big single hits are better than many small hits for ignite",
             ],
             changed_from_poe1="""
 MAJOR CHANGES from PoE1:
@@ -380,14 +382,14 @@ MAJOR CHANGES from PoE1:
 - Base damage and duration similar to PoE1
 - Still doesn't stack (same as PoE1)
 - Threshold-based chance is new to PoE2
-"""
+""",
         )
 
         # =====================================================================
         # ELEMENTAL AILMENTS (NON-DAMAGING)
         # =====================================================================
 
-        self.mechanics['freeze'] = MechanicExplanation(
+        self.mechanics["freeze"] = MechanicExplanation(
             name="Freeze",
             category=MechanicCategory.AILMENTS,
             short_description="Completely stops target actions for up to 4 seconds",
@@ -430,23 +432,23 @@ Example:
                 "Build up freeze with multiple cold hits",
                 "Bosses have increasing freeze thresholds - can't perma-freeze",
                 "Freeze PAUSES boss attacks - they resume casting after freeze",
-                "Shatter frozen enemies on kill for on-death immunity"
+                "Shatter frozen enemies on kill for on-death immunity",
             ],
             common_questions={
                 "Can I perma-freeze bosses?": "No. Boss freeze thresholds increase after each freeze, requiring more and more damage.",
                 "Does freeze interrupt boss attacks?": "No! Freeze PAUSES actions. Boss will resume casting when freeze ends.",
                 "Is freeze different from chill?": "Yes! Freeze stops actions completely. Chill only slows. They're independent.",
                 "Do crits guarantee freeze?": "No. Crits help by dealing more damage, but don't guarantee freeze in PoE2.",
-                "How do I shatter enemies?": "Kill a frozen enemy. Shatter prevents on-death effects."
+                "How do I shatter enemies?": "Kill a frozen enemy. Shatter prevents on-death effects.",
             },
-            related_mechanics=['chill', 'cold_damage', 'shatter', 'ailment_threshold'],
+            related_mechanics=["chill", "cold_damage", "shatter", "ailment_threshold"],
             important_notes=[
                 "Uses BUILDUP system - not instant freeze",
                 "PAUSES actions (doesn't interrupt) - enemies resume after",
                 "Boss thresholds INCREASE after each freeze",
                 "Independent from Chill",
                 "Base duration up to 4 seconds",
-                "Crits do NOT guarantee freeze in PoE2"
+                "Crits do NOT guarantee freeze in PoE2",
             ],
             changed_from_poe1="""
 MAJOR CHANGES from PoE1:
@@ -455,10 +457,10 @@ MAJOR CHANGES from PoE1:
 - Boss thresholds increase with each freeze (anti-perma-freeze)
 - Crits don't guarantee freeze
 - More accessible but harder to maintain on bosses
-"""
+""",
         )
 
-        self.mechanics['chill'] = MechanicExplanation(
+        self.mechanics["chill"] = MechanicExplanation(
             name="Chill",
             category=MechanicCategory.AILMENTS,
             short_description="Slows target action speed by up to 50%",
@@ -491,26 +493,26 @@ Example:
                 "Any cold damage applies chill automatically",
                 "Big cold hits = stronger slow (up to 50%)",
                 "Chill is separate from freeze - can have both",
-                "2 second duration, refreshes on new cold hits"
+                "2 second duration, refreshes on new cold hits",
             ],
             common_questions={
                 "How do I apply chill?": "Any cold damage automatically applies chill. No special chance needed.",
                 "What's the max chill effect?": "50% reduced action speed.",
                 "Is chill the same as freeze?": "No! Chill slows, freeze stops completely. They're independent ailments.",
-                "Does chill work on bosses?": "Yes, but effect may be reduced on some bosses."
+                "Does chill work on bosses?": "Yes, but effect may be reduced on some bosses.",
             },
-            related_mechanics=['freeze', 'cold_damage', 'action_speed'],
+            related_mechanics=["freeze", "cold_damage", "action_speed"],
             important_notes=[
                 "Applied by ANY cold damage automatically",
                 "Max slow is 50%",
                 "2 second base duration",
                 "Independent from Freeze",
-                "Scales with damage dealt"
+                "Scales with damage dealt",
             ],
-            changed_from_poe1="Similar to PoE1 but with ailment threshold scaling."
+            changed_from_poe1="Similar to PoE1 but with ailment threshold scaling.",
         )
 
-        self.mechanics['shock'] = MechanicExplanation(
+        self.mechanics["shock"] = MechanicExplanation(
             name="Shock",
             category=MechanicCategory.AILMENTS,
             short_description="Target takes 20% increased damage from all sources",
@@ -548,21 +550,21 @@ Example:
                 "Flat 20% damage increase - doesn't scale with damage",
                 "Affects ALL damage types (physical, elemental, DoT)",
                 "Great for party play - everyone benefits",
-                "4 second duration, can be refreshed"
+                "4 second duration, can be refreshed",
             ],
             common_questions={
                 "Does shock scale with damage in PoE2?": "NO! Shock is a flat 20% in PoE2. This is different from PoE1.",
                 "Does shock affect DoT damage?": "Yes! All damage the enemy takes is increased by 20%.",
                 "Can I stack multiple shocks?": "No. Only one shock can be active at a time.",
-                "Is shock worth investing in?": "20% more damage is significant, especially for party play."
+                "Is shock worth investing in?": "20% more damage is significant, especially for party play.",
             },
-            related_mechanics=['electrocute', 'lightning_damage', 'ailment_threshold'],
+            related_mechanics=["electrocute", "lightning_damage", "ailment_threshold"],
             important_notes=[
                 "FLAT 20% increased damage taken - does NOT scale",
                 "This is different from PoE1 where shock scaled up to 50%",
                 "Affects ALL damage types",
                 "4 second duration",
-                "Does not stack"
+                "Does not stack",
             ],
             changed_from_poe1="""
 MAJOR CHANGE from PoE1:
@@ -570,10 +572,10 @@ MAJOR CHANGE from PoE1:
 - PoE2: Shock is a FLAT 20% (does not scale)
 - This is a significant nerf to big-hit shock builds
 - But makes shock more consistent and accessible
-"""
+""",
         )
 
-        self.mechanics['electrocute'] = MechanicExplanation(
+        self.mechanics["electrocute"] = MechanicExplanation(
             name="Electrocute",
             category=MechanicCategory.AILMENTS,
             short_description="NEW in PoE2 - Hard CC that stops target actions for 5 seconds",
@@ -607,31 +609,31 @@ NOT ALL LIGHTNING CAN ELECTROCUTE:
                 "Lightning equivalent of Freeze for crowd control",
                 "Only specific skills can electrocute (not all lightning)",
                 "5 second base duration (longer than freeze's 4 seconds)",
-                "INTERRUPTS actions (unlike freeze which pauses)"
+                "INTERRUPTS actions (unlike freeze which pauses)",
             ],
             common_questions={
                 "Can any lightning damage electrocute?": "NO! Only specific skills and effects. Regular lightning only shocks.",
                 "How is electrocute different from shock?": "Shock = 20% damage taken debuff. Electrocute = hard CC that stops actions.",
                 "How is electrocute different from freeze?": "Both stop actions, but electrocute INTERRUPTS while freeze PAUSES.",
-                "What skills can electrocute?": "Check skill descriptions - only skills mentioning 'Electrocute' can apply it."
+                "What skills can electrocute?": "Check skill descriptions - only skills mentioning 'Electrocute' can apply it.",
             },
-            related_mechanics=['shock', 'freeze', 'lightning_damage'],
+            related_mechanics=["shock", "freeze", "lightning_damage"],
             important_notes=[
                 "NEW to PoE2 - didn't exist in PoE1",
                 "Only specific skills can Electrocute",
                 "Regular lightning damage only Shocks",
                 "5 second duration (longer than freeze)",
                 "INTERRUPTS actions (doesn't pause like freeze)",
-                "Boss thresholds increase after each electrocute"
+                "Boss thresholds increase after each electrocute",
             ],
-            changed_from_poe1="Electrocute is completely NEW in PoE2. PoE1 only had Shock for lightning."
+            changed_from_poe1="Electrocute is completely NEW in PoE2. PoE1 only had Shock for lightning.",
         )
 
         # =====================================================================
         # CROWD CONTROL
         # =====================================================================
 
-        self.mechanics['stun'] = MechanicExplanation(
+        self.mechanics["stun"] = MechanicExplanation(
             name="Stun",
             category=MechanicCategory.CROWD_CONTROL,
             short_description="Two-tier system: Light Stun (brief) and Heavy Stun (long)",
@@ -679,22 +681,22 @@ Players have 50% more stun threshold per light stun in past 4 seconds
                 "Physical melee hits have 125% more stun chance (1.5 x 1.5)",
                 "Build up heavy stun with consistent hits",
                 "Look for 'Primed for Stun' indicator on enemies",
-                "Use Crushing Blows to instantly heavy stun primed enemies"
+                "Use Crushing Blows to instantly heavy stun primed enemies",
             ],
             common_questions={
                 "Can I be Heavy Stunned?": "No. Players can only receive Light Stuns.",
                 "What is 'Primed for Stun'?": "When enemy has 40-70% heavy stun buildup. Crushing Blows instant-stun primed enemies.",
                 "How do I stun bosses?": "Build up heavy stun with consistent damage. Use Crushing Blow when primed.",
-                "Does stun threshold scale with life?": "Yes. Higher life = higher stun threshold = harder to stun."
+                "Does stun threshold scale with life?": "Yes. Higher life = higher stun threshold = harder to stun.",
             },
-            related_mechanics=['heavy_stun', 'light_stun', 'crushing_blow', 'poise'],
+            related_mechanics=["heavy_stun", "light_stun", "crushing_blow", "poise"],
             important_notes=[
                 "Two-tier system: Light Stun and Heavy Stun",
                 "Players CANNOT be Heavy Stunned",
                 "Physical and melee have bonus stun chance",
                 "Heavy Stun buildup decays over time",
                 "Crushing Blows trigger instant Heavy Stun on Primed enemies",
-                "Player stun threshold increases after being stunned recently"
+                "Player stun threshold increases after being stunned recently",
             ],
             changed_from_poe1="""
 COMPLETELY REDESIGNED from PoE1:
@@ -704,14 +706,14 @@ COMPLETELY REDESIGNED from PoE1:
 - "Primed for Stun" indicator is new
 - Crushing Blow mechanic is new
 - Much more interactive than PoE1's simple stun system
-"""
+""",
         )
 
         # =====================================================================
         # DEFENSES
         # =====================================================================
 
-        self.mechanics['armor'] = MechanicExplanation(
+        self.mechanics["armor"] = MechanicExplanation(
             name="Armor",
             category=MechanicCategory.DEFENSE,
             short_description="Reduces physical damage from hits - better against small hits",
@@ -751,26 +753,26 @@ Examples (post-patch 0.1.1 formula):
                 "Great against trash mobs with many small hits",
                 "Struggles against boss slams - need other defenses too",
                 "Does NOT reduce bleed DoT",
-                "Physical spells are also reduced by armor"
+                "Physical spells are also reduced by armor",
             ],
             common_questions={
                 "Does armor reduce bleed?": "No. Armor only affects the initial hit. Bleed DoT is not reduced.",
                 "Is armor good against bosses?": "It helps, but big boss hits overwhelm armor. Layer with other defenses.",
                 "Does armor work against spells?": "Yes! Physical spells are reduced by armor.",
-                "How much armor do I need?": "Depends on content. 10k+ for endgame, but always layer defenses."
+                "How much armor do I need?": "Depends on content. 10k+ for endgame, but always layer defenses.",
             },
-            related_mechanics=['evasion', 'block', 'physical_damage_reduction'],
+            related_mechanics=["evasion", "block", "physical_damage_reduction"],
             important_notes=[
                 "Only reduces HITS, not DoT",
                 "More effective against small hits",
                 "90% cap on damage reduction",
                 "Formula: Armor / (Armor + 10 x Damage)",
-                "Layer with other defenses for big hits"
+                "Layer with other defenses for big hits",
             ],
-            changed_from_poe1="Formula changed in patch 0.1.1 from 12x to 10x multiplier, making armor more effective."
+            changed_from_poe1="Formula changed in patch 0.1.1 from 12x to 10x multiplier, making armor more effective.",
         )
 
-        self.mechanics['evasion'] = MechanicExplanation(
+        self.mechanics["evasion"] = MechanicExplanation(
             name="Evasion",
             category=MechanicCategory.DEFENSE,
             short_description="Chance to completely avoid ALL hits (except boss red-flash skills)",
@@ -806,23 +808,23 @@ CANNOT EVADE: Boss skills with red flash indicator
                 "Complete damage avoidance when you evade",
                 "Works against ALL hits including area damage in PoE2",
                 "Watch for RED FLASH on boss skills - those cannot be evaded",
-                "Evasion is much stronger in PoE2 than PoE1"
+                "Evasion is much stronger in PoE2 than PoE1",
             ],
             common_questions={
                 "Does evasion work against spells?": "Yes! In PoE2, evasion works against ALL hits including spells.",
                 "Can I evade area damage?": "YES! In PoE2, evasion works against area damage by default. Acrobatics was removed.",
                 "What is Acrobatics?": "Acrobatics was REMOVED in patch 0.3.0. Its functionality is now baseline evasion.",
                 "What can't I evade?": "Boss skills with a red flash indicator cannot be evaded. You must dodge roll these.",
-                "Is evasion reliable?": "Uses entropy system for consistency. Very strong in PoE2."
+                "Is evasion reliable?": "Uses entropy system for consistency. Very strong in PoE2.",
             },
-            related_mechanics=['armor', 'block', 'dodge_roll', 'deflect'],
+            related_mechanics=["armor", "block", "dodge_roll", "deflect"],
             important_notes=[
                 "Complete damage avoidance on evade",
                 "Works against ALL hits including area damage",
                 "CANNOT evade boss red-flash skills",
                 "Acrobatics keystone was REMOVED in 0.3.0",
                 "Uses entropy system for consistency",
-                "Much stronger than PoE1 evasion"
+                "Much stronger than PoE1 evasion",
             ],
             changed_from_poe1="""
 MAJOR CHANGES from PoE1:
@@ -831,10 +833,10 @@ MAJOR CHANGES from PoE1:
 - Works against spells in PoE2
 - Cannot evade boss red-flash skills (must dodge roll)
 - Significantly stronger defense layer than in PoE1
-"""
+""",
         )
 
-        self.mechanics['energy_shield'] = MechanicExplanation(
+        self.mechanics["energy_shield"] = MechanicExplanation(
             name="Energy Shield",
             category=MechanicCategory.DEFENSE,
             short_description="Extra HP pool that recharges - absorbs all damage except bleed/poison",
@@ -879,22 +881,22 @@ PoE2 CHAOS INOCULATION:
                 "Bleed/poison bypass ES - use CI for immunity in PoE2",
                 "Recharges for free - don't need flasks",
                 "2 second delay after damage before recharge starts",
-                "CI in PoE2 = chaos + bleed + poison immunity (life = 1)"
+                "CI in PoE2 = chaos + bleed + poison immunity (life = 1)",
             ],
             common_questions={
                 "Does bleed hurt through ES?": "Yes! Bleed bypasses ES. Use Chaos Inoculation for immunity in PoE2.",
                 "Does poison hurt through ES?": "Yes! Poison bypasses ES. Use Chaos Inoculation for immunity in PoE2.",
                 "How fast does ES recharge?": "33.3% per second base, after 2 second delay.",
                 "Is ES better than life?": "Different tradeoffs. ES recharges but is bypassed by bleed/poison without CI.",
-                "What does CI do in PoE2?": "Chaos Inoculation in PoE2 grants immunity to chaos, bleed, AND poison. Life = 1."
+                "What does CI do in PoE2?": "Chaos Inoculation in PoE2 grants immunity to chaos, bleed, AND poison. Life = 1.",
             },
-            related_mechanics=['life', 'chaos_inoculation', 'recharge', 'leech'],
+            related_mechanics=["life", "chaos_inoculation", "recharge", "leech"],
             important_notes=[
                 "Poison and Bleed BYPASS ES (unless you have CI)",
                 "Recharges after 2 seconds of no damage",
                 "Base recharge rate: 33.3% per second",
                 "Damage is taken from ES before life",
-                "PoE2 CI = chaos + bleed + poison immunity (life = 1)"
+                "PoE2 CI = chaos + bleed + poison immunity (life = 1)",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -902,10 +904,10 @@ CHANGES from PoE1:
 - Chaos Inoculation now grants POISON immunity (NEW!)
 - This makes CI much more viable for ES builds in PoE2
 - ES recharge mechanics similar to PoE1
-"""
+""",
         )
 
-        self.mechanics['runic_ward'] = MechanicExplanation(
+        self.mechanics["runic_ward"] = MechanicExplanation(
             name="Runic Ward",
             category=MechanicCategory.DEFENSE,
             short_description="New defense pool added in Patch 0.5 via Verisium Runeforging on armours (PRELIMINARY — exact mechanics pending local extraction)",
@@ -942,7 +944,7 @@ extracted from local .datc64 files. Specifically need to confirm:
                 "Where does it come from?": "Verisium Runeforging - a new crafting system added in Patch 0.5 'Return of the Ancients'.",
                 "Does it stack with Energy Shield?": "PENDING EXTRACTION - relationship to ES and other defense pools not yet confirmed from game files.",
             },
-            related_mechanics=['energy_shield', 'armor', 'life', 'block'],
+            related_mechanics=["energy_shield", "armor", "life", "block"],
             important_notes=[
                 "PRELIMINARY entry - exact mechanics pending local .datc64 re-extraction post-0.5",
                 "DefensiveStats.runic_ward stub exists but is not layered into calculate_ehp",
@@ -950,10 +952,10 @@ extracted from local .datc64 files. Specifically need to confirm:
                 "Added in Patch 0.5 'Return of the Ancients' (2026-05-29)",
                 "Do NOT publish numeric Runic Ward stats until extracted from local game data per project data policy",
             ],
-            changed_from_poe1="N/A - entirely new mechanic introduced in PoE2 Patch 0.5"
+            changed_from_poe1="N/A - entirely new mechanic introduced in PoE2 Patch 0.5",
         )
 
-        self.mechanics['block'] = MechanicExplanation(
+        self.mechanics["block"] = MechanicExplanation(
             name="Block",
             category=MechanicCategory.DEFENSE,
             short_description="Chance to completely block strikes and projectiles (not area)",
@@ -991,36 +993,36 @@ NOTE: Glancing Blows in PoE2 affects Evade/Deflect, NOT Block!
                 "50% block cap - solid defense layer",
                 "Shields provide 25% base block",
                 "Blocks prevent ailments too",
-                "Glancing Blows in PoE2 affects Evade/Deflect, not Block"
+                "Glancing Blows in PoE2 affects Evade/Deflect, not Block",
             ],
             common_questions={
                 "What's the block cap?": "50% maximum block chance.",
                 "Can I block spells?": "Yes, if you have spell block chance from sources like shields or passives.",
                 "Does block work against area damage?": "Not by default. Some items/passives add this.",
                 "What is Glancing Blows in PoE2?": "In PoE2, Glancing Blows makes Evade Unlucky and Deflect Lucky. It no longer affects block.",
-                "What is Deflect?": "Deflect is a new mechanic in PoE2 separate from block. Glancing Blows interacts with it."
+                "What is Deflect?": "Deflect is a new mechanic in PoE2 separate from block. Glancing Blows interacts with it.",
             },
-            related_mechanics=['armor', 'evasion', 'deflect', 'spell_block'],
+            related_mechanics=["armor", "evasion", "deflect", "spell_block"],
             important_notes=[
                 "50% cap on block chance",
                 "Successful block = 0 damage AND no ailments",
                 "Does NOT work against area by default",
                 "Shield = 25% base, Dual wield = 20% base",
-                "Glancing Blows in PoE2 affects Evade/Deflect, NOT block"
+                "Glancing Blows in PoE2 affects Evade/Deflect, NOT block",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
 - Block core mechanics similar
 - Glancing Blows COMPLETELY CHANGED - now affects Evade/Deflect, not Block
 - Deflect is a new mechanic in PoE2
-"""
+""",
         )
 
         # =====================================================================
         # RESOURCES
         # =====================================================================
 
-        self.mechanics['spirit'] = MechanicExplanation(
+        self.mechanics["spirit"] = MechanicExplanation(
             name="Spirit",
             category=MechanicCategory.RESOURCES,
             short_description="NEW resource for permanent skills (auras, heralds, minions)",
@@ -1055,21 +1057,21 @@ Fixed costs mean you know exactly what you can run.
                 "Auras cost fixed Spirit amounts (not percentages)",
                 "Amulets are a major source of Spirit",
                 "Plan your permanent skills around Spirit budget",
-                "Support gems can reduce Spirit costs"
+                "Support gems can reduce Spirit costs",
             ],
             common_questions={
                 "What gives Spirit?": "Gear (especially amulets), passives, and some uniques.",
                 "Is Spirit like mana reservation?": "Similar purpose but separate resource. Doesn't affect mana pool.",
                 "What uses Spirit?": "Auras, heralds, persistent minions, and some other permanent effects.",
-                "Can I increase Spirit?": "Yes, through gear, passives, and uniques."
+                "Can I increase Spirit?": "Yes, through gear, passives, and uniques.",
             },
-            related_mechanics=['auras', 'heralds', 'mana', 'reservation'],
+            related_mechanics=["auras", "heralds", "mana", "reservation"],
             important_notes=[
                 "NEW to PoE2 - didn't exist in PoE1",
                 "Separate from mana - doesn't affect mana pool",
                 "Fixed costs, not percentages",
                 "Plan around Spirit budget for permanent skills",
-                "Support gems can modify Spirit costs"
+                "Support gems can modify Spirit costs",
             ],
             changed_from_poe1="""
 Spirit is COMPLETELY NEW in PoE2:
@@ -1077,14 +1079,14 @@ Spirit is COMPLETELY NEW in PoE2:
 - Is a separate resource from mana
 - Has fixed costs instead of percentages
 - Much easier to plan and budget
-"""
+""",
         )
 
         # =====================================================================
         # DAMAGE SCALING
         # =====================================================================
 
-        self.mechanics['increased_vs_more'] = MechanicExplanation(
+        self.mechanics["increased_vs_more"] = MechanicExplanation(
             name="Increased vs More Damage",
             category=MechanicCategory.SCALING,
             short_description="Additive (increased) vs Multiplicative (more) damage scaling",
@@ -1127,26 +1129,26 @@ Why More is powerful:
                 "Support gems with 'more damage' are very powerful",
                 "Stacking 'increased' has diminishing returns",
                 "Check wording carefully - 'more' vs 'increased' matters",
-                "This applies to ALL modifiers: damage, speed, area, etc."
+                "This applies to ALL modifiers: damage, speed, area, etc.",
             ],
             common_questions={
                 "Is 'more' always better?": "Usually, especially if you have lots of 'increased' already.",
                 "How do 'less' modifiers work?": "'Less' is multiplicative reduction, 'reduced' is additive reduction.",
                 "Does this apply to defense?": "Yes! The same logic applies to all modifiers in PoE.",
-                "Why does my damage barely increase?": "Probably diminishing returns from stacking 'increased' modifiers."
+                "Why does my damage barely increase?": "Probably diminishing returns from stacking 'increased' modifiers.",
             },
-            related_mechanics=['damage_calculation', 'support_gems', 'passive_tree'],
+            related_mechanics=["damage_calculation", "support_gems", "passive_tree"],
             important_notes=[
                 "Increased = additive, More = multiplicative",
                 "This is CORE to understanding PoE damage",
                 "Applies to ALL modifier types, not just damage",
                 "Read gem and item text carefully",
-                "More multipliers are almost always worth taking"
+                "More multipliers are almost always worth taking",
             ],
-            changed_from_poe1="Same system as PoE1. This is a core PoE mechanic."
+            changed_from_poe1="Same system as PoE1. This is a core PoE mechanic.",
         )
 
-        self.mechanics['crit'] = MechanicExplanation(
+        self.mechanics["crit"] = MechanicExplanation(
             name="Critical Strike",
             category=MechanicCategory.DAMAGE,
             short_description="Hits that deal bonus damage based on critical multiplier",
@@ -1182,21 +1184,21 @@ Example:
                 "Base crit multi is +100% in PoE2 (lower than PoE1's +150%)",
                 "Crits do NOT guarantee ailments in PoE2",
                 "Need both crit chance AND multiplier for crit builds",
-                "Crit chance caps at 100%"
+                "Crit chance caps at 100%",
             ],
             common_questions={
                 "Do crits guarantee ailments?": "NO! This changed from PoE1. Crits just deal more damage.",
                 "What's the base crit multiplier?": "+100% in PoE2 (was +150% in PoE1).",
                 "Is crit cap still 100%?": "Yes, crit chance is capped at 100%.",
-                "Is crit worth building?": "Yes, if you invest in both chance and multiplier."
+                "Is crit worth building?": "Yes, if you invest in both chance and multiplier.",
             },
-            related_mechanics=['crit_chance', 'crit_multiplier', 'ailments'],
+            related_mechanics=["crit_chance", "crit_multiplier", "ailments"],
             important_notes=[
                 "Base crit multiplier is +100% (not +150% like PoE1)",
                 "Crits do NOT guarantee ailments in PoE2",
                 "Crit chance capped at 100%",
                 "Need investment in both chance and multiplier",
-                "Crits affect hits only, not DoT"
+                "Crits affect hits only, not DoT",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -1204,14 +1206,14 @@ CHANGES from PoE1:
 - Crits NO LONGER guarantee ailment application
 - Crit builds need to invest more for ailments
 - Overall crit is more balanced/accessible
-"""
+""",
         )
 
         # =====================================================================
         # RESOURCE MECHANICS
         # =====================================================================
 
-        self.mechanics['leech'] = MechanicExplanation(
+        self.mechanics["leech"] = MechanicExplanation(
             name="Life Leech",
             category=MechanicCategory.RESOURCES,
             short_description="Recover life based on damage dealt - NO CAP in PoE2, balanced by monster resistance",
@@ -1265,7 +1267,7 @@ Modifiers:
                 "Life Leech II: 16% physical leech",
                 "Life Leech III: 16% physical + OVERLEECH (leech continues at full life)",
                 "Fast Metabolism: Overleech + leech expires 20% slower (1.25s duration)",
-                "Savoured Blood passive: +35% leech amount, 20% slower (good for overleech builds)"
+                "Savoured Blood passive: +35% leech amount, 20% slower (good for overleech builds)",
             ],
             common_questions={
                 "What is the leech cap in PoE2?": "There is NO cap! PoE2 removed the 20% max life/sec cap from PoE1. Balance comes from monster leech resistance instead.",
@@ -1274,9 +1276,9 @@ Modifiers:
                 "Does elemental damage leech?": "Only physical by default. Need specific sources (Mystic Harvest, items, passives) for elemental leech.",
                 "Is more leech % always better?": "In PoE2, yes! There's no cap, so more leech = more recovery. Monster resistance is the limiting factor.",
                 "Do I need Life Leech support if I have leech on gear?": "Depends on your leech rate and attack speed. More sources = more recovery since there's no cap.",
-                "Life Leech III vs Life Leech II?": "Both give 16% leech, but III provides OVERLEECH. Get III for sustain builds."
+                "Life Leech III vs Life Leech II?": "Both give 16% leech, but III provides OVERLEECH. Get III for sustain builds.",
             },
-            related_mechanics=['life', 'energy_shield', 'mana_leech', 'overleech'],
+            related_mechanics=["life", "energy_shield", "mana_leech", "overleech"],
             important_notes=[
                 "NO LEECH CAP in PoE2 - this is a major change from PoE1",
                 "Monster leech resistance scales with level (exact formula unknown)",
@@ -1284,7 +1286,7 @@ Modifiers:
                 "Physical damage leech is most common",
                 "Elemental leech requires specific sources",
                 "Overleech sources: Life Leech III, Fast Metabolism, Couture of Crimson",
-                "Leech 'faster' = more recovery/sec, 'slower' = longer overleech duration"
+                "Leech 'faster' = more recovery/sec, 'slower' = longer overleech duration",
             ],
             changed_from_poe1="""
 MAJOR CHANGES from PoE1:
@@ -1294,10 +1296,10 @@ MAJOR CHANGES from PoE1:
 - Vaal Pact now only disables life flasks (not all life recovery like PoE1)
 - Overleech is now accessible from gems (Life Leech III) and passives (Fast Metabolism)
 - 'Leech faster/slower' modifiers affect the 1 second base duration
-"""
+""",
         )
 
-        self.mechanics['endurance_charges'] = MechanicExplanation(
+        self.mechanics["endurance_charges"] = MechanicExplanation(
             name="Endurance Charges",
             category=MechanicCategory.RESOURCES,
             short_description="Defensive charges that grant physical damage reduction and elemental resistances",
@@ -1342,32 +1344,32 @@ With +3 max charges (6 total):
                 "3 charges = 12% physical reduction + 12% to all elemental resistances",
                 "Arctic Howl consumes Endurance Charge to bypass cooldown",
                 "Guts notable: Recover 3% max life per Endurance Charge consumed",
-                "Can stack to 6+ with passives like Endurance (+2) or Grit (+1)"
+                "Can stack to 6+ with passives like Endurance (+2) or Grit (+1)",
             ],
             common_questions={
                 "How do I generate Endurance Charges?": "Skills (Enduring Cry), on-kill effects, passives, or items.",
                 "What consumes Endurance Charges?": "Some skills like Arctic Howl, or passives that trigger on consumption.",
                 "Is the resistance bonus capped?": "No, but overall resistance caps still apply (75%/90%).",
-                "Do charges refresh when gaining more?": "Yes, gaining ANY charge refreshes ALL charges of that type."
+                "Do charges refresh when gaining more?": "Yes, gaining ANY charge refreshes ALL charges of that type.",
             },
-            related_mechanics=['frenzy_charges', 'power_charges', 'armor', 'resistance'],
+            related_mechanics=["frenzy_charges", "power_charges", "armor", "resistance"],
             important_notes=[
                 "+4% Physical Damage Reduction per charge",
                 "+4% to ALL Elemental Resistances per charge",
                 "Default max: 3 charges",
                 "Duration: 10 seconds (refreshes on gain)",
                 "Some skills CONSUME charges for effects",
-                "Arctic Howl can bypass cooldown by consuming Endurance"
+                "Arctic Howl can bypass cooldown by consuming Endurance",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
 - Similar system but specific skill interactions differ
 - New skills in PoE2 can consume charges in different ways
 - Integration with PoE2's cooldown and Spirit systems
-"""
+""",
         )
 
-        self.mechanics['frenzy_charges'] = MechanicExplanation(
+        self.mechanics["frenzy_charges"] = MechanicExplanation(
             name="Frenzy Charges",
             category=MechanicCategory.RESOURCES,
             short_description="Offensive charges that grant attack/cast speed and MORE damage",
@@ -1412,32 +1414,37 @@ Example DPS calculation:
                 "3 charges = +12% speed and 12% MORE damage",
                 "The Frenzied Bear: 30% damage + 10% skill speed when consumed recently",
                 "Thrilling Chase: 50% chance to double consumption benefits",
-                "Valako's Roar charm grants Frenzy Charge when triggered"
+                "Valako's Roar charm grants Frenzy Charge when triggered",
             ],
             common_questions={
                 "Is Frenzy Charge damage 'increased' or 'more'?": "MORE damage - it's multiplicative, making it very powerful.",
                 "How do I generate Frenzy Charges?": "Skills, on-kill effects, charms (like Valako's Roar), or passives.",
                 "What's the difference between having and consuming?": "Having gives passive bonuses. Consuming triggers specific effects but removes the charge.",
-                "Do charges refresh when gaining more?": "Yes, gaining ANY charge refreshes ALL charges of that type."
+                "Do charges refresh when gaining more?": "Yes, gaining ANY charge refreshes ALL charges of that type.",
             },
-            related_mechanics=['endurance_charges', 'power_charges', 'attack_speed', 'more_vs_increased'],
+            related_mechanics=[
+                "endurance_charges",
+                "power_charges",
+                "attack_speed",
+                "more_vs_increased",
+            ],
             important_notes=[
                 "+4% Attack Speed per charge",
                 "+4% Cast Speed per charge",
                 "+4% MORE Damage per charge (multiplicative!)",
                 "Default max: 3 charges",
                 "Duration: 10 seconds (refreshes on gain)",
-                "MORE damage is extremely valuable"
+                "MORE damage is extremely valuable",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
 - Frenzy charges now grant +4% MORE damage (was +4% increased in early PoE1)
 - Integration with PoE2 charm system for generation
 - New consumption effects on skills and passives
-"""
+""",
         )
 
-        self.mechanics['power_charges'] = MechanicExplanation(
+        self.mechanics["power_charges"] = MechanicExplanation(
             name="Power Charges",
             category=MechanicCategory.RESOURCES,
             short_description="Critical strike charges that grant increased critical strike chance",
@@ -1482,35 +1489,35 @@ Example:
                 "3 charges = +120% increased critical strike chance",
                 "Essential for crit builds to reliably hit crits",
                 "Elemental Surge: Consume Power Charge to gain 3 Cold Surges",
-                "Can stack to 6+ with passives and gear"
+                "Can stack to 6+ with passives and gear",
             ],
             common_questions={
                 "Is Power Charge crit 'increased' or 'more'?": "INCREASED - it adds to your other crit chance increases.",
                 "How do I generate Power Charges?": "On-crit effects, skills (Power Siphon, etc.), or passives.",
                 "Are Power Charges worth it for non-crit builds?": "Generally no - the bonus is specific to critical strikes.",
-                "Do charges refresh when gaining more?": "Yes, gaining ANY charge refreshes ALL charges of that type."
+                "Do charges refresh when gaining more?": "Yes, gaining ANY charge refreshes ALL charges of that type.",
             },
-            related_mechanics=['endurance_charges', 'frenzy_charges', 'crit', 'crit_multiplier'],
+            related_mechanics=["endurance_charges", "frenzy_charges", "crit", "crit_multiplier"],
             important_notes=[
                 "+40% increased Critical Strike Chance per charge",
                 "Default max: 3 charges",
                 "Duration: 10 seconds (refreshes on gain)",
                 "Increased (not more) crit chance",
-                "Crit chance still capped at 100%"
+                "Crit chance still capped at 100%",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
 - Bonus increased from +30% to +40% per charge
 - New consumption effects for PoE2 skills
 - Integration with surge system (Elemental Surge)
-"""
+""",
         )
 
         # =====================================================================
         # DAMAGE MODIFIERS
         # =====================================================================
 
-        self.mechanics['penetration'] = MechanicExplanation(
+        self.mechanics["penetration"] = MechanicExplanation(
             name="Penetration",
             category=MechanicCategory.DAMAGE,
             short_description="Bypasses enemy resistances - your damage ignores a portion of their defense",
@@ -1569,23 +1576,23 @@ Physical Penetration:
                 "Fire Penetration Support: Supported skills penetrate 20-37% fire resistance",
                 "Elemental Weakness curse reduces resistance (stacks with penetration)",
                 "Exposure applies -10% to -25% resistance (different from penetration)",
-                "Against 75% resistant boss: 37% pen = 38% res = 62% damage vs 25% without"
+                "Against 75% resistant boss: 37% pen = 38% res = 62% damage vs 25% without",
             ],
             common_questions={
                 "Does penetration work on DoT?": "NO! Penetration only affects hits. DoT uses the enemy's actual resistance.",
                 "Is penetration or reduced resistance better?": "Penetration is personal (only your damage). Reduced resistance benefits party members and DoT too.",
                 "Can I penetrate below 0% resistance?": "Yes! Negative resistance means you deal bonus damage. Cap is -200%.",
                 "Does penetration stack?": "Yes, all penetration sources add together.",
-                "Does penetration work against physical?": "Yes, physical penetration exists but is rarer than elemental."
+                "Does penetration work against physical?": "Yes, physical penetration exists but is rarer than elemental.",
             },
-            related_mechanics=['exposure', 'curses', 'resistance', 'damage_calculation'],
+            related_mechanics=["exposure", "curses", "resistance", "damage_calculation"],
             important_notes=[
                 "Only affects HITS, not damage over time",
                 "Only benefits YOUR damage, not party members",
                 "Can push effective resistance negative for bonus damage",
                 "Stacks additively from all sources",
                 "Calculated after all other resistance modifiers",
-                "Physical penetration is separate from elemental penetration"
+                "Physical penetration is separate from elemental penetration",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -1593,14 +1600,14 @@ CHANGES from PoE1:
 - Physical penetration more accessible in PoE2
 - Integration with new PoE2 support gems
 - Exposure system remains but values adjusted
-"""
+""",
         )
 
         # =====================================================================
         # DEBUFFS
         # =====================================================================
 
-        self.mechanics['curses'] = MechanicExplanation(
+        self.mechanics["curses"] = MechanicExplanation(
             name="Curses",
             category=MechanicCategory.INTERACTION,
             short_description="Debuffs that weaken enemies - affects all damage sources",
@@ -1659,23 +1666,23 @@ With +1 curse limit:
                 "Vulnerability: 20-30% increased physical damage taken",
                 "Elemental Weakness: -20% to -30% to all elemental resistances",
                 "Temporal Chains: 20-30% slower action speed, debuffs expire slower",
-                "Despair: Enemies take increased chaos damage, reduced chaos resistance"
+                "Despair: Enemies take increased chaos damage, reduced chaos resistance",
             ],
             common_questions={
                 "How many curses can I apply?": "Default is 1. Passives like Whispers of Doom and items can increase the limit.",
                 "Do curses work on bosses?": "Yes, but bosses have 60%+ reduced curse effectiveness. Invest in curse effect to compensate.",
                 "What is Hexproof?": "Hexproof enemies are IMMUNE to hex curses. Marks still work on them.",
                 "Is curse effectiveness important?": "Very! Against bosses, without increased curse effect your curses are 60%+ less effective.",
-                "Do curses affect DoT?": "Yes! Unlike penetration, curses affect all damage including DoT."
+                "Do curses affect DoT?": "Yes! Unlike penetration, curses affect all damage including DoT.",
             },
-            related_mechanics=['marks', 'penetration', 'exposure', 'debuffs'],
+            related_mechanics=["marks", "penetration", "exposure", "debuffs"],
             important_notes=[
                 "Default curse limit: 1 (can be increased)",
                 "Curses affect ALL damage sources (hits, DoT, party)",
                 "Bosses have 60%+ reduced curse effectiveness",
                 "Hexproof enemies are immune to hex curses",
                 "Marks are a separate category (single target, no limit)",
-                "Curse effectiveness mods are crucial for endgame"
+                "Curse effectiveness mods are crucial for endgame",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -1683,10 +1690,10 @@ CHANGES from PoE1:
 - Some curse values adjusted
 - Hexproof interactions refined
 - Integration with PoE2 skill gem system
-"""
+""",
         )
 
-        self.mechanics['marks'] = MechanicExplanation(
+        self.mechanics["marks"] = MechanicExplanation(
             name="Marks",
             category=MechanicCategory.INTERACTION,
             short_description="Single-target debuffs that transfer on kill and provide powerful bonuses",
@@ -1743,23 +1750,23 @@ Mark + Curse Stacking:
                 "Assassin's Mark: +3% base crit chance against marked, power charge on kill",
                 "Sniper's Mark: 35% increased projectile damage taken, flask charges on hit",
                 "Predator's Mark: 10% of damage taken as life/mana on hit",
-                "Poacher's Mark: Frenzy charge on hit, increased flask charges"
+                "Poacher's Mark: Frenzy charge on hit, increased flask charges",
             ],
             common_questions={
                 "Do marks count against curse limit?": "NO! Marks are separate. You can have 1 mark + all your curses.",
                 "Do marks work on Hexproof enemies?": "YES! Marks are not hexes, so Hexproof doesn't block them.",
                 "Can I have multiple marks?": "No, you can only have one mark active at a time. New marks replace old.",
                 "Do marks transfer automatically?": "Yes, on kill the mark transfers to a nearby enemy within range.",
-                "Which mark is best?": "Depends on build. Assassin's for crit, Sniper's for projectiles, Predator's for sustain."
+                "Which mark is best?": "Depends on build. Assassin's for crit, Sniper's for projectiles, Predator's for sustain.",
             },
-            related_mechanics=['curses', 'hexproof', 'debuffs', 'single_target'],
+            related_mechanics=["curses", "hexproof", "debuffs", "single_target"],
             important_notes=[
                 "Only ONE mark active at a time",
                 "Does NOT count against curse limit",
                 "Works on Hexproof enemies",
                 "Transfers to nearby enemy on kill",
                 "No duration - lasts until death or replaced",
-                "Subject to curse effectiveness reduction on bosses"
+                "Subject to curse effectiveness reduction on bosses",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -1767,14 +1774,14 @@ CHANGES from PoE1:
 - Mark transfer mechanics more reliable
 - Specific mark skills adjusted for PoE2 balance
 - Integration with PoE2 skill system
-"""
+""",
         )
 
         # =====================================================================
         # NEW POE2 DEFENSES
         # =====================================================================
 
-        self.mechanics['ward'] = MechanicExplanation(
+        self.mechanics["ward"] = MechanicExplanation(
             name="Ward",
             category=MechanicCategory.DEFENSE,
             short_description="NEW in PoE2 - Absorbs damage completely until broken, then restores after delay",
@@ -1838,16 +1845,16 @@ Effective HP:
                 "Ward effectively makes you immune to small hits",
                 "Useful against DoT ground effects and small projectiles",
                 "Large boss hits will break Ward and overflow to life",
-                "Pairs well with evasion (fewer hits = more Ward uptime)"
+                "Pairs well with evasion (fewer hits = more Ward uptime)",
             ],
             common_questions={
                 "How is Ward different from Energy Shield?": "Ward absorbs fully or breaks. ES is depleted proportionally. Ward restores fully after delay, ES recharges gradually.",
                 "Does Ward block chaos damage?": "YES! Ward absorbs ALL damage types including chaos.",
                 "Can I leech Ward?": "No. Ward cannot be leeched, regenerated, or recovered - only restored after delay.",
                 "Is Ward good against bosses?": "Mixed. Good against adds and small attacks, but big boss hits break it instantly.",
-                "What affects Ward restoration?": "Some items and passives reduce restoration delay. Taking any damage resets the timer."
+                "What affects Ward restoration?": "Some items and passives reduce restoration delay. Taking any damage resets the timer.",
             },
-            related_mechanics=['energy_shield', 'life', 'evasion', 'damage_absorption'],
+            related_mechanics=["energy_shield", "life", "evasion", "damage_absorption"],
             important_notes=[
                 "NEW to PoE2 - didn't exist in PoE1",
                 "Absorbs ALL damage types including chaos",
@@ -1855,16 +1862,16 @@ Effective HP:
                 "Cannot be leeched or regenerated",
                 "Restores FULLY after delay with no damage taken",
                 "Best against many small hits, weak against big hits",
-                "Default restoration delay: ~5 seconds"
+                "Default restoration delay: ~5 seconds",
             ],
-            changed_from_poe1="Ward is COMPLETELY NEW in PoE2. PoE1 had a different 'Ward' mechanic on specific uniques that worked differently."
+            changed_from_poe1="Ward is COMPLETELY NEW in PoE2. PoE1 had a different 'Ward' mechanic on specific uniques that worked differently.",
         )
 
         # =====================================================================
         # ATTRIBUTES
         # =====================================================================
 
-        self.mechanics['attributes'] = MechanicExplanation(
+        self.mechanics["attributes"] = MechanicExplanation(
             name="Attributes",
             category=MechanicCategory.SCALING,
             short_description="Core stats (Strength, Dexterity, Intelligence) that provide bonuses and meet requirements",
@@ -1939,32 +1946,32 @@ Example (200 of each attribute):
                 "Marauder starts with high Strength, low Dexterity/Intelligence",
                 "A level 20 skill gem might require 111 of its primary attribute",
                 "Hybrid gear (Str/Dex armor) requires both attributes",
-                "Attribute requirements on gear cap around 180 for endgame items"
+                "Attribute requirements on gear cap around 180 for endgame items",
             ],
             common_questions={
                 "What if I don't meet requirements?": "You cannot equip the item or use the skill gem. The item will be greyed out.",
                 "Do attribute bonuses stack?": "Yes, all attribute bonuses from all sources add together.",
                 "Which attribute is most important?": "Depends on build. Strength for melee/life, Dex for evasion/accuracy, Int for ES/mana builds.",
                 "How do I get more attributes?": "Passive tree, gear affixes, skill gems, and some unique items.",
-                "Do attributes affect damage directly?": "Only Strength affects damage (melee physical). Others affect accuracy/defenses."
+                "Do attributes affect damage directly?": "Only Strength affects damage (melee physical). Others affect accuracy/defenses.",
             },
-            related_mechanics=['life', 'mana', 'energy_shield', 'accuracy', 'evasion'],
+            related_mechanics=["life", "mana", "energy_shield", "accuracy", "evasion"],
             important_notes=[
                 "Strength: +0.5 life per point, +1% melee phys per 5 points",
                 "Dexterity: +2 accuracy per point, +1% evasion per 5 points",
                 "Intelligence: +0.5 mana per point, +1% ES per 5 points",
                 "Gear and gems have attribute requirements",
                 "All three attributes are useful for most builds (requirements)",
-                "Amulets can have large attribute bonuses"
+                "Amulets can have large attribute bonuses",
             ],
-            changed_from_poe1="Core mechanics are the same. Values may be slightly adjusted for PoE2 balance."
+            changed_from_poe1="Core mechanics are the same. Values may be slightly adjusted for PoE2 balance.",
         )
 
         # =====================================================================
         # FLASK MECHANICS
         # =====================================================================
 
-        self.mechanics['flask'] = MechanicExplanation(
+        self.mechanics["flask"] = MechanicExplanation(
             name="Flask",
             category=MechanicCategory.RESOURCES,
             short_description="Consumable charges that restore life/mana or grant utility effects",
@@ -2038,23 +2045,23 @@ Example (Utility Flask):
                 "Divine Life Flask: Large life recovery over time",
                 "Quicksilver Flask: 40% increased movement speed",
                 "Granite Flask: +1500 armor during effect",
-                "Instilling Orb: 'Use when life falls below 50%' for auto-healing"
+                "Instilling Orb: 'Use when life falls below 50%' for auto-healing",
             ],
             common_questions={
                 "How do I gain flask charges?": "Kill enemies or hit enemies (depends on flask). Some passives increase charge gain.",
                 "Do flask charges decay?": "Yes, charges slowly decay when not in combat. This is different from PoE1.",
                 "What are Instilling Orbs?": "Currency that adds automatic trigger conditions to flasks.",
                 "Can I have multiple utility flasks active?": "Yes, different utility flask effects can stack.",
-                "Is instant recovery worth it?": "For life flasks, often yes. Instant healing can save you in dangerous situations."
+                "Is instant recovery worth it?": "For life flasks, often yes. Instant healing can save you in dangerous situations.",
             },
-            related_mechanics=['life', 'mana', 'on_kill', 'charges'],
+            related_mechanics=["life", "mana", "on_kill", "charges"],
             important_notes=[
                 "Charges decay out of combat (new in PoE2)",
                 "Life/mana flasks: recovery over time or instant",
                 "Utility flasks: temporary buffs",
                 "Instilling Orbs automate flask usage",
                 "Quality increases duration or recovery",
-                "Cannot spam flasks - charge management matters"
+                "Cannot spam flasks - charge management matters",
             ],
             changed_from_poe1="""
 MAJOR CHANGES from PoE1:
@@ -2063,14 +2070,14 @@ MAJOR CHANGES from PoE1:
 - Less flask piano gameplay - more strategic use
 - Charge gain rebalanced for longer boss fights
 - Some flask types removed or reworked
-"""
+""",
         )
 
         # =====================================================================
         # TRIGGER MECHANICS
         # =====================================================================
 
-        self.mechanics['trigger'] = MechanicExplanation(
+        self.mechanics["trigger"] = MechanicExplanation(
             name="Trigger",
             category=MechanicCategory.INTERACTION,
             short_description="Skills that activate automatically when conditions are met",
@@ -2145,23 +2152,23 @@ Mana Cost (varies by trigger):
                 "Cast when Damage Taken (CWDT): Trigger spell when taking damage",
                 "Cast on Crit: Trigger spell when you crit with linked attack",
                 "Trigger wand mod: 'Trigger socketed spell when you use a skill'",
-                "Automation passive: Trigger linked skills periodically"
+                "Automation passive: Trigger linked skills periodically",
             ],
             common_questions={
                 "Do triggered skills cost mana?": "Depends on trigger source. CWDT = no cost. Item triggers vary. Check the specific trigger.",
                 "Can I trigger auras?": "No, Spirit-reserving skills cannot be triggered.",
                 "Why isn't my trigger working?": "Check: Cooldown, mana/cost, skill requirements, trigger conditions, level requirements.",
                 "Do triggers share cooldowns?": "Some do, some don't. Similar triggers often share cooldowns.",
-                "Does 'on cast' work with triggers?": "NO. Triggered skills are not 'cast' - they're triggered. Different mechanic."
+                "Does 'on cast' work with triggers?": "NO. Triggered skills are not 'cast' - they're triggered. Different mechanic.",
             },
-            related_mechanics=['cooldown', 'mana', 'on_kill', 'crit'],
+            related_mechanics=["cooldown", "mana", "on_kill", "crit"],
             important_notes=[
                 "Triggered skills are NOT 'cast'",
                 "Most triggers have cooldowns",
                 "Some triggers share cooldowns",
                 "Mana cost rules vary by trigger source",
                 "Spirit-reserving skills cannot be triggered",
-                "Check specific trigger for exact mechanics"
+                "Check specific trigger for exact mechanics",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -2170,14 +2177,14 @@ CHANGES from PoE1:
 - Integration with PoE2's Spirit system
 - CWDT equivalent exists but may have different scaling
 - Some unique trigger interactions removed/added
-"""
+""",
         )
 
         # =====================================================================
         # KNOCKBACK MECHANICS
         # =====================================================================
 
-        self.mechanics['knockback'] = MechanicExplanation(
+        self.mechanics["knockback"] = MechanicExplanation(
             name="Knockback",
             category=MechanicCategory.CROWD_CONTROL,
             short_description="Pushes enemies away from you or in skill direction",
@@ -2256,32 +2263,32 @@ Multiple hits = multiple knockback chances
                 "Heavy Strike: High knockback chance, good for melee control",
                 "Bow builds: Push enemies away to maintain distance",
                 "Knockback + Bleed: Keep enemies moving for more damage",
-                "Boss fights: Limited use as bosses often resist knockback"
+                "Boss fights: Limited use as bosses often resist knockback",
             ],
             common_questions={
                 "Do bosses get knocked back?": "Many bosses have knockback resistance or immunity. Check boss mechanics.",
                 "Does knockback interrupt attacks?": "Sometimes. It can interrupt some enemy actions but not all.",
                 "Can I knockback enemies off ledges?": "In some areas, yes. Depends on map geometry.",
                 "Is knockback good for defense?": "Yes for melee builds to create space. Less useful for ranged.",
-                "Does knockback work with bleed?": "Yes! Knocked back enemies are 'moving' which increases bleed damage."
+                "Does knockback work with bleed?": "Yes! Knocked back enemies are 'moving' which increases bleed damage.",
             },
-            related_mechanics=['stun', 'bleed', 'crowd_control', 'positioning'],
+            related_mechanics=["stun", "bleed", "crowd_control", "positioning"],
             important_notes=[
                 "Chance-based mechanic (per hit)",
                 "Direction depends on attack type",
                 "Enemies stop at walls/terrain",
                 "Bosses often resist knockback",
                 "Synergizes with bleed (moving damage bonus)",
-                "Can interrupt some enemy actions"
+                "Can interrupt some enemy actions",
             ],
-            changed_from_poe1="Core mechanics similar. Specific skill knockback values may differ in PoE2."
+            changed_from_poe1="Core mechanics similar. Specific skill knockback values may differ in PoE2.",
         )
 
         # =====================================================================
         # BLIND MECHANICS
         # =====================================================================
 
-        self.mechanics['blind'] = MechanicExplanation(
+        self.mechanics["blind"] = MechanicExplanation(
             name="Blind",
             category=MechanicCategory.CROWD_CONTROL,
             short_description="Reduces enemy accuracy, making them miss attacks more often",
@@ -2353,32 +2360,32 @@ Note: Blind stacks multiplicatively with other accuracy debuffs
                 "Smoke Mine: Creates cloud that blinds enemies inside",
                 "Flesh and Stone Sand Stance: Blinds nearby enemies",
                 "Item mod: 'Blind enemies on hit for 4 seconds'",
-                "Trickster ascendancy: Blind synergies"
+                "Trickster ascendancy: Blind synergies",
             ],
             common_questions={
                 "Does blind work against spells?": "Only against spells that use accuracy (rare). Most spells auto-hit.",
                 "Is blind good for evasion builds?": "YES! Blind + evasion is a powerful defensive combination.",
                 "Do bosses get blinded?": "Some bosses have reduced effect or immunity. Check specific boss.",
                 "How long does blind last?": "Depends on source. Typically 4-5 seconds base.",
-                "Does blind stack?": "No, only one blind effect active. Reapplication refreshes duration."
+                "Does blind stack?": "No, only one blind effect active. Reapplication refreshes duration.",
             },
-            related_mechanics=['evasion', 'accuracy', 'debuffs', 'crowd_control'],
+            related_mechanics=["evasion", "accuracy", "debuffs", "crowd_control"],
             important_notes=[
                 "Reduces enemy ACCURACY",
                 "Does NOT affect most spells",
                 "Duration-based (typically 4-5 seconds)",
                 "Bosses may have reduced effect or immunity",
                 "Excellent synergy with evasion builds",
-                "Cannot stack - reapplication refreshes duration"
+                "Cannot stack - reapplication refreshes duration",
             ],
-            changed_from_poe1="Core mechanics similar. Some blind sources and values adjusted for PoE2."
+            changed_from_poe1="Core mechanics similar. Some blind sources and values adjusted for PoE2.",
         )
 
         # =====================================================================
         # TAUNT MECHANICS
         # =====================================================================
 
-        self.mechanics['taunt'] = MechanicExplanation(
+        self.mechanics["taunt"] = MechanicExplanation(
             name="Taunt",
             category=MechanicCategory.CROWD_CONTROL,
             short_description="Forces enemies to target you, reduces their damage to others",
@@ -2453,32 +2460,32 @@ Example (Enduring Cry):
                 "Enduring Cry: Taunt nearby enemies + generates endurance charges",
                 "Decoy Totem: Creates taunt target that isn't you",
                 "Taunt Support on Minions: Makes minions taunt on hit",
-                "Party play: Tank taunts boss adds to protect damage dealers"
+                "Party play: Tank taunts boss adds to protect damage dealers",
             ],
             common_questions={
                 "Do bosses get taunted?": "Most bosses are taunt-immune for targeting. Damage reduction may still apply.",
                 "Does taunt make enemies deal less damage to me?": "No! Taunt reduces damage to OTHERS. You take full damage.",
                 "Can minions taunt?": "Yes, with Taunt Support or certain minion skills.",
                 "What if multiple allies taunt?": "Most recent taunt wins. Enemy attacks that taunter.",
-                "Is taunt useful for solo play?": "Mainly for protecting minions/totems. Limited value without allies to protect."
+                "Is taunt useful for solo play?": "Mainly for protecting minions/totems. Limited value without allies to protect.",
             },
-            related_mechanics=['warcries', 'minions', 'totems', 'aggro'],
+            related_mechanics=["warcries", "minions", "totems", "aggro"],
             important_notes=[
                 "Forces enemies to target taunter",
                 "Reduces enemy damage to non-taunters",
                 "Taunter takes NORMAL damage",
                 "Most bosses are taunt-immune for targeting",
                 "Most recent taunt takes priority",
-                "Duration-based (2-4 seconds typical)"
+                "Duration-based (2-4 seconds typical)",
             ],
-            changed_from_poe1="Core mechanics similar. Specific taunt values and sources adjusted for PoE2."
+            changed_from_poe1="Core mechanics similar. Specific taunt values and sources adjusted for PoE2.",
         )
 
         # =====================================================================
         # CULLING STRIKE MECHANICS
         # =====================================================================
 
-        self.mechanics['culling_strike'] = MechanicExplanation(
+        self.mechanics["culling_strike"] = MechanicExplanation(
             name="Culling Strike",
             category=MechanicCategory.DAMAGE,
             short_description="Instantly kills enemies below 10% life",
@@ -2556,32 +2563,32 @@ Damage Efficiency:
                 "Culling Strike Support: All linked skills cull at 10%",
                 "Unique weapon: 'Enemies are culled at 15% life'",
                 "Party play: One player runs culling for boss kill credit",
-                "Boss at 1M HP remaining (10% of 10M) - single hit kills"
+                "Boss at 1M HP remaining (10% of 10M) - single hit kills",
             ],
             common_questions={
                 "Does culling work on bosses?": "YES! Culling Strike works on all enemies, including bosses.",
                 "Can DoT cull enemies?": "NO! Only hits can trigger culling strike. DoT cannot cull.",
                 "Is culling worth it?": "Very much so. Effective 11%+ more damage against everything.",
                 "Does culling provide overkill damage?": "No. Enemy simply dies at threshold, no extra damage calculated.",
-                "What if enemy has 5% life and I DoT them?": "DoT won't cull. You must HIT them for culling to trigger."
+                "What if enemy has 5% life and I DoT them?": "DoT won't cull. You must HIT them for culling to trigger.",
             },
-            related_mechanics=['hits', 'damage_over_time', 'boss_mechanics'],
+            related_mechanics=["hits", "damage_over_time", "boss_mechanics"],
             important_notes=[
                 "Instant kill at 10% life (standard)",
                 "Works on ALL enemies including bosses",
                 "Only HITS can trigger culling (not DoT)",
                 "Effectively ~11% more damage",
                 "No overkill damage from culling",
-                "Some enhanced sources have higher thresholds"
+                "Some enhanced sources have higher thresholds",
             ],
-            changed_from_poe1="Core mechanics identical. Culling Strike works the same way in PoE2."
+            changed_from_poe1="Core mechanics identical. Culling Strike works the same way in PoE2.",
         )
 
         # =====================================================================
         # DAMAGE TAKEN AS MECHANICS
         # =====================================================================
 
-        self.mechanics['damage_taken_as'] = MechanicExplanation(
+        self.mechanics["damage_taken_as"] = MechanicExplanation(
             name="Damage Taken As",
             category=MechanicCategory.DEFENSE,
             short_description="Shift incoming damage to a different damage type before mitigation",
@@ -2658,32 +2665,32 @@ Multiple Conversions (Physical → Fire + Cold):
                 "Cloak of Flame unique: 20% of physical damage taken as fire",
                 "Taste of Hate flask: 20% of physical damage taken as cold",
                 "Divine Flesh keystone: 50% of elemental damage taken as chaos",
-                "Stacking multiple sources for near-100% physical conversion"
+                "Stacking multiple sources for near-100% physical conversion",
             ],
             common_questions={
                 "When does conversion happen?": "BEFORE mitigation. Damage is converted, then mitigated by its new type's defenses.",
                 "Can I convert 100% of physical?": "Yes, with enough sources. All physical becomes other types.",
                 "Is chaos immunity good with damage taken as chaos?": "YES! With CI, 'taken as chaos' = damage reduced to 0.",
                 "What happens over 100% conversion?": "Conversions scale proportionally. No damage 'disappears'.",
-                "Does conversion work for DoT?": "Yes, damage taken as works for all incoming damage including DoT."
+                "Does conversion work for DoT?": "Yes, damage taken as works for all incoming damage including DoT.",
             },
-            related_mechanics=['resistance', 'armor', 'chaos_inoculation', 'mitigation'],
+            related_mechanics=["resistance", "armor", "chaos_inoculation", "mitigation"],
             important_notes=[
                 "Conversion happens BEFORE mitigation",
                 "Stack additively up to 100%",
                 "Over 100% scales proportionally",
                 "Redirect to better-defended damage types",
                 "Works for hits AND DoT",
-                "Order: conversion → then mitigation"
+                "Order: conversion → then mitigation",
             ],
-            changed_from_poe1="Core mechanics identical. Some specific sources and values adjusted for PoE2."
+            changed_from_poe1="Core mechanics identical. Some specific sources and values adjusted for PoE2.",
         )
 
         # =====================================================================
         # RECOUP MECHANICS
         # =====================================================================
 
-        self.mechanics['recoup'] = MechanicExplanation(
+        self.mechanics["recoup"] = MechanicExplanation(
             name="Recoup",
             category=MechanicCategory.DEFENSE,
             short_description="Recover a portion of damage taken over 4 seconds",
@@ -2758,32 +2765,32 @@ ES Recoup with 50% ES Recoup:
                 "40% life recoup: Take 1000 damage, recover 400 life over 4 seconds",
                 "ES recoup on gear: Sustain ES without needing to stop taking damage",
                 "Stacking 60%+ recoup: Nearly recover all damage taken",
-                "Hybrid life/ES build with both recoup types"
+                "Hybrid life/ES build with both recoup types",
             ],
             common_questions={
                 "How is recoup different from leech?": "Leech is based on damage DEALT. Recoup is based on damage TAKEN. Recoup works for low-DPS builds.",
                 "Does recoup bypass ES recharge delay?": "No, but recoup CONTINUES while taking damage, which ES recharge doesn't.",
                 "Can recoup exceed damage taken?": "With enough recoup% yes. 100%+ recoup = recover more than you took.",
                 "Does recoup work with DoT?": "Yes! DoT damage taken triggers recoup recovery.",
-                "Is there a recoup cap?": "No cap on recoup%. Stack as much as you can."
+                "Is there a recoup cap?": "No cap on recoup%. Stack as much as you can.",
             },
-            related_mechanics=['leech', 'life', 'energy_shield', 'mana', 'regeneration'],
+            related_mechanics=["leech", "life", "energy_shield", "mana", "regeneration"],
             important_notes=[
                 "Based on damage TAKEN (not dealt)",
                 "Recovery over 4 seconds base",
                 "Stacks additively from all sources",
                 "No cap on recoup percentage",
                 "Works for Life, Mana, and ES",
-                "Multiple instances stack simultaneously"
+                "Multiple instances stack simultaneously",
             ],
-            changed_from_poe1="Recoup mechanics are similar to PoE1. Values and sources may differ in PoE2."
+            changed_from_poe1="Recoup mechanics are similar to PoE1. Values and sources may differ in PoE2.",
         )
 
         # =====================================================================
         # ON-KILL MECHANICS
         # =====================================================================
 
-        self.mechanics['on_kill'] = MechanicExplanation(
+        self.mechanics["on_kill"] = MechanicExplanation(
             name="On Kill",
             category=MechanicCategory.INTERACTION,
             short_description="Effects that trigger when you kill an enemy",
@@ -2853,32 +2860,32 @@ Flask Charge Example:
                 "30 life gained on kill: Reliable sustain while clearing",
                 "Onslaught on kill: Speed boost for map clearing",
                 "Frenzy charge on kill: Maintain charges during clear",
-                "Minion Instability: Minion kills DON'T give you on-kill effects"
+                "Minion Instability: Minion kills DON'T give you on-kill effects",
             ],
             common_questions={
                 "Do minion kills count as my kills?": "NO, unless you have 'minions' kills count as your kills' modifier.",
                 "Do DoT kills count as my kills?": "YES, if it's your DoT (ignite, poison, bleed, etc.).",
                 "Do totem kills count as my kills?": "Usually YES, as totems use your skills.",
                 "Why don't I get on-kill effects in boss fights?": "No kills = no on-kill triggers. These effects are for clearing, not bossing.",
-                "Does culling strike give kill credit?": "YES, culling kills count as your kills."
+                "Does culling strike give kill credit?": "YES, culling kills count as your kills.",
             },
-            related_mechanics=['flask', 'charges', 'minions', 'damage_over_time'],
+            related_mechanics=["flask", "charges", "minions", "damage_over_time"],
             important_notes=[
                 "Your direct damage kills = YOUR KILL",
                 "Your DoT kills = YOUR KILL",
                 "Minion kills ≠ your kills (by default)",
                 "Totem/trap kills usually = YOUR KILL",
                 "On-kill effects are for clearing, not bossing",
-                "Some items make minion kills count as yours"
+                "Some items make minion kills count as yours",
             ],
-            changed_from_poe1="Core mechanics identical. Kill attribution rules are the same in PoE2."
+            changed_from_poe1="Core mechanics identical. Kill attribution rules are the same in PoE2.",
         )
 
         # =====================================================================
         # GAME TERMINOLOGY AND MODIFIERS
         # =====================================================================
 
-        self.mechanics['item_rarity'] = MechanicExplanation(
+        self.mechanics["item_rarity"] = MechanicExplanation(
             name="Item Rarity and Quantity",
             category=MechanicCategory.SCALING,
             short_description="IIR increases chance of higher rarity drops, IIQ increases number of drops",
@@ -2950,23 +2957,23 @@ Example:
                 "150% IIR + 50% IIQ = more items AND better chance at rares/uniques",
                 "6-player party gives +250% base IIQ from party bonus alone",
                 "IIQ is better for currency farming (currency has no rarity)",
-                "IIR helps find unique items but has diminishing returns"
+                "IIR helps find unique items but has diminishing returns",
             ],
             common_questions={
                 "Is IIR or IIQ better?": "IIQ is generally more valuable for overall drops including currency. IIR only affects item rarity, not currency or card drops.",
                 "Does IIR affect unique drop rates?": "Partially. IIR improves the chance that a rare becomes unique, but doesn't affect base unique drop rates.",
                 "Do party bonuses stack with my IIQ?": "Yes, multiplicatively. Your IIQ x Party Bonus x Map Mods all multiply together.",
                 "Why don't I get more uniques with high IIR?": "Diminishing returns reduce effectiveness above 100%. Also, unique items have their own rarity weights.",
-                "Does IIQ affect currency drops?": "YES! IIQ affects the number of currency items dropped. IIR does not affect currency at all."
+                "Does IIQ affect currency drops?": "YES! IIQ affects the number of currency items dropped. IIR does not affect currency at all.",
             },
-            related_mechanics=['party_play', 'map_modifiers', 'drop_mechanics'],
+            related_mechanics=["party_play", "map_modifiers", "drop_mechanics"],
             important_notes=[
                 "IIQ = more items, IIR = better rarity on items",
                 "Both have diminishing returns above 100%",
                 "IIQ affects currency drops, IIR does not",
                 "Party play provides significant IIQ bonus",
                 "Map quantity is a separate multiplier",
-                "Some unique drop rates are fixed regardless of IIR"
+                "Some unique drop rates are fixed regardless of IIR",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -2974,10 +2981,10 @@ CHANGES from PoE1:
 - Diminishing returns formula may be adjusted
 - Party bonuses work similarly
 - Map quantity interaction unchanged
-"""
+""",
         )
 
-        self.mechanics['lucky'] = MechanicExplanation(
+        self.mechanics["lucky"] = MechanicExplanation(
             name="Lucky and Unlucky",
             category=MechanicCategory.SCALING,
             short_description="Lucky rolls twice and takes the better result, Unlucky takes worse",
@@ -3056,23 +3063,23 @@ Example (damage roll 100-200):
                 "Diamond Flask in PoE1 made crits Lucky - massive DPS boost at 50% crit",
                 "Glancing Blows makes Evade Unlucky but Deflect Lucky (tradeoff)",
                 "Lucky damage rolls = more consistent high damage",
-                "30% base chance becomes 51% with Lucky - huge improvement"
+                "30% base chance becomes 51% with Lucky - huge improvement",
             ],
             common_questions={
                 "When is Lucky most effective?": "Around 50% base chance. Lucky 50% = 75% effective. At 10% it's 19%, at 90% it's 99%.",
                 "Can I have both Lucky and Unlucky?": "If both apply, they typically cancel out and you roll normally.",
                 "Does Lucky affect damage rolls?": "If specified (Lucky damage), yes. It rolls the damage range twice and takes higher.",
                 "Is Unlucky always bad?": "Yes, Unlucky is always a downside. It's used to balance powerful effects.",
-                "Does Lucky double my crit chance?": "No, the formula is 1-(1-base)^2. At 50% base, Lucky gives 75%, not 100%."
+                "Does Lucky double my crit chance?": "No, the formula is 1-(1-base)^2. At 50% base, Lucky gives 75%, not 100%.",
             },
-            related_mechanics=['crit', 'evasion', 'damage_calculation', 'glancing_blows'],
+            related_mechanics=["crit", "evasion", "damage_calculation", "glancing_blows"],
             important_notes=[
                 "Lucky = roll twice, take BETTER result",
                 "Unlucky = roll twice, take WORSE result",
                 "Most effective at mid-range chances (~50%)",
                 "Formula: Lucky = 1-(1-base)^2, Unlucky = base^2",
                 "Lucky and Unlucky cancel if both apply",
-                "Check what specific stat is Lucky (crit, damage, etc.)"
+                "Check what specific stat is Lucky (crit, damage, etc.)",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -3080,10 +3087,10 @@ CHANGES from PoE1:
 - Glancing Blows changed significantly (now affects Evade/Deflect, not Block)
 - New sources of Lucky effects in PoE2
 - Same mathematical formulas apply
-"""
+""",
         )
 
-        self.mechanics['nearby'] = MechanicExplanation(
+        self.mechanics["nearby"] = MechanicExplanation(
             name="Nearby",
             category=MechanicCategory.INTERACTION,
             short_description="Distance modifier meaning roughly 40 units - about 1/4 screen width",
@@ -3160,23 +3167,23 @@ MAY scale with:
                 "40 units is approximately 1/4 screen width or 13 character widths",
                 "Nearby enemy curses/debuffs require staying close to bosses",
                 "Nearby ally buffs work like mini-auras without Spirit reservation",
-                "On-kill effects with 'nearby' require killing within range"
+                "On-kill effects with 'nearby' require killing within range",
             ],
             common_questions={
                 "How far is 'nearby'?": "Approximately 40 units, which is about 1/4 of your screen width or 13 character widths.",
                 "Does 'nearby' scale with AoE?": "Usually NO. 'Nearby' is a fixed distance. Aura radius CAN scale, 'nearby' typically cannot.",
                 "Is 'nearby' the same as aura range?": "No. Auras have their own radius (often larger) that scales with AoE. 'Nearby' is fixed.",
                 "Does 'nearby' work for both allies and enemies?": "Yes, same distance applies to 'nearby allies' and 'nearby enemies'.",
-                "Can I see the 'nearby' range?": "Not directly. Some auras show their radius which may help estimate nearby distance."
+                "Can I see the 'nearby' range?": "Not directly. Some auras show their radius which may help estimate nearby distance.",
             },
-            related_mechanics=['presence', 'auras', 'area_of_effect', 'targeting'],
+            related_mechanics=["presence", "auras", "area_of_effect", "targeting"],
             important_notes=[
                 "Standard distance: ~40 units",
                 "About 1/4 screen width or 13 character widths",
                 "Does NOT scale with AoE modifiers (usually)",
                 "Different from aura radius",
                 "Same distance for allies and enemies",
-                "Measured from YOUR character position"
+                "Measured from YOUR character position",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -3184,10 +3191,10 @@ CHANGES from PoE1:
 - PoE2 introduces "in your presence" as related concept
 - Same general mechanics apply
 - Some specific interactions may differ
-"""
+""",
         )
 
-        self.mechanics['recently'] = MechanicExplanation(
+        self.mechanics["recently"] = MechanicExplanation(
             name="Recently",
             category=MechanicCategory.INTERACTION,
             short_description="'Recently' means within the past 4 seconds - used in conditional modifiers",
@@ -3254,23 +3261,23 @@ Common Bonuses:
                 "4 seconds exactly - not 'about 4 seconds'",
                 "Kill Recently: Easy in maps, hard on bosses without adds",
                 "Crit Recently: Maintained with high crit chance builds",
-                "Multiple Recently conditions can apply simultaneously"
+                "Multiple Recently conditions can apply simultaneously",
             ],
             common_questions={
                 "How long is 'recently'?": "Exactly 4 seconds. This is consistent across all 'recently' modifiers.",
                 "Do 'recently' timers stack?": "No. Each type of 'recently' has one timer that resets on the action.",
                 "Is 'recently' good for bossing?": "Depends on the condition. 'Killed recently' is hard without adds. 'Used a skill recently' is easy.",
                 "Can I have multiple 'recently' bonuses?": "Yes! Each different 'recently' condition has its own independent timer.",
-                "Does 'recently' work in town?": "Timers continue but you can't perform combat actions to refresh them."
+                "Does 'recently' work in town?": "Timers continue but you can't perform combat actions to refresh them.",
             },
-            related_mechanics=['conditional_modifiers', 'kill_effects', 'buff_duration'],
+            related_mechanics=["conditional_modifiers", "kill_effects", "buff_duration"],
             important_notes=[
                 "'Recently' = exactly 4 seconds",
                 "Timer resets on each qualifying action",
                 "Different 'recently' conditions are independent",
                 "Timers do NOT stack, only refresh",
                 "Consider boss vs mapping when evaluating 'recently' bonuses",
-                "Very common in passive tree and item modifiers"
+                "Very common in passive tree and item modifiers",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -3278,10 +3285,10 @@ CHANGES from PoE1:
 - Same timer mechanics apply
 - May have new sources of "recently" bonuses in PoE2
 - Core mechanic is identical
-"""
+""",
         )
 
-        self.mechanics['presence'] = MechanicExplanation(
+        self.mechanics["presence"] = MechanicExplanation(
             name="Presence (In Your Presence)",
             category=MechanicCategory.INTERACTION,
             short_description="NEW PoE2: Your character's aura-like area affecting nearby allies/enemies",
@@ -3358,23 +3365,23 @@ Stacking Rules:
                 "Similar to an aura but doesn't cost Spirit",
                 "Allies in your presence = party members within ~40 units",
                 "Always active - no skill or toggle needed",
-                "Common on ascendancy passives and unique items"
+                "Common on ascendancy passives and unique items",
             ],
             common_questions={
                 "Is 'presence' the same as 'nearby'?": "Very similar! Both are ~40 units. 'Presence' is often used for ally effects, 'nearby' for enemy effects.",
                 "Does presence reserve Spirit?": "NO! Presence effects are free - they don't reserve Spirit like auras do.",
                 "Can I scale presence range?": "Usually no. Presence range is typically fixed, unlike aura radius which can scale.",
                 "Do multiple presence effects stack?": "Different presence effects stack. Same effect from same source does not stack.",
-                "Is presence always active?": "Yes, presence effects are passive and cannot be toggled off."
+                "Is presence always active?": "Yes, presence effects are passive and cannot be toggled off.",
             },
-            related_mechanics=['nearby', 'auras', 'party_play', 'area_of_effect'],
+            related_mechanics=["nearby", "auras", "party_play", "area_of_effect"],
             important_notes=[
                 "NEW to PoE2 - specific 'presence' terminology",
                 "Similar range to 'nearby' (~40 units)",
                 "Does NOT reserve Spirit (unlike auras)",
                 "Always active - cannot be toggled",
                 "Cannot usually be scaled with AoE or aura effect",
-                "Common for party buff effects"
+                "Common for party buff effects",
             ],
             changed_from_poe1="""
 NEW in PoE2:
@@ -3382,14 +3389,14 @@ NEW in PoE2:
 - PoE1 used "nearby" for similar effects
 - PoE2 distinguishes between presence (ally focus) and nearby (general)
 - Functionally similar to PoE1 "nearby allies" effects
-"""
+""",
         )
 
         # =====================================================================
         # PROJECTILE MECHANICS
         # =====================================================================
 
-        self.mechanics['projectiles'] = MechanicExplanation(
+        self.mechanics["projectiles"] = MechanicExplanation(
             name="Projectiles",
             category=MechanicCategory.DAMAGE,
             short_description="Projectile behaviors: Pierce, Chain, Fork, Split, Return, and Shotgunning rules",
@@ -3485,16 +3492,16 @@ Example Build Calculation:
                 "Fork builds: Good for hitting enemies behind your target",
                 "Split/Additional proj: More projectiles = more chances to hit, potential shotgun",
                 "Spectral Throw: Built-in return for double-hit potential",
-                "Barrage: Multiple projectiles from same attack CAN shotgun (different timing)"
+                "Barrage: Multiple projectiles from same attack CAN shotgun (different timing)",
             ],
             common_questions={
                 "Can I have Pierce AND Chain?": "Yes, but Pierce takes priority. If projectile pierces, it won't chain on that hit. After pierce fails, it can chain.",
                 "Does Fork work with Pierce?": "Fork only triggers when pierce FAILS. If you have 100% pierce, fork never happens.",
                 "Can multiple projectiles hit the same boss?": "Depends on the skill. Forked projectiles and skills like Barrage CAN shotgun. Standard multiple projectiles usually cannot.",
                 "Does Chain reduce damage?": "Usually yes, 30% less per chain by default. Some supports remove this penalty.",
-                "What's better for clear: Pierce or Chain?": "Pierce for linear density, Chain for spread-out enemies. Chain is more versatile but loses damage."
+                "What's better for clear: Pierce or Chain?": "Pierce for linear density, Chain for spread-out enemies. Chain is more versatile but loses damage.",
             },
-            related_mechanics=['increased_vs_more', 'attack_speed', 'area_of_effect'],
+            related_mechanics=["increased_vs_more", "attack_speed", "area_of_effect"],
             important_notes=[
                 "Behavior priority: Pierce > Fork > Chain > Return",
                 "A projectile does ONE behavior per target hit",
@@ -3502,7 +3509,7 @@ Example Build Calculation:
                 "Chain has distance limits between targets",
                 "Fork only happens once per original projectile",
                 "Shotgunning rules vary by skill - check skill mechanics",
-                "Return counts as separate hit opportunity"
+                "Return counts as separate hit opportunity",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -3511,14 +3518,14 @@ CHANGES from PoE1:
 - Some support gems removed or reworked
 - Fork and Chain interaction more clearly defined
 - Return projectiles more common as skill mechanics
-"""
+""",
         )
 
         # =====================================================================
         # AREA OF EFFECT
         # =====================================================================
 
-        self.mechanics['area_of_effect'] = MechanicExplanation(
+        self.mechanics["area_of_effect"] = MechanicExplanation(
             name="Area of Effect",
             category=MechanicCategory.SCALING,
             short_description="AoE radius scaling, overlap mechanics, increased vs more AoE, and breakpoints",
@@ -3602,16 +3609,16 @@ Overlap DPS (when applicable):
                 "Blade Vortex: Multiple blades can hit same target (overlap mechanic)",
                 "Firestorm: Multiple meteors, overlap is core to damage",
                 "Conc Effect: 30% less area but 54% more damage - worth it for bossing",
-                "100% increased AoE = only 41% more radius (sqrt scaling)"
+                "100% increased AoE = only 41% more radius (sqrt scaling)",
             ],
             common_questions={
                 "Why doesn't my AoE feel much bigger with 100% increased?": "Area scales with radius squared. 100% more area only gives 41% more radius. You need 300% increased area to double radius.",
                 "Should I use Concentrated Effect for bosses?": "Usually yes for single-target. The damage boost outweighs the area loss when fighting one enemy.",
                 "Do all AoE skills overlap?": "No! Most AoE skills hit each enemy once per use. Only specific skills (Blade Vortex, Firestorm, etc.) can overlap.",
                 "Is increased AoE worth investing in?": "For clear speed, yes. For bossing, usually not. Many builds swap AoE gems for boss fights.",
-                "What's the cap on AoE?": "No hard cap, but diminishing returns make extreme investment inefficient."
+                "What's the cap on AoE?": "No hard cap, but diminishing returns make extreme investment inefficient.",
             },
-            related_mechanics=['increased_vs_more', 'projectiles', 'concentrated_effect'],
+            related_mechanics=["increased_vs_more", "projectiles", "concentrated_effect"],
             important_notes=[
                 "Radius scales with SQUARE ROOT of area (diminishing returns)",
                 "100% increased area = ~41% increased radius",
@@ -3619,7 +3626,7 @@ Overlap DPS (when applicable):
                 "Most AoE skills do NOT overlap (one hit per enemy)",
                 "Concentrated Effect and Increased AoE are incompatible",
                 "'More area' is multiplicative, 'increased area' is additive",
-                "Check skill descriptions for overlap capability"
+                "Check skill descriptions for overlap capability",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -3628,14 +3635,14 @@ CHANGES from PoE1:
 - Skill-specific AoE values rebalanced
 - Concentrated Effect values adjusted for PoE2
 - Visual breakpoints may differ from PoE1
-"""
+""",
         )
 
         # =====================================================================
         # ATTACK SPEED
         # =====================================================================
 
-        self.mechanics['attack_speed'] = MechanicExplanation(
+        self.mechanics["attack_speed"] = MechanicExplanation(
             name="Attack Speed",
             category=MechanicCategory.SCALING,
             short_description="Base attack time, more vs increased speed, animation mechanics, dual wield bonus",
@@ -3720,16 +3727,16 @@ Speed Breakpoints:
                 "Fast weapon (1.3 base) vs slow weapon (1.7 base): ~30% APS difference",
                 "Berserker with Rage: Stacking speed for rapid attacks",
                 "Animation cancel: Move after damage point to skip recovery",
-                "2-handed vs Dual Wield: 2H has higher damage per hit, DW has more hits"
+                "2-handed vs Dual Wield: 2H has higher damage per hit, DW has more hits",
             ],
             common_questions={
                 "Is attack speed better than damage?": "Depends on build. Speed helps leech, on-hit effects, and gameplay feel. Damage per hit better for ailments, big hits.",
                 "Does dual wield attack faster?": "Yes! 20% MORE attack speed while dual wielding in PoE2.",
                 "What's animation canceling?": "Moving after the damage point to skip attack recovery. Speeds up effective APS and improves mobility.",
                 "Is there a speed cap?": "No hard cap, but server ticks and diminishing returns limit practical benefit at extreme speeds.",
-                "Local vs global attack speed?": "Local only affects that weapon. Global affects all attacks. Both are 'increased' and add together."
+                "Local vs global attack speed?": "Local only affects that weapon. Global affects all attacks. Both are 'increased' and add together.",
             },
-            related_mechanics=['increased_vs_more', 'dual_wielding', 'rage', 'leech'],
+            related_mechanics=["increased_vs_more", "dual_wielding", "rage", "leech"],
             important_notes=[
                 "Lower base attack time = faster weapon",
                 "All 'increased' attack speed is additive",
@@ -3737,7 +3744,7 @@ Speed Breakpoints:
                 "Dual wielding grants 20% MORE attack speed in PoE2",
                 "Animation canceling can improve effective speed",
                 "Attacks alternate between main/off hand when dual wielding",
-                "Very high APS has diminishing returns due to server ticks"
+                "Very high APS has diminishing returns due to server ticks",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -3746,14 +3753,14 @@ CHANGES from PoE1:
 - Some attack speed sources adjusted
 - Server tick interaction may differ
 - Skill-specific speed modifiers rebalanced
-"""
+""",
         )
 
         # =====================================================================
         # MINIONS
         # =====================================================================
 
-        self.mechanics['minions'] = MechanicExplanation(
+        self.mechanics["minions"] = MechanicExplanation(
             name="Minions",
             category=MechanicCategory.INTERACTION,
             short_description="Companions (permanent, limited) vs Minions (temporary, many), scaling, AI, aggro",
@@ -3843,16 +3850,16 @@ Note: Minions do NOT benefit from YOUR life or resists
                 "Skeleton Army: Many temporary skeletons, quantity over quality",
                 "Spectre builds: Specific monster types as companions for unique abilities",
                 "Golem builds: Elemental golems provide buffs AND damage",
-                "Minion instability: Some builds focus on minion death explosions"
+                "Minion instability: Some builds focus on minion death explosions",
             ],
             common_questions={
                 "Do my stats affect minions?": "NO! Your damage, crit, etc. don't apply. Only 'minion' specific modifiers affect them.",
                 "What's the difference between Companions and Minions?": "Companions are permanent and cost Spirit. Minions are temporary, often numerous, and usually don't reserve Spirit.",
                 "How do I keep minions alive?": "Minion life, minion resistances, and positioning. Some builds use 'Minions cannot be damaged' effects.",
                 "Do minions benefit from my auras?": "Usually yes! Auras that affect 'allies' include minions. This is a key scaling method.",
-                "What's the best minion type?": "Depends on playstyle. Spectres for specific mechanics, Skeletons for army, Golems for buffs + damage."
+                "What's the best minion type?": "Depends on playstyle. Spectres for specific mechanics, Skeletons for army, Golems for buffs + damage.",
             },
-            related_mechanics=['spirit', 'auras', 'increased_vs_more', 'companions'],
+            related_mechanics=["spirit", "auras", "increased_vs_more", "companions"],
             important_notes=[
                 "Companions reserve Spirit, temporary minions usually don't",
                 "YOUR damage stats don't apply to minions",
@@ -3860,7 +3867,7 @@ Note: Minions do NOT benefit from YOUR life or resists
                 "Auras can affect minions (they're allies)",
                 "Minion AI is aggressive - targets nearby enemies",
                 "Convocation skill repositions minions to you",
-                "Each minion type has its own limit"
+                "Each minion type has its own limit",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -3870,14 +3877,14 @@ CHANGES from PoE1:
 - Some minion skills removed or changed
 - AI and targeting improved
 - Minion limit systems adjusted
-"""
+""",
         )
 
         # =====================================================================
         # AURAS
         # =====================================================================
 
-        self.mechanics['auras'] = MechanicExplanation(
+        self.mechanics["auras"] = MechanicExplanation(
             name="Auras",
             category=MechanicCategory.RESOURCES,
             short_description="Mana reservation vs Spirit reservation, presence effects, aura stacking, ally vs enemy auras",
@@ -3970,16 +3977,16 @@ Party Aura Stacking:
                 "Hatred: Physical to Cold conversion, offensive aura",
                 "Discipline: Flat Energy Shield, popular for ES builds",
                 "Wrath: Lightning damage boost for spells/attacks",
-                "Party play: Multiple players each running different auras"
+                "Party play: Multiple players each running different auras",
             ],
             common_questions={
                 "Do auras stack from multiple players?": "Different auras stack. Same aura from multiple sources does NOT stack - only the strongest applies.",
                 "What's the difference between Spirit and Mana reservation?": "Spirit is a new resource for 'permanent' effects like auras. Mana reservation is separate, used by heralds and some other skills.",
                 "How do I run more auras?": "Increase Spirit pool (gear, passives), reduce reservation costs, or use both Spirit AND mana-reserving effects.",
                 "Does 'increased aura effect' help my party?": "Yes! It improves the aura's buff strength, which benefits everyone in range.",
-                "Do auras affect minions?": "Yes! Auras that affect 'allies' include your minions."
+                "Do auras affect minions?": "Yes! Auras that affect 'allies' include your minions.",
             },
-            related_mechanics=['spirit', 'minions', 'mana', 'increased_vs_more'],
+            related_mechanics=["spirit", "minions", "mana", "increased_vs_more"],
             important_notes=[
                 "Spirit auras: Fixed cost, persistent buff",
                 "Same aura from multiple sources: Only strongest applies",
@@ -3987,7 +3994,7 @@ Party Aura Stacking:
                 "'Aura effect' improves buff strength",
                 "'Aura area' improves radius",
                 "Minions are allies - benefit from your auras",
-                "Reservation efficiency passives help run more auras"
+                "Reservation efficiency passives help run more auras",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -3997,14 +4004,14 @@ CHANGES from PoE1:
 - Presence effects are new category
 - Aura effect scaling similar but values adjusted
 - Easier to plan exact Spirit budget
-"""
+""",
         )
 
         # =====================================================================
         # FORTIFY
         # =====================================================================
 
-        self.mechanics['fortify'] = MechanicExplanation(
+        self.mechanics["fortify"] = MechanicExplanation(
             name="Fortify",
             category=MechanicCategory.DEFENSE,
             short_description="Physical damage reduction buff, generation methods, stacks, duration, and cap",
@@ -4076,16 +4083,16 @@ Example: 5000 life with 20% Fortify = 5000 / 0.80 = 6250 effective HP
                 "Melee slam builds: Big hits generate stacks quickly",
                 "Fortify Support: Links to melee skills for automatic generation",
                 "Shield Charge + Fortify: Movement skill that generates stacks",
-                "Boss fights: Maintain stacks through consistent melee damage"
+                "Boss fights: Maintain stacks through consistent melee damage",
             ],
             common_questions={
                 "Do ranged builds get Fortify?": "Difficult. Fortify is primarily generated through melee hits. Ranged builds need specific sources or won't have reliable access.",
                 "Does Fortify reduce all damage?": "Yes! Fortify reduces ALL incoming damage, not just physical.",
                 "How many stacks can I have?": "Typically capped at 20 stacks (20% reduction). Some sources may modify the cap.",
                 "Do stacks refresh or add?": "New generation adds stacks (up to cap). Existing stacks decay independently.",
-                "Is Fortify worth it for melee?": "Absolutely. 20% damage reduction is a massive defensive layer for builds that can maintain it."
+                "Is Fortify worth it for melee?": "Absolutely. 20% damage reduction is a massive defensive layer for builds that can maintain it.",
             },
-            related_mechanics=['armor', 'endurance_charges', 'damage_reduction', 'melee'],
+            related_mechanics=["armor", "endurance_charges", "damage_reduction", "melee"],
             important_notes=[
                 "Stack-based system: 1% reduction per stack",
                 "Typically capped at 20 stacks (20% max reduction)",
@@ -4093,7 +4100,7 @@ Example: 5000 life with 20% Fortify = 5000 / 0.80 = 6250 effective HP
                 "Stacks decay over time (5 second base duration)",
                 "Requires dealing significant damage to generate",
                 "Reduces ALL damage types, not just physical",
-                "Melee builds benefit most from Fortify"
+                "Melee builds benefit most from Fortify",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -4103,14 +4110,14 @@ CHANGES from PoE1:
 - Maximum stacks may differ from PoE1
 - Integration with PoE2 skill system
 - Some Fortify sources removed or changed
-"""
+""",
         )
 
         # =====================================================================
         # RAGE
         # =====================================================================
 
-        self.mechanics['rage'] = MechanicExplanation(
+        self.mechanics["rage"] = MechanicExplanation(
             name="Rage",
             category=MechanicCategory.RESOURCES,
             short_description="Generated on hit, decays over time, scales attack damage/speed, Berserk interaction",
@@ -4193,16 +4200,16 @@ Example: 10000 DPS x (1 + 50 x 0.01) = 10000 x 1.5 = 15000 DPS
                 "Berserker ascendancy: Enhanced Rage generation and effects",
                 "Berserk for boss burst: Save 50 Rage, pop Berserk, huge damage",
                 "Chain boss: Rage decays during invulnerability phases",
-                "Rage Support: Adds generation to linked skills"
+                "Rage Support: Adds generation to linked skills",
             ],
             common_questions={
                 "How do I generate Rage?": "Hit enemies with attacks. Some skills, passives, and the Rage Support gem improve generation.",
                 "Does Rage work for spells?": "Rage is attack-focused. Some sources may provide spell-related bonuses, but generation is typically attack-based.",
                 "When should I use Berserk?": "For boss burst damage phases. Build up Rage, then Berserk for massive damage boost.",
                 "How do I prevent Rage decay?": "Keep attacking. Continuous hits maintain Rage. Some sources slow decay rate.",
-                "Is Rage worth building around?": "For attack builds, absolutely. 50% increased damage + speed is significant."
+                "Is Rage worth building around?": "For attack builds, absolutely. 50% increased damage + speed is significant.",
             },
-            related_mechanics=['attack_speed', 'increased_vs_more', 'berserk', 'frenzy_charges'],
+            related_mechanics=["attack_speed", "increased_vs_more", "berserk", "frenzy_charges"],
             important_notes=[
                 "Generated by hitting with attacks",
                 "Decays over time when not generating (~4 sec grace)",
@@ -4210,7 +4217,7 @@ Example: 10000 DPS x (1 + 50 x 0.01) = 10000 x 1.5 = 15000 DPS
                 "Each Rage point = ~1% increased attack damage",
                 "Berserk consumes Rage for powerful burst buff",
                 "Attack-focused resource - less useful for spell builds",
-                "Encourages aggressive, continuous attacking"
+                "Encourages aggressive, continuous attacking",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -4220,14 +4227,14 @@ CHANGES from PoE1:
 - Specific value per Rage point rebalanced
 - Integration with PoE2 support gems
 - Decay rates and grace period may vary
-"""
+""",
         )
 
         # =====================================================================
         # LIFE REGENERATION
         # =====================================================================
 
-        self.mechanics['life_regeneration'] = MechanicExplanation(
+        self.mechanics["life_regeneration"] = MechanicExplanation(
             name="Life Regeneration",
             category=MechanicCategory.RESOURCES,
             short_description="Flat regen vs % regen, regeneration rate modifiers, interaction with degens",
@@ -4313,16 +4320,16 @@ Negative = taking damage
                 "5000 life with 5% regen = 250 life/sec baseline",
                 "50% increased regen rate = 1.5x total regeneration",
                 "Stone Golem buff: Flat life regen boost",
-                "Vitality aura: Grants flat life regen to you and allies"
+                "Vitality aura: Grants flat life regen to you and allies",
             ],
             common_questions={
                 "What's the difference between 'increased regeneration' and 'regeneration rate'?": "'Increased life regeneration' adds to your % regen pool. 'Regeneration Rate' is a multiplier on your TOTAL regen. Rate is much more powerful.",
                 "Does regen work during RF degen?": "Yes! Regen constantly heals while RF constantly damages. If regen > degen, you sustain.",
                 "Is flat regen worth it late game?": "Usually not as primary source. % regen scales with life pool. Flat is supplementary.",
                 "Can I out-regen Blood Rage degen?": "Yes, with enough regen. Blood Rage is 4% life degen, so ~5%+ regen sustains it.",
-                "Does regen work on Energy Shield?": "ES has its own regeneration. Life regen doesn't restore ES unless you have specific conversion effects."
+                "Does regen work on Energy Shield?": "ES has its own regeneration. Life regen doesn't restore ES unless you have specific conversion effects.",
             },
-            related_mechanics=['life', 'leech', 'degeneration', 'righteous_fire'],
+            related_mechanics=["life", "leech", "degeneration", "righteous_fire"],
             important_notes=[
                 "% regen scales with max life, flat regen doesn't",
                 "'Regeneration Rate' is a MULTIPLIER (very powerful)",
@@ -4330,7 +4337,7 @@ Negative = taking damage
                 "Net recovery = Regen - Degen per second",
                 "RF builds need regen > fire degen to sustain",
                 "Life regen doesn't affect Energy Shield",
-                "Stacks from all sources"
+                "Stacks from all sources",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -4340,14 +4347,14 @@ CHANGES from PoE1:
 - RF interaction similar but numbers may differ
 - New passive tree may have different regen options
 - Zealot's Oath (regen applies to ES) status in PoE2 varies
-"""
+""",
         )
 
         # =====================================================================
         # ACCURACY AND HIT CHANCE
         # =====================================================================
 
-        self.mechanics['accuracy'] = MechanicExplanation(
+        self.mechanics["accuracy"] = MechanicExplanation(
             name="Accuracy",
             category=MechanicCategory.DAMAGE,
             short_description="Determines hit chance - Accuracy vs Evasion with 5%-100% cap",
@@ -4407,23 +4414,23 @@ Dexterity bonus:
                 "Resolute Technique makes all attacks hit but disables crits",
                 "Dexterity gives +2 accuracy per point",
                 "Precision aura grants flat accuracy to you and allies",
-                "Spells ignore accuracy entirely - they always hit"
+                "Spells ignore accuracy entirely - they always hit",
             ],
             common_questions={
                 "Do spells need accuracy?": "NO! Spells always hit. Only attacks use accuracy.",
                 "What is the hit chance cap?": "Minimum 5%, maximum 100%. You can never have less than 5% hit chance.",
                 "Is Resolute Technique good?": "Yes for non-crit builds. You always hit but lose crit entirely.",
                 "How much accuracy do I need?": "Depends on content. For endgame, aim for 90%+ hit chance against evasion-based enemies.",
-                "Does accuracy affect ailments?": "Indirectly - you must hit to apply ailments. Misses apply nothing."
+                "Does accuracy affect ailments?": "Indirectly - you must hit to apply ailments. Misses apply nothing.",
             },
-            related_mechanics=['evasion', 'crit', 'resolute_technique', 'dexterity'],
+            related_mechanics=["evasion", "crit", "resolute_technique", "dexterity"],
             important_notes=[
                 "Formula: Accuracy / (Accuracy + Evasion/4)",
                 "Capped between 5% and 100%",
                 "Only affects ATTACKS, not spells",
                 "Dexterity grants +2 accuracy per point",
                 "Resolute Technique = always hit, never crit",
-                "Missing an attack = no damage, no ailments, no effects"
+                "Missing an attack = no damage, no ailments, no effects",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -4431,14 +4438,14 @@ CHANGES from PoE1:
 - PoE2 enemies may have different evasion scaling
 - Resolute Technique still exists with same tradeoff
 - Accuracy remains attack-only (spells still always hit)
-"""
+""",
         )
 
         # =====================================================================
         # MANA RESOURCE
         # =====================================================================
 
-        self.mechanics['mana'] = MechanicExplanation(
+        self.mechanics["mana"] = MechanicExplanation(
             name="Mana",
             category=MechanicCategory.RESOURCES,
             short_description="Primary resource for casting skills - costs, reservation, and regeneration",
@@ -4509,23 +4516,23 @@ Efficiency Example (reservation):
                 "Clarity aura grants flat mana regeneration",
                 "Mind Over Matter diverts damage to mana (requires mana available)",
                 "Eldritch Battery converts ES to 'mana' for skill costs",
-                "Full mana bonuses require no reservation or instant recovery"
+                "Full mana bonuses require no reservation or instant recovery",
             ],
             common_questions={
                 "How do I reduce mana costs?": "Passives, support gems (-mana cost), items with reduced cost, and crafted mods.",
                 "What's the difference between reservation and cost?": "Cost is paid per use and regenerates. Reservation is permanent reduction to your pool.",
                 "Is mana reservation the same as Spirit?": "No! Spirit is a separate resource in PoE2. Some skills still reserve mana, but auras use Spirit.",
                 "How does mana leech work?": "Similar to life leech - % of damage dealt recovered as mana, subject to rate caps.",
-                "What triggers 'full mana' effects?": "Your current mana must equal your unreserved maximum. Even 1 missing mana disables it."
+                "What triggers 'full mana' effects?": "Your current mana must equal your unreserved maximum. Even 1 missing mana disables it.",
             },
-            related_mechanics=['spirit', 'leech', 'mind_over_matter', 'reservation'],
+            related_mechanics=["spirit", "leech", "mind_over_matter", "reservation"],
             important_notes=[
                 "Most auras now use Spirit instead of mana reservation",
                 "Some skills still reserve mana (check skill description)",
                 "Mana regeneration is based on MAX mana, not current",
                 "Recovery rate affects regen, leech, and flask recovery",
                 "Full mana conditions are strict - need 100% unreserved",
-                "Eldritch Battery makes ES protect mana instead of life"
+                "Eldritch Battery makes ES protect mana instead of life",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -4534,14 +4541,14 @@ CHANGES from PoE1:
 - Base mana and regen values may differ
 - Mana management generally simpler due to Spirit split
 - Some reservation efficiency mechanics adjusted
-"""
+""",
         )
 
         # =====================================================================
         # COOLDOWN MECHANICS
         # =====================================================================
 
-        self.mechanics['cooldown'] = MechanicExplanation(
+        self.mechanics["cooldown"] = MechanicExplanation(
             name="Cooldown",
             category=MechanicCategory.SCALING,
             short_description="Time between skill uses - recovery rate, charges, and bypass mechanics",
@@ -4620,23 +4627,23 @@ Minimum Cooldown Example:
                 "Guard skills (Molten Shell, etc.) have longer cooldowns",
                 "Warcries may have cooldowns reduced by passives",
                 "Some unique items grant cooldown recovery rate",
-                "Triggered skills sometimes bypass cooldowns"
+                "Triggered skills sometimes bypass cooldowns",
             ],
             common_questions={
                 "How do I reduce cooldowns?": "Stack cooldown recovery rate from gear, passives, and support gems.",
                 "Is there a minimum cooldown?": "Some skills have minimums (check description). Others can be reduced to near-zero with enough investment.",
                 "Do triggered skills have cooldowns?": "Often yes, but may be shorter. Some triggered effects bypass cooldowns.",
                 "What's the difference between cooldown and charges?": "Cooldown is time between uses. Charges are stored uses that each have their own cooldown.",
-                "Can I have 0 cooldown?": "Rarely. Most skills have either a minimum or practical limits. Some skills have no cooldown at all."
+                "Can I have 0 cooldown?": "Rarely. Most skills have either a minimum or practical limits. Some skills have no cooldown at all.",
             },
-            related_mechanics=['cast_speed', 'attack_speed', 'triggered_skills', 'charges'],
+            related_mechanics=["cast_speed", "attack_speed", "triggered_skills", "charges"],
             important_notes=[
                 "Cooldown Recovery Rate speeds up cooldown expiration",
                 "Formula: Actual CD = Base CD / (1 + recovery rate)",
                 "Stacks additively from all sources",
                 "Some skills have minimum cooldown floors",
                 "Charge-based skills regenerate charges independently",
-                "Triggered effects may bypass cooldowns"
+                "Triggered effects may bypass cooldowns",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -4645,14 +4652,14 @@ CHANGES from PoE1:
 - New skills with different cooldown interactions
 - Cooldown recovery rate remains important stat
 - Trigger mechanics refined
-"""
+""",
         )
 
         # =====================================================================
         # DAMAGE CONVERSION
         # =====================================================================
 
-        self.mechanics['damage_conversion'] = MechanicExplanation(
+        self.mechanics["damage_conversion"] = MechanicExplanation(
             name="Damage Conversion",
             category=MechanicCategory.DAMAGE,
             short_description="Converting damage types - Physical > Lightning > Cold > Fire > Chaos chain",
@@ -4736,23 +4743,28 @@ Over 100% Normalization Example:
                 "Avatar of Fire converts 50% of all damage to fire",
                 "Hatred adds cold damage based on physical (added as, not conversion)",
                 "Winter Spirit notable: 40% physical converted to cold",
-                "Cannot convert chaos damage to anything - it's the end of chain"
+                "Cannot convert chaos damage to anything - it's the end of chain",
             ],
             common_questions={
                 "Can I convert Fire to Cold?": "NO! Conversion only goes forward: Phys -> Light -> Cold -> Fire -> Chaos. Cannot reverse.",
                 "What happens with over 100% conversion?": "It's normalized proportionally. 60% to A + 60% to B becomes 50% each.",
                 "Does converted damage benefit from both types?": "YES! This is why conversion is powerful. Get double-dipping from both damage type modifiers.",
                 "What's the difference between 'converted to' and 'added as'?": "Conversion changes type (same total base). Added as creates extra damage (increases total).",
-                "Why can't I convert chaos damage?": "Chaos is the end of the chain. It cannot be converted to anything else by design."
+                "Why can't I convert chaos damage?": "Chaos is the end of the chain. It cannot be converted to anything else by design.",
             },
-            related_mechanics=['physical_damage', 'elemental_damage', 'chaos_damage', 'added_damage'],
+            related_mechanics=[
+                "physical_damage",
+                "elemental_damage",
+                "chaos_damage",
+                "added_damage",
+            ],
             important_notes=[
                 "Chain: Physical -> Lightning -> Cold -> Fire -> Chaos",
                 "One-way only - cannot convert backwards",
                 "Over 100% conversion is normalized proportionally",
                 "Converted damage benefits from BOTH type modifiers",
                 "'Added as' creates extra damage, conversion changes type",
-                "Chaos cannot be converted to anything"
+                "Chaos cannot be converted to anything",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -4761,14 +4773,14 @@ CHANGES from PoE1:
 - Same over 100% normalization rules
 - Some specific conversion sources may differ
 - Double-dipping mechanics similar
-"""
+""",
         )
 
         # =====================================================================
         # RESISTANCES
         # =====================================================================
 
-        self.mechanics['resistances'] = MechanicExplanation(
+        self.mechanics["resistances"] = MechanicExplanation(
             name="Resistances",
             category=MechanicCategory.DEFENSE,
             short_description="Damage reduction vs elements/chaos - 75% cap (90% max), negative = more damage",
@@ -4847,23 +4859,29 @@ Maximum Resistance Value:
                 "-30% cold res = take 130% of cold damage (ouch!)",
                 "Purity of Fire aura can raise max fire res to 79-84%",
                 "10% overcap protects against Elemental Weakness curse",
-                "90% res (hard cap) = take only 10% damage"
+                "90% res (hard cap) = take only 10% damage",
             ],
             common_questions={
                 "What's the resistance cap?": "Default 75%, hard cap 90%. You need specific sources to raise your cap above 75%.",
                 "Can resistance go negative?": "YES! Negative resistance means you take MORE damage. Very dangerous!",
                 "What is overcapping?": "Having resistance above your cap. Protects against resistance reduction effects.",
                 "How much overcap do I need?": "10-20% recommended for endgame. More for curse-heavy content.",
-                "Is chaos resistance important?": "Yes, but often neglected. No campaign penalty but also fewer sources. 0%+ recommended for endgame."
+                "Is chaos resistance important?": "Yes, but often neglected. No campaign penalty but also fewer sources. 0%+ recommended for endgame.",
             },
-            related_mechanics=['penetration', 'exposure', 'curses', 'elemental_damage', 'chaos_damage'],
+            related_mechanics=[
+                "penetration",
+                "exposure",
+                "curses",
+                "elemental_damage",
+                "chaos_damage",
+            ],
             important_notes=[
                 "Default cap: 75%, hard cap: 90%",
                 "Campaign penalty: -30% to elemental resistances",
                 "Negative resistance = take MORE damage",
                 "Overcapping protects against resistance reduction",
                 "Each 1% max res above 75% is extremely valuable",
-                "Chaos resistance has no penalty but fewer sources"
+                "Chaos resistance has no penalty but fewer sources",
             ],
             changed_from_poe1="""
 CHANGES from PoE1:
@@ -4872,14 +4890,14 @@ CHANGES from PoE1:
 - Same overcapping benefits
 - Campaign penalty timing may differ
 - Resistance sources adjusted for PoE2 gear
-"""
+""",
         )
 
         # =====================================================================
         # AILMENT THRESHOLD (NEW POE2 SYSTEM)
         # =====================================================================
 
-        self.mechanics['ailment_threshold'] = MechanicExplanation(
+        self.mechanics["ailment_threshold"] = MechanicExplanation(
             name="Ailment Threshold",
             category=MechanicCategory.AILMENTS,
             short_description="NEW in PoE2 - Ailments require damage threshold, no longer guaranteed on crit",
@@ -4963,23 +4981,31 @@ BOSS THRESHOLDS:
                 "Big single hits are better for ailment chance than many small hits",
                 "Freeze uses buildup - multiple hits accumulate toward 100%",
                 "Bosses have increasing thresholds after each hard CC",
-                "High threshold enemies (bosses) need massive damage to ailment"
+                "High threshold enemies (bosses) need massive damage to ailment",
             ],
             common_questions={
                 "Do crits guarantee ailments?": "NO! This is a major change from PoE1. Crits just deal more damage, indirectly helping ailment chance.",
                 "Why does my ignite chance vary?": "Because it depends on your damage vs enemy threshold. Low damage hits have lower chance.",
                 "How do I freeze bosses?": "Build up freeze with multiple cold hits. But boss thresholds increase after each freeze - can't perma-freeze.",
                 "Is ailment chance still useful?": "YES! It's the base chance that gets multiplied by your damage ratio. More base chance = more reliable ailments.",
-                "What's the enemy's threshold?": "Usually their max life. Bosses may have additional modifiers."
+                "What's the enemy's threshold?": "Usually their max life. Bosses may have additional modifiers.",
             },
-            related_mechanics=['ignite', 'shock', 'freeze', 'poison', 'bleed', 'electrocute', 'crit'],
+            related_mechanics=[
+                "ignite",
+                "shock",
+                "freeze",
+                "poison",
+                "bleed",
+                "electrocute",
+                "crit",
+            ],
             important_notes=[
                 "NEW to PoE2 - completely replaces PoE1's crit-guarantees-ailment",
                 "Threshold usually = enemy max life",
                 "Bigger hits = higher ailment chance",
                 "Crits help indirectly (more damage) but don't guarantee ailments",
                 "Buildup ailments (freeze, electrocute) accumulate over multiple hits",
-                "Boss thresholds increase after each hard CC (anti-permafreeze)"
+                "Boss thresholds increase after each hard CC (anti-permafreeze)",
             ],
             changed_from_poe1="""
 COMPLETELY NEW in PoE2:
@@ -4989,14 +5015,14 @@ COMPLETELY NEW in PoE2:
 - Big hits matter more, crits matter less for ailments
 - Buildup system for freeze/electrocute is new
 - Boss anti-perma-CC is new
-"""
+""",
         )
 
         # =====================================================================
         # DODGE ROLL (NEW POE2 MECHANIC)
         # =====================================================================
 
-        self.mechanics['dodge_roll'] = MechanicExplanation(
+        self.mechanics["dodge_roll"] = MechanicExplanation(
             name="Dodge Roll",
             category=MechanicCategory.DEFENSE,
             short_description="NEW in PoE2 - i-frames during roll, stamina cost, cannot dodge everything",
@@ -5072,16 +5098,16 @@ Example Timing:
                 "Spacebar is default dodge roll key",
                 "Watch for RED FLASH - some attacks can't be dodged",
                 "Stamina management is crucial - don't spam rolls",
-                "Learn boss attack patterns to time rolls correctly"
+                "Learn boss attack patterns to time rolls correctly",
             ],
             common_questions={
                 "Can I dodge everything?": "NO! Some boss attacks are undodgeable. Watch for specific telegraphs.",
                 "How many times can I roll?": "Depends on stamina. Usually 2-3 times before depleted, then wait for regen.",
                 "Do i-frames work against all damage?": "During the i-frame window, yes. But ground effects damage you after roll ends.",
                 "Is dodge roll better than evasion?": "Different. Evasion is passive chance. Dodge roll is active with guaranteed i-frames but costs stamina.",
-                "What affects dodge roll?": "Some passives/gear can affect stamina cost, regen, roll distance, or i-frame duration."
+                "What affects dodge roll?": "Some passives/gear can affect stamina cost, regen, roll distance, or i-frame duration.",
             },
-            related_mechanics=['evasion', 'stamina', 'block', 'movement_skills'],
+            related_mechanics=["evasion", "stamina", "block", "movement_skills"],
             important_notes=[
                 "NEW to PoE2 - active defensive ability",
                 "Grants invincibility frames during roll animation",
@@ -5089,7 +5115,7 @@ Example Timing:
                 "Some attacks CANNOT be dodge rolled (undodgeable)",
                 "Timing is crucial - roll INTO attacks",
                 "Ground effects still damage after roll ends",
-                "Essential skill to master for endgame bosses"
+                "Essential skill to master for endgame bosses",
             ],
             changed_from_poe1="""
 COMPLETELY NEW in PoE2:
@@ -5099,18 +5125,18 @@ COMPLETELY NEW in PoE2:
 - Stamina system is new (doesn't exist in PoE1)
 - i-frames are a new concept for PoE
 - This fundamentally changes combat engagement
-"""
+""",
         )
 
     def get_mechanic(self, name: str) -> Optional[MechanicExplanation]:
         """Get explanation for a specific mechanic"""
         # Normalize: convert spaces to underscores, lowercase
-        normalized = name.lower().replace(' ', '_').replace('-', '_')
+        normalized = name.lower().replace(" ", "_").replace("-", "_")
         result = self.mechanics.get(normalized)
 
         # If not found, try without underscores (spaces)
         if not result:
-            no_underscore = name.lower().replace('_', ' ')
+            no_underscore = name.lower().replace("_", " ")
             for key, mechanic in self.mechanics.items():
                 if mechanic.name.lower() == no_underscore or key == normalized:
                     return mechanic
@@ -5148,7 +5174,9 @@ COMPLETELY NEW in PoE2:
         """List all available mechanics"""
         return list(self.mechanics.keys())
 
-    def format_mechanic_explanation(self, mechanic: MechanicExplanation, include_all: bool = True) -> str:
+    def format_mechanic_explanation(
+        self, mechanic: MechanicExplanation, include_all: bool = True
+    ) -> str:
         """Format a mechanic explanation as readable text"""
         lines = []
         lines.append("=" * 80)

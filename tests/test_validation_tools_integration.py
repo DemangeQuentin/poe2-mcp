@@ -11,6 +11,7 @@ These tests verify:
 Author: HivemindMinion
 Date: 2025-11-22
 """
+
 import pytest
 import asyncio
 import sys
@@ -60,7 +61,9 @@ class TestValidationToolsIntegration:
 
         result = gem_calculator.validate_combination(valid_combo)
 
-        assert result["valid"] is True, f"Valid combo should be accepted: {result.get('reason', '')}"
+        assert (
+            result["valid"] is True
+        ), f"Valid combo should be accepted: {result.get('reason', '')}"
         assert result["conflicts"] == []
 
         print(f"[OK] Valid combination accepted: {', '.join(valid_combo)}")
@@ -78,21 +81,23 @@ class TestValidationToolsIntegration:
 
     def test_inspect_support_gem(self, gem_calculator):
         """Test support gem inspection against the canonical 0.5 dataset"""
-        supports_file = Path(__file__).parent.parent / 'data' / 'game' / 'support_gems' / 'support_gems.json'
+        supports_file = (
+            Path(__file__).parent.parent / "data" / "game" / "support_gems" / "support_gems.json"
+        )
 
         if not supports_file.exists():
             pytest.skip("Canonical support gems dataset not found")
 
-        with open(supports_file, 'r', encoding='utf-8') as f:
+        with open(supports_file, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         # Find first named support in the canonical extraction
         first_support = None
-        support_gems = data.get('support_gems', {})
+        support_gems = data.get("support_gems", {})
         gem_iter = support_gems.values() if isinstance(support_gems, dict) else support_gems
         for support_data in gem_iter:
-            if isinstance(support_data, dict) and support_data.get('name'):
-                first_support = support_data['name']
+            if isinstance(support_data, dict) and support_data.get("name"):
+                first_support = support_data["name"]
                 break
 
         assert first_support is not None, "Should find at least one support gem"
@@ -102,34 +107,36 @@ class TestValidationToolsIntegration:
         assert resolved is not None, f"Calculator should resolve '{first_support}'"
         # And without the " Support" suffix, the way callers actually ask
         base_name = first_support.removesuffix(" Support")
-        assert gem_calculator._get_support(base_name) is not None, \
-            f"Calculator should resolve suffix-less '{base_name}'"
+        assert (
+            gem_calculator._get_support(base_name) is not None
+        ), f"Calculator should resolve suffix-less '{base_name}'"
 
         print(f"[OK] Can inspect support: {first_support}")
 
     def test_inspect_spell_gem(self, gem_calculator):
         """Test spell gem inspection — Fireball must resolve by display name"""
-        spells_file = Path(__file__).parent.parent / 'data' / 'game' / 'skill_gems' / 'skill_gems.json'
+        spells_file = (
+            Path(__file__).parent.parent / "data" / "game" / "skill_gems" / "skill_gems.json"
+        )
 
         if not spells_file.exists():
             pytest.skip("Canonical skill gems dataset not found")
 
-        with open(spells_file, 'r', encoding='utf-8') as f:
+        with open(spells_file, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         # Fireball (the spell from the original bug report) is in the
         # canonical extraction
-        gems = data.get('skill_gems', {})
+        gems = data.get("skill_gems", {})
         gem_iter = gems.values() if isinstance(gems, dict) else gems
         fireball_found = any(
-            isinstance(g, dict) and g.get('name', '').lower() == 'fireball'
-            for g in gem_iter
+            isinstance(g, dict) and g.get("name", "").lower() == "fireball" for g in gem_iter
         )
         assert fireball_found, "Should find Fireball spell"
 
         # The calculator stores spells under internal skill ids
         # ("fireballplayer") — the display-name lookup must bridge that
-        spell = gem_calculator._get_spell('fireball')
+        spell = gem_calculator._get_spell("fireball")
         assert spell is not None, "Calculator should resolve 'fireball' by display name"
         assert spell.name == "Fireball"
 
@@ -137,39 +144,41 @@ class TestValidationToolsIntegration:
 
     def test_list_all_supports(self, gem_calculator):
         """Test support listing with filtering"""
-        supports_file = Path(__file__).parent.parent / 'data' / 'poe2_support_gems_database.json'
+        supports_file = Path(__file__).parent.parent / "data" / "poe2_support_gems_database.json"
 
         if not supports_file.exists():
             pytest.skip("Support gems database not found")
 
-        with open(supports_file, 'r') as f:
+        with open(supports_file, "r") as f:
             data = json.load(f)
 
         # Count total supports
-        support_gems = data.get('support_gems', {})
-        total = sum(1 for k, v in support_gems.items() if isinstance(v, dict) and 'name' in v)
+        support_gems = data.get("support_gems", {})
+        total = sum(1 for k, v in support_gems.items() if isinstance(v, dict) and "name" in v)
 
         assert total > 0, "Should have support gems in database"
         assert len(gem_calculator.support_gems) > 0, "Calculator should have loaded support gems"
 
-        print(f"[OK] Can list {len(gem_calculator.support_gems)} support gems (database has {total})")
+        print(
+            f"[OK] Can list {len(gem_calculator.support_gems)} support gems (database has {total})"
+        )
 
     def test_list_all_spells(self, gem_calculator):
         """Test spell listing with filtering"""
-        spells_file = Path(__file__).parent.parent / 'data' / 'poe2_spell_gems_database.json'
+        spells_file = Path(__file__).parent.parent / "data" / "poe2_spell_gems_database.json"
 
         if not spells_file.exists():
             pytest.skip("Spell gems database not found")
 
-        with open(spells_file, 'r') as f:
+        with open(spells_file, "r") as f:
             data = json.load(f)
 
         # Count total spells
         total = 0
         for category, spells in data.items():
-            if category == 'metadata':
+            if category == "metadata":
                 continue
-            total += sum(1 for k, v in spells.items() if isinstance(v, dict) and 'name' in v)
+            total += sum(1 for k, v in spells.items() if isinstance(v, dict) and "name" in v)
 
         assert total > 0, "Should have spell gems in database"
         assert len(gem_calculator.spell_gems) > 0, "Calculator should have loaded spell gems"
@@ -190,7 +199,7 @@ class TestValidationToolsIntegration:
             num_supports=5,
             max_spirit=100,
             optimization_goal="dps",
-            return_trace=True
+            return_trace=True,
         )
 
         assert isinstance(result, dict), "Should return dict when return_trace=True"
@@ -221,7 +230,7 @@ class TestValidationToolsIntegration:
 
         # With hardcoded incompatibility rules, some combinations should be rejected
         # (if there are enough supports to create conflicting combinations)
-        if trace['compatible_supports_count'] >= 5:
+        if trace["compatible_supports_count"] >= 5:
             # Only assert if we have enough supports to potentially create conflicts
             print(f"  - Note: {trace['invalid_combinations']} incompatible combinations rejected")
 
@@ -231,7 +240,7 @@ class TestValidationToolsIntegration:
             spell_name="fireball",
             support_names=["Spell Echo", "Elemental Focus"],
             character_mods={"increased_damage": 50.0},
-            max_spirit=100
+            max_spirit=100,
         )
 
         # Verify trace structure
@@ -260,7 +269,9 @@ class TestValidationToolsIntegration:
             print(f"  - Increased total: {calc['increased_total']:.2f}x")
             print(f"  - Final DPS: {calc['final_dps']:.1f}")
         else:
-            print(f"  - Warning: Some supports not found, trace has errors: {trace.get('errors', [])}")
+            print(
+                f"  - Warning: Some supports not found, trace has errors: {trace.get('errors', [])}"
+            )
 
     def test_trace_dps_invalid_combination(self, gem_calculator):
         """Test that DPS trace detects invalid combinations.
@@ -271,14 +282,15 @@ class TestValidationToolsIntegration:
         trace = gem_calculator.trace_dps_calculation(
             spell_name="fireball",
             support_names=["Projectile Acceleration", "Projectile Deceleration"],  # INVALID!
-            max_spirit=100
+            max_spirit=100,
         )
 
         # Should be invalid
         assert trace["valid"] is False, "Acceleration + Deceleration should be INVALID"
         assert len(trace["errors"]) > 0, "Should have error messages"
-        assert any("incompatible" in err.lower() or "conflict" in err.lower() for err in trace["errors"]), \
-            f"Error should mention incompatibility, got: {trace['errors']}"
+        assert any(
+            "incompatible" in err.lower() or "conflict" in err.lower() for err in trace["errors"]
+        ), f"Error should mention incompatibility, got: {trace['errors']}"
 
         print(f"[OK] DPS trace correctly rejects Projectile Acceleration + Deceleration:")
         print(f"  - Valid: {trace['valid']}")
@@ -294,11 +306,7 @@ class TestValidationToolsIntegration:
         Faster + Slower Projectiles in the same setup
         """
         result = gem_calculator.find_best_combinations(
-            spell_name="fireball",
-            num_supports=5,
-            max_spirit=100,
-            optimization_goal="dps",
-            top_n=10
+            spell_name="fireball", num_supports=5, max_spirit=100, optimization_goal="dps", top_n=10
         )
 
         assert isinstance(result, list), "Should return list of results"
@@ -308,11 +316,16 @@ class TestValidationToolsIntegration:
             support_names = combo.support_names
 
             # Verify no combination has both Faster and Slower Projectiles
-            has_faster = any("faster" in s.lower() and "projectile" in s.lower() for s in support_names)
-            has_slower = any("slower" in s.lower() and "projectile" in s.lower() for s in support_names)
+            has_faster = any(
+                "faster" in s.lower() and "projectile" in s.lower() for s in support_names
+            )
+            has_slower = any(
+                "slower" in s.lower() and "projectile" in s.lower() for s in support_names
+            )
 
-            assert not (has_faster and has_slower), \
-                f"Combo #{i+1} should NOT have both Faster and Slower Projectiles: {support_names}"
+            assert not (
+                has_faster and has_slower
+            ), f"Combo #{i+1} should NOT have both Faster and Slower Projectiles: {support_names}"
 
         print(f"[OK] All {len(result)} Fireball recommendations are valid (no Faster+Slower bug)")
 
@@ -327,20 +340,25 @@ class TestValidationToolsIntegration:
         assert len(HARDCODED_INCOMPATIBILITIES) > 0, "Should have hardcoded incompatibilities"
 
         # Verify Faster + Slower Projectiles is in the list
-        assert "Faster Projectiles" in HARDCODED_INCOMPATIBILITIES or \
-               "faster_projectiles" in HARDCODED_INCOMPATIBILITIES, \
-               "Faster Projectiles should be in incompatibility list"
+        assert (
+            "Faster Projectiles" in HARDCODED_INCOMPATIBILITIES
+            or "faster_projectiles" in HARDCODED_INCOMPATIBILITIES
+        ), "Faster Projectiles should be in incompatibility list"
 
         # Verify it conflicts with Slower Projectiles
-        faster_conflicts = HARDCODED_INCOMPATIBILITIES.get("Faster Projectiles", []) + \
-                          HARDCODED_INCOMPATIBILITIES.get("faster_projectiles", [])
+        faster_conflicts = HARDCODED_INCOMPATIBILITIES.get(
+            "Faster Projectiles", []
+        ) + HARDCODED_INCOMPATIBILITIES.get("faster_projectiles", [])
 
-        assert any("slower" in c.lower() and "projectile" in c.lower() for c in faster_conflicts), \
-               "Faster Projectiles should conflict with Slower Projectiles"
+        assert any(
+            "slower" in c.lower() and "projectile" in c.lower() for c in faster_conflicts
+        ), "Faster Projectiles should conflict with Slower Projectiles"
 
         print(f"[OK] Hardcoded incompatibilities verified:")
         print(f"  - Total rules: {len(HARDCODED_INCOMPATIBILITIES)}")
-        print(f"  - Faster Projectiles conflicts: {HARDCODED_INCOMPATIBILITIES.get('Faster Projectiles', HARDCODED_INCOMPATIBILITIES.get('faster_projectiles', []))}")
+        print(
+            f"  - Faster Projectiles conflicts: {HARDCODED_INCOMPATIBILITIES.get('Faster Projectiles', HARDCODED_INCOMPATIBILITIES.get('faster_projectiles', []))}"
+        )
 
     # ========================================================================
     # EDGE CASES
@@ -367,9 +385,7 @@ class TestValidationToolsIntegration:
     def test_trace_nonexistent_spell(self, gem_calculator):
         """Test trace with nonexistent spell"""
         trace = gem_calculator.trace_dps_calculation(
-            spell_name="NonexistentSpell123",
-            support_names=["Spell Echo"],
-            max_spirit=100
+            spell_name="NonexistentSpell123", support_names=["Spell Echo"], max_spirit=100
         )
 
         assert trace["valid"] is False, "Should be invalid for nonexistent spell"
@@ -381,9 +397,7 @@ class TestValidationToolsIntegration:
     def test_trace_nonexistent_support(self, gem_calculator):
         """Test trace with nonexistent support"""
         trace = gem_calculator.trace_dps_calculation(
-            spell_name="fireball",
-            support_names=["NonexistentSupport123"],
-            max_spirit=100
+            spell_name="fireball", support_names=["NonexistentSupport123"], max_spirit=100
         )
 
         assert trace["valid"] is False, "Should be invalid for nonexistent support"
@@ -400,7 +414,7 @@ class TestValidationToolsIntegration:
             max_spirit=100,
             optimization_goal="dps",
             top_n=5,
-            return_trace=False
+            return_trace=False,
         )
 
         assert isinstance(result, list), "Should return list when return_trace=False"

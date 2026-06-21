@@ -32,11 +32,15 @@ if str(PROJECT_ROOT) not in sys.path:
 # Calculator-direct mode — verifies the math contract without MCP import
 # ---------------------------------------------------------------------------
 
+
 def test_calculator_baseline_fireball():
     """Fireball with no modifiers, target dummy. Math anchor."""
     from src.calculator.spell_dps_calculator import (
-        SpellDPSCalculator, CharacterModifiers, EnemyStats,
+        SpellDPSCalculator,
+        CharacterModifiers,
+        EnemyStats,
     )
+
     calc = SpellDPSCalculator()
     spell = calc.SPELL_DATABASE["fireball"]
     result = calc.calculate_dps(spell, CharacterModifiers(), EnemyStats())
@@ -51,8 +55,11 @@ def test_calculator_baseline_fireball():
 def test_calculator_more_multipliers_stack_multiplicatively():
     """Two +25% more multipliers must give ×1.5625, not ×1.5."""
     from src.calculator.spell_dps_calculator import (
-        SpellDPSCalculator, CharacterModifiers, EnemyStats,
+        SpellDPSCalculator,
+        CharacterModifiers,
+        EnemyStats,
     )
+
     calc = SpellDPSCalculator()
     spell = calc.SPELL_DATABASE["spark"]
     mods = CharacterModifiers(more_multipliers=[25.0, 25.0])
@@ -63,8 +70,11 @@ def test_calculator_more_multipliers_stack_multiplicatively():
 def test_calculator_resistance_reduces_damage():
     """75% fire res reduces fire damage by 75%."""
     from src.calculator.spell_dps_calculator import (
-        SpellDPSCalculator, CharacterModifiers, EnemyStats,
+        SpellDPSCalculator,
+        CharacterModifiers,
+        EnemyStats,
     )
+
     calc = SpellDPSCalculator()
     spell = calc.SPELL_DATABASE["fireball"]
     base = calc.calculate_dps(spell, CharacterModifiers(), EnemyStats())
@@ -76,8 +86,11 @@ def test_calculator_resistance_reduces_damage():
 def test_calculator_penetration_overcomes_resistance():
     """25 penetration vs 75 res = effective 50% res."""
     from src.calculator.spell_dps_calculator import (
-        SpellDPSCalculator, CharacterModifiers, EnemyStats,
+        SpellDPSCalculator,
+        CharacterModifiers,
+        EnemyStats,
     )
+
     calc = SpellDPSCalculator()
     spell = calc.SPELL_DATABASE["fireball"]
     no_pen = calc.calculate_dps(spell, CharacterModifiers(), EnemyStats(fire_resistance=75))
@@ -97,6 +110,7 @@ def test_calculator_penetration_overcomes_resistance():
 # calculator-direct tests above. If the fixture init fails, all handler tests
 # error rather than module-load.
 
+
 @pytest_asyncio.fixture(scope="module")
 async def mcp():
     """Canonical fixture per docs/TESTING.md — initialize before handler use.
@@ -105,6 +119,7 @@ async def mcp():
     mcp_server module-level import on some platforms.
     """
     from src.mcp_server import PoE2BuildOptimizerMCP
+
     instance = PoE2BuildOptimizerMCP()
     await instance.initialize()
     return instance
@@ -134,15 +149,17 @@ async def test_handler_unknown_spell_warns(mcp):
 @pytest.mark.asyncio
 async def test_handler_custom_spell_stats_works(mcp):
     """spell_stats override allows DPS calc for spells not in SPELL_DATABASE."""
-    r = await mcp._handle_calculate_character_dps({
-        "spell_stats": {
-            "name": "Custom Spell",
-            "base_damage_min": 100,
-            "base_damage_max": 200,
-            "base_cast_time": 1.0,
-            "damage_types": ["cold"],
-        },
-    })
+    r = await mcp._handle_calculate_character_dps(
+        {
+            "spell_stats": {
+                "name": "Custom Spell",
+                "base_damage_min": 100,
+                "base_damage_max": 200,
+                "base_cast_time": 1.0,
+                "damage_types": ["cold"],
+            },
+        }
+    )
     text = r[0].text
     assert "Custom Spell DPS" in text
     assert "Total DPS" in text

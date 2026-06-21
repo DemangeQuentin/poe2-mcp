@@ -6,6 +6,7 @@ All decode tests run against the recorded fixture
 live API in CI. The 0.5 'death' of this API was a protobuf encoding
 migration; these tests lock the recovered wire understanding.
 """
+
 from __future__ import annotations
 
 import sys
@@ -33,8 +34,8 @@ def payload():
 
 def test_fixture_decodes(payload):
     d = decode_search_response(payload)
-    assert d["total"] == 124242            # RoA builds indexed at capture
-    assert len(d["rows"]) == 100           # one full ladder page
+    assert d["total"] == 124242  # RoA builds indexed at capture
+    assert len(d["rows"]) == 100  # one full ladder page
     assert "name" in d["columns"] and "dps" in d["columns"]
 
 
@@ -46,7 +47,7 @@ def test_row_shape(payload):
     assert r0["level"] == 100
     assert isinstance(r0["life"], int)
     assert isinstance(r0["energyshield"], int)
-    assert isinstance(r0["ehp"], str)      # display string ('31k')
+    assert isinstance(r0["ehp"], str)  # display string ('31k')
 
 
 def test_rows_substantially_named(payload):
@@ -57,7 +58,7 @@ def test_rows_substantially_named(payload):
     named = [r for r in d["rows"] if r.get("name")]
     assert len(named) >= 95
     with_account = [r for r in d["rows"] if r.get("account")]
-    assert len(with_account) >= 95          # accounts can be hidden too
+    assert len(with_account) >= 95  # accounts can be hidden too
     assert all(isinstance(r.get("level"), int) for r in d["rows"])
 
 
@@ -74,17 +75,22 @@ def test_decode_rejects_non_search_payload():
 @pytest.mark.asyncio
 async def test_ladder_client_decodes_via_stub():
     """Client plumbing test with a stubbed transport — no network."""
+
     class _Resp:
         status_code = 200
         content = FIXTURE.read_bytes()
+
         def json(self):
-            return {"snapshotVersions": [
-                {"url": "runesofaldur", "version": "v1", "snapshotName": "runes-of-aldur"}
-            ]}
+            return {
+                "snapshotVersions": [
+                    {"url": "runesofaldur", "version": "v1", "snapshotName": "runes-of-aldur"}
+                ]
+            }
 
     class _Client:
         async def get(self, url, **kw):
             return _Resp()
+
         async def aclose(self):
             pass
 

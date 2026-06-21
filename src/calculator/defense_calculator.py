@@ -51,6 +51,7 @@ class DefenseConstants:
 @dataclass
 class ArmorResult:
     """Result of armor damage reduction calculation."""
+
     armor: float
     raw_damage: float
     damage_reduction_percent: float
@@ -61,6 +62,7 @@ class ArmorResult:
 @dataclass
 class EvasionResult:
     """Result of evasion chance calculation."""
+
     evasion: float
     accuracy: float
     hit_chance_percent: float
@@ -71,6 +73,7 @@ class EvasionResult:
 @dataclass
 class EnergyShieldResult:
     """Result of energy shield recharge calculation."""
+
     max_es: float
     recharge_rate_percent: float
     recharge_per_second: float
@@ -81,6 +84,7 @@ class EnergyShieldResult:
 @dataclass
 class ResistanceResult:
     """Result of resistance damage reduction calculation."""
+
     resistance_percent: float
     damage_taken_multiplier: float
     damage_reduction_percent: float
@@ -91,6 +95,7 @@ class ResistanceResult:
 @dataclass
 class BlockResult:
     """Result of block chance calculation."""
+
     block_chance_percent: float
     is_capped: bool
 
@@ -111,11 +116,7 @@ class DefenseCalculator:
     # ARMOR CALCULATIONS (PoE2)
     # ============================================================================
 
-    def calculate_armor_dr(
-        self,
-        armor: float,
-        raw_damage: float
-    ) -> ArmorResult:
+    def calculate_armor_dr(self, armor: float, raw_damage: float) -> ArmorResult:
         """
         Calculate damage reduction from armor using PoE2 formula.
 
@@ -147,7 +148,7 @@ class DefenseCalculator:
                 raw_damage=raw_damage,
                 damage_reduction_percent=0.0,
                 effective_damage=0.0,
-                is_capped=False
+                is_capped=False,
             )
 
         # PoE2 armor formula: DR = A / (A + 10 × D_raw)
@@ -173,14 +174,10 @@ class DefenseCalculator:
             raw_damage=raw_damage,
             damage_reduction_percent=dr_percent,
             effective_damage=effective_damage,
-            is_capped=is_capped
+            is_capped=is_capped,
         )
 
-    def armor_needed_for_dr(
-        self,
-        target_dr_percent: float,
-        raw_damage: float
-    ) -> float:
+    def armor_needed_for_dr(self, target_dr_percent: float, raw_damage: float) -> float:
         """
         Calculate armor needed to achieve target damage reduction.
 
@@ -215,7 +212,9 @@ class DefenseCalculator:
 
         # Rearrange: DR = A / (A + 10D) -> A = (DR × 10D) / (1 - DR)
         dr_decimal = target_dr_percent / 100
-        armor_needed = (dr_decimal * DefenseConstants.ARMOR_MULTIPLIER * raw_damage) / (1 - dr_decimal)
+        armor_needed = (dr_decimal * DefenseConstants.ARMOR_MULTIPLIER * raw_damage) / (
+            1 - dr_decimal
+        )
 
         logger.debug(
             f"Armor needed: {armor_needed:.0f} for {target_dr_percent}% DR vs {raw_damage} damage"
@@ -224,9 +223,7 @@ class DefenseCalculator:
         return armor_needed
 
     def armor_comparison(
-        self,
-        armor: float,
-        damage_values: list[float]
+        self, armor: float, damage_values: list[float]
     ) -> Dict[float, ArmorResult]:
         """
         Calculate armor effectiveness against multiple damage values.
@@ -255,11 +252,7 @@ class DefenseCalculator:
     # EVASION CALCULATIONS (PoE2)
     # ============================================================================
 
-    def calculate_evasion_chance(
-        self,
-        evasion: float,
-        attacker_accuracy: float
-    ) -> EvasionResult:
+    def calculate_evasion_chance(self, evasion: float, attacker_accuracy: float) -> EvasionResult:
         """
         Calculate chance to evade using PoE2 formula.
 
@@ -294,7 +287,7 @@ class DefenseCalculator:
                 accuracy=attacker_accuracy,
                 hit_chance_percent=0.0,
                 evade_chance_percent=100.0,
-                is_hit_capped=False
+                is_hit_capped=False,
             )
 
         # PoE2 formula: Hit_Chance = (Accuracy × 1.25 × 100) / (Accuracy + Evasion × 0.3)
@@ -324,13 +317,11 @@ class DefenseCalculator:
             accuracy=attacker_accuracy,
             hit_chance_percent=hit_chance_percent,
             evade_chance_percent=evade_chance_percent,
-            is_hit_capped=is_hit_capped
+            is_hit_capped=is_hit_capped,
         )
 
     def evasion_needed_for_hit_chance(
-        self,
-        target_hit_chance_percent: float,
-        attacker_accuracy: float
+        self, target_hit_chance_percent: float, attacker_accuracy: float
     ) -> float:
         """
         Calculate evasion needed to reduce hit chance to target value.
@@ -390,7 +381,7 @@ class DefenseCalculator:
         self,
         max_es: float,
         increased_recharge_rate_percent: float = 0.0,
-        faster_start_percent: float = 0.0
+        faster_start_percent: float = 0.0,
     ) -> EnergyShieldResult:
         """
         Calculate Energy Shield recharge mechanics using PoE2 values.
@@ -424,13 +415,17 @@ class DefenseCalculator:
 
         # Calculate delay (PoE2: 4 second base, formula: 400 / (100 + faster_start_%))
         delay_divisor = DefenseConstants.ES_DELAY_DIVISOR_BASE + faster_start_percent
-        delay_seconds = DefenseConstants.ES_DELAY_BASE_VALUE / delay_divisor if delay_divisor > 0 else DefenseConstants.ES_BASE_DELAY
+        delay_seconds = (
+            DefenseConstants.ES_DELAY_BASE_VALUE / delay_divisor
+            if delay_divisor > 0
+            else DefenseConstants.ES_BASE_DELAY
+        )
 
         # Calculate time to full
         if recharge_per_second > 0:
             time_to_full = (max_es / recharge_per_second) + delay_seconds
         else:
-            time_to_full = float('inf')
+            time_to_full = float("inf")
 
         logger.debug(
             f"ES Recharge: {max_es} max ES, {actual_rate_percent:.2f}% rate "
@@ -442,7 +437,7 @@ class DefenseCalculator:
             recharge_rate_percent=actual_rate_percent,
             recharge_per_second=recharge_per_second,
             delay_seconds=delay_seconds,
-            time_to_full_seconds=time_to_full
+            time_to_full_seconds=time_to_full,
         )
 
     # ============================================================================
@@ -450,9 +445,7 @@ class DefenseCalculator:
     # ============================================================================
 
     def calculate_resistance_dr(
-        self,
-        resistance_percent: float,
-        cap: float = DefenseConstants.RESISTANCE_DEFAULT_CAP
+        self, resistance_percent: float, cap: float = DefenseConstants.RESISTANCE_DEFAULT_CAP
     ) -> ResistanceResult:
         """
         Calculate damage reduction from resistance.
@@ -519,7 +512,7 @@ class DefenseCalculator:
             damage_taken_multiplier=damage_taken_multiplier,
             damage_reduction_percent=damage_reduction_percent,
             is_capped=is_capped,
-            is_over_cap=is_over_cap
+            is_over_cap=is_over_cap,
         )
 
     def calculate_all_resistances(
@@ -531,7 +524,7 @@ class DefenseCalculator:
         fire_cap: float = DefenseConstants.RESISTANCE_DEFAULT_CAP,
         cold_cap: float = DefenseConstants.RESISTANCE_DEFAULT_CAP,
         lightning_cap: float = DefenseConstants.RESISTANCE_DEFAULT_CAP,
-        chaos_cap: float = DefenseConstants.RESISTANCE_DEFAULT_CAP
+        chaos_cap: float = DefenseConstants.RESISTANCE_DEFAULT_CAP,
     ) -> Dict[str, ResistanceResult]:
         """
         Calculate damage reduction for all resistance types.
@@ -556,10 +549,10 @@ class DefenseCalculator:
             ...     print(f"{res_type}: {result.damage_reduction_percent:.0f}% DR")
         """
         resistances = {
-            'fire': (fire_res, fire_cap),
-            'cold': (cold_res, cold_cap),
-            'lightning': (lightning_res, lightning_cap),
-            'chaos': (chaos_res, chaos_cap)
+            "fire": (fire_res, fire_cap),
+            "cold": (cold_res, cold_cap),
+            "lightning": (lightning_res, lightning_cap),
+            "chaos": (chaos_res, chaos_cap),
         }
 
         results = {}
@@ -573,10 +566,7 @@ class DefenseCalculator:
     # BLOCK CALCULATIONS (PoE2)
     # ============================================================================
 
-    def calculate_block_chance(
-        self,
-        block_chance_percent: float
-    ) -> BlockResult:
+    def calculate_block_chance(self, block_chance_percent: float) -> BlockResult:
         """
         Calculate effective block chance with PoE2 cap.
 
@@ -595,9 +585,7 @@ class DefenseCalculator:
             >>> print(f"Block: {result.block_chance_percent}% (capped: {result.is_capped})")
         """
         if block_chance_percent < DefenseConstants.BLOCK_MIN_CHANCE:
-            logger.warning(
-                f"Block chance {block_chance_percent}% < 0%, treating as 0%"
-            )
+            logger.warning(f"Block chance {block_chance_percent}% < 0%, treating as 0%")
             block_chance_percent = DefenseConstants.BLOCK_MIN_CHANCE
 
         is_capped = block_chance_percent > DefenseConstants.BLOCK_MAX_CHANCE
@@ -609,10 +597,7 @@ class DefenseCalculator:
                 f"{DefenseConstants.BLOCK_MAX_CHANCE}%"
             )
 
-        return BlockResult(
-            block_chance_percent=effective_block,
-            is_capped=is_capped
-        )
+        return BlockResult(block_chance_percent=effective_block, is_capped=is_capped)
 
     # ============================================================================
     # COMBINED DEFENSE CALCULATIONS
@@ -624,7 +609,7 @@ class DefenseCalculator:
         energy_shield: float = 0.0,
         armor_dr_percent: float = 0.0,
         resistance_percent: float = 0.0,
-        block_chance_percent: float = 0.0
+        block_chance_percent: float = 0.0,
     ) -> Dict[str, Any]:
         """
         Calculate effective HP considering all defense layers.
@@ -652,7 +637,11 @@ class DefenseCalculator:
 
         # Apply resistance
         res_result = self.calculate_resistance_dr(resistance_percent)
-        hp_after_res = total_hp / res_result.damage_taken_multiplier if res_result.damage_taken_multiplier > 0 else float('inf')
+        hp_after_res = (
+            total_hp / res_result.damage_taken_multiplier
+            if res_result.damage_taken_multiplier > 0
+            else float("inf")
+        )
 
         # Apply armor DR
         armor_multiplier = 1 / (1 - min(armor_dr_percent, DefenseConstants.ARMOR_MAX_DR) / 100)
@@ -664,13 +653,17 @@ class DefenseCalculator:
         effective_hp = hp_after_armor * block_multiplier
 
         result = {
-            'life': life,
-            'energy_shield': energy_shield,
-            'total_hp': total_hp,
-            'resistance_multiplier': 1 / res_result.damage_taken_multiplier if res_result.damage_taken_multiplier > 0 else float('inf'),
-            'armor_multiplier': armor_multiplier,
-            'block_multiplier': block_multiplier,
-            'effective_hp': effective_hp
+            "life": life,
+            "energy_shield": energy_shield,
+            "total_hp": total_hp,
+            "resistance_multiplier": (
+                1 / res_result.damage_taken_multiplier
+                if res_result.damage_taken_multiplier > 0
+                else float("inf")
+            ),
+            "armor_multiplier": armor_multiplier,
+            "block_multiplier": block_multiplier,
+            "effective_hp": effective_hp,
         }
 
         logger.info(
@@ -687,7 +680,7 @@ class DefenseCalculator:
         armor: float = 0.0,
         resistance_percent: float = 0.0,
         block_chance_percent: float = 0.0,
-        damage_type: str = 'physical'
+        damage_type: str = "physical",
     ) -> Dict[str, Any]:
         """
         Calculate actual damage taken after all mitigation.
@@ -714,7 +707,7 @@ class DefenseCalculator:
         armor_dr_percent = 0.0
 
         # Apply armor only for physical damage
-        if damage_type.lower() == 'physical' and armor > 0:
+        if damage_type.lower() == "physical" and armor > 0:
             armor_result = self.calculate_armor_dr(armor, raw_damage)
             damage_after_armor = armor_result.effective_damage
             armor_dr_percent = armor_result.damage_reduction_percent
@@ -728,14 +721,16 @@ class DefenseCalculator:
         expected_damage = damage_after_res * (1 - block_result.block_chance_percent / 100)
 
         result = {
-            'raw_damage': raw_damage,
-            'armor_dr_percent': armor_dr_percent,
-            'damage_after_armor': damage_after_armor,
-            'resistance_percent': res_result.resistance_percent,
-            'damage_after_resistance': damage_after_res,
-            'block_chance_percent': block_result.block_chance_percent,
-            'expected_damage': expected_damage,
-            'damage_reduction_total_percent': (1 - expected_damage / raw_damage) * 100 if raw_damage > 0 else 0
+            "raw_damage": raw_damage,
+            "armor_dr_percent": armor_dr_percent,
+            "damage_after_armor": damage_after_armor,
+            "resistance_percent": res_result.resistance_percent,
+            "damage_after_resistance": damage_after_res,
+            "block_chance_percent": block_result.block_chance_percent,
+            "expected_damage": expected_damage,
+            "damage_reduction_total_percent": (
+                (1 - expected_damage / raw_damage) * 100 if raw_damage > 0 else 0
+            ),
         }
 
         logger.info(
@@ -747,6 +742,7 @@ class DefenseCalculator:
 
 
 # Convenience functions for quick calculations
+
 
 def armor_dr(armor: float, damage: float) -> float:
     """Quick armor damage reduction calculation."""
@@ -776,7 +772,7 @@ def block_effective(block_chance: float) -> float:
     return result.block_chance_percent
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example usage and testing
     logging.basicConfig(level=logging.INFO)
 
@@ -803,7 +799,9 @@ if __name__ == '__main__':
     print("--- Energy Shield (PoE2) ---")
     es_test = calc.calculate_es_recharge(1000, 50, 25)
     print(f"1000 ES with 50% increased rate, 25% faster start:")
-    print(f"Recharge rate: {es_test.recharge_rate_percent:.2f}%/sec ({es_test.recharge_per_second:.1f}/sec)")
+    print(
+        f"Recharge rate: {es_test.recharge_rate_percent:.2f}%/sec ({es_test.recharge_per_second:.1f}/sec)"
+    )
     print(f"Delay: {es_test.delay_seconds:.2f}s")
     print(f"Time to full: {es_test.time_to_full_seconds:.2f}s\n")
 
@@ -811,14 +809,18 @@ if __name__ == '__main__':
     print("--- Resistances ---")
     all_res = calc.calculate_all_resistances(75, 80, 70, 50)
     for res_type, result in all_res.items():
-        print(f"{res_type.capitalize()}: {result.resistance_percent:.0f}% "
-              f"({result.damage_reduction_percent:.0f}% DR, capped: {result.is_capped})")
+        print(
+            f"{res_type.capitalize()}: {result.resistance_percent:.0f}% "
+            f"({result.damage_reduction_percent:.0f}% DR, capped: {result.is_capped})"
+        )
     print()
 
     # Block examples
     print("--- Block (PoE2 - 50% cap) ---")
     block_test = calc.calculate_block_chance(60)
-    print(f"60% block chance: {block_test.block_chance_percent:.0f}% (capped: {block_test.is_capped})\n")
+    print(
+        f"60% block chance: {block_test.block_chance_percent:.0f}% (capped: {block_test.is_capped})\n"
+    )
 
     # Combined defense
     print("--- Effective HP ---")
@@ -827,7 +829,7 @@ if __name__ == '__main__':
         energy_shield=2000,
         armor_dr_percent=40,
         resistance_percent=75,
-        block_chance_percent=40
+        block_chance_percent=40,
     )
     print(f"5000 life, 2000 ES, 40% armor DR, 75% res, 40% block:")
     print(f"Total HP: {ehp['total_hp']:.0f}")
@@ -840,7 +842,7 @@ if __name__ == '__main__':
         armor=5000,
         resistance_percent=75,
         block_chance_percent=40,
-        damage_type='physical'
+        damage_type="physical",
     )
     print(f"1000 physical damage, 5000 armor, 75% res, 40% block:")
     print(f"After armor: {damage['damage_after_armor']:.0f}")

@@ -33,10 +33,10 @@ LEGACY_DATA_MARKERS = (
 # poe.ninja HTML response. Detection of an Astro shell with NO legacy
 # markers is the signal that the build/character data isn't embedded.
 ASTRO_MARKERS = (
-    "/_astro/",            # Astro chunks served from assets.poe.ninja/_astro/
-    "data-astro-",         # Astro hydration attrs
-    "<astro-island",       # Astro Islands web component
-    "astro:page",          # Astro client-side event names
+    "/_astro/",  # Astro chunks served from assets.poe.ninja/_astro/
+    "data-astro-",  # Astro hydration attrs
+    "<astro-island",  # Astro Islands web component
+    "astro:page",  # Astro client-side event names
 )
 
 

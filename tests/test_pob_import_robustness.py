@@ -10,6 +10,7 @@ zlib error with no diagnosis. The importer now supports:
   - hardened ``import_build_sync`` — whitespace strip, URL-safe base64,
     missing padding, and actionable ValueError diagnostics on corruption
 """
+
 from __future__ import annotations
 
 import base64
@@ -67,6 +68,7 @@ def _assert_build_ok(build: dict):
 # Share-code path
 # ---------------------------------------------------------------------------
 
+
 def test_clean_code_roundtrip():
     _assert_build_ok(PoBImporter().import_build_sync(_make_code()))
 
@@ -74,7 +76,7 @@ def test_clean_code_roundtrip():
 def test_code_with_whitespace_and_newlines():
     """Codes pasted from terminals/editors arrive line-wrapped."""
     code = _make_code()
-    wrapped = "\n".join(code[i:i + 76] for i in range(0, len(code), 76))
+    wrapped = "\n".join(code[i : i + 76] for i in range(0, len(code), 76))
     _assert_build_ok(PoBImporter().import_build_sync("  " + wrapped + "\n"))
 
 
@@ -113,6 +115,7 @@ def test_empty_code_rejected():
 # Raw-XML path
 # ---------------------------------------------------------------------------
 
+
 def test_import_xml_sync():
     _assert_build_ok(PoBImporter().import_xml_sync(SAMPLE_XML))
 
@@ -134,6 +137,7 @@ async def test_import_xml_async_wrapper():
 # ---------------------------------------------------------------------------
 # File path (the agent-preferred route)
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_import_from_file_xml(tmp_path):

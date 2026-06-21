@@ -218,7 +218,11 @@ def get_notables() -> list:
     payload = load_passive_tree()
     if not payload:
         return []
-    return [n for n in payload.get("nodes", {}).values() if n.get("is_notable") and not n.get("is_keystone")]
+    return [
+        n
+        for n in payload.get("nodes", {}).values()
+        if n.get("is_notable") and not n.get("is_keystone")
+    ]
 
 
 def find_keystone_by_name(name: str) -> Optional[Dict[str, Any]]:
@@ -421,9 +425,7 @@ def find_per_skill_stat_description(stat_id: str) -> Optional[Dict[str, Any]]:
             if target in (record.get("stat_ids") or []):
                 out = dict(record)
                 out["source_skill"] = file_payload.get("skill_key", rel_key)
-                out["source_csd"] = (
-                    "specific_skill_stat_descriptions/" + rel_key
-                )
+                out["source_csd"] = "specific_skill_stat_descriptions/" + rel_key
                 return out
     return None
 
@@ -460,9 +462,7 @@ def search_per_skill_stat_descriptions(
             if match_field:
                 out = dict(record)
                 out["source_skill"] = file_payload.get("skill_key", rel_key)
-                out["source_csd"] = (
-                    "specific_skill_stat_descriptions/" + rel_key
-                )
+                out["source_csd"] = "specific_skill_stat_descriptions/" + rel_key
                 out["match_field"] = match_field
                 results.append(out)
                 if len(results) >= limit:
@@ -494,7 +494,9 @@ def describe() -> str:
         f"Extracted: {v.get('extracted_at', '?')}",
     ]
     for ds, info in (v.get("datasets") or {}).items():
-        lines.append(f"  - {ds}: {info.get('record_count', '?')} records at {info.get('path', '?')}")
+        lines.append(
+            f"  - {ds}: {info.get('record_count', '?')} records at {info.get('path', '?')}"
+        )
     pending = v.get("datasets_pending_0_5_reextract") or {}
     if pending:
         lines.append(f"  pending re-extract: {', '.join(pending.keys())}")

@@ -5,6 +5,7 @@ launch.py's import-time side effects (Windows stdout wrap, deferred src/
 imports) into the test runner. Pattern documented in
 docs/TESTING.md / PR #123-#124.
 """
+
 from __future__ import annotations
 
 import os
@@ -41,11 +42,11 @@ def check_code_freshness(
     can call this without wiring colorized output. launch.py passes its own
     print helpers.
     """
-    if os.environ.get('POE2_MCP_NO_CODE_CHECK') == '1':
+    if os.environ.get("POE2_MCP_NO_CODE_CHECK") == "1":
         print_info("Code freshness check disabled (POE2_MCP_NO_CODE_CHECK=1)")
         return
 
-    git = shutil.which('git')
+    git = shutil.which("git")
     if not git:
         print_warning("git not in PATH; skipping code freshness check")
         return
@@ -62,33 +63,33 @@ def check_code_freshness(
 
     # Are we in a git checkout at all?
     try:
-        repo_root = _git('rev-parse', '--show-toplevel').stdout.strip()
+        repo_root = _git("rev-parse", "--show-toplevel").stdout.strip()
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
         print_info("Not running from a git checkout; skipping code freshness check")
         return
 
     # On which branch?
     try:
-        branch = _git('-C', repo_root, 'rev-parse', '--abbrev-ref', 'HEAD').stdout.strip()
+        branch = _git("-C", repo_root, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         print_warning("Could not determine current branch; skipping code freshness check")
         return
 
-    if branch != 'main':
+    if branch != "main":
         print_info(f"On branch '{branch}' (not main); skipping code freshness check")
         return
 
     # Fetch latest from origin/main (network-bound).
     try:
-        _git('-C', repo_root, 'fetch', '--quiet', 'origin', 'main', timeout=30)
+        _git("-C", repo_root, "fetch", "--quiet", "origin", "main", timeout=30)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         print_warning("Could not fetch from origin (offline?); skipping code freshness check")
         return
 
     # Compare local HEAD to origin/main.
     try:
-        local_head = _git('-C', repo_root, 'rev-parse', 'HEAD').stdout.strip()
-        remote_head = _git('-C', repo_root, 'rev-parse', 'origin/main').stdout.strip()
+        local_head = _git("-C", repo_root, "rev-parse", "HEAD").stdout.strip()
+        remote_head = _git("-C", repo_root, "rev-parse", "origin/main").stdout.strip()
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         print_warning("Could not compare to origin/main; skipping code freshness check")
         return
@@ -100,24 +101,22 @@ def check_code_freshness(
     # How many commits behind?
     try:
         behind = _git(
-            '-C', repo_root, 'rev-list', '--count', f'{local_head}..{remote_head}'
+            "-C", repo_root, "rev-list", "--count", f"{local_head}..{remote_head}"
         ).stdout.strip()
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-        behind = '?'
+        behind = "?"
 
-    auto_update = os.environ.get('POE2_MCP_AUTO_UPDATE') == '1'
+    auto_update = os.environ.get("POE2_MCP_AUTO_UPDATE") == "1"
 
     if not auto_update:
         # Option A: notify only.
-        print_warning(
-            f"Code is {behind} commit(s) behind origin/main. Run 'git pull' to update."
-        )
+        print_warning(f"Code is {behind} commit(s) behind origin/main. Run 'git pull' to update.")
         print_info("Set POE2_MCP_AUTO_UPDATE=1 to enable automatic fast-forward updates.")
         return
 
     # Option B: auto fast-forward — only if working tree is clean.
     try:
-        dirty = _git('-C', repo_root, 'status', '--porcelain').stdout.strip()
+        dirty = _git("-C", repo_root, "status", "--porcelain").stdout.strip()
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         print_warning("Could not check working tree status; skipping auto-update")
         return
@@ -129,7 +128,7 @@ def check_code_freshness(
         return
 
     try:
-        _git('-C', repo_root, 'merge', '--ff-only', 'origin/main', timeout=30)
+        _git("-C", repo_root, "merge", "--ff-only", "origin/main", timeout=30)
         print_success(f"Code updated: fast-forwarded {behind} commit(s) from origin/main")
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
         print_warning(

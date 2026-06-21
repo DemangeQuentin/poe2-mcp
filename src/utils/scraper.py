@@ -37,7 +37,7 @@ class PoE2DataScraper:
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                 "Accept": "text/html,application/json",
                 "Accept-Language": "en-US,en;q=0.9",
-            }
+            },
         )
 
     async def scrape_unique_items(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -63,13 +63,13 @@ class PoE2DataScraper:
                 logger.error(f"Failed to fetch unique items: {response.status_code}")
                 return []
 
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, "html.parser")
 
             # Find item tables
-            tables = soup.find_all('table', class_=['item', 'wikitable'])
+            tables = soup.find_all("table", class_=["item", "wikitable"])
 
             for table in tables:
-                rows = table.find_all('tr')[1:]  # Skip header
+                rows = table.find_all("tr")[1:]  # Skip header
 
                 for row in rows:
                     try:
@@ -97,18 +97,18 @@ class PoE2DataScraper:
     def _parse_item_row(self, row) -> Optional[Dict[str, Any]]:
         """Parse a single item row from table"""
         try:
-            cols = row.find_all(['td', 'th'])
+            cols = row.find_all(["td", "th"])
             if len(cols) < 2:
                 return None
 
             # Extract item name
             name_cell = cols[0]
-            item_link = name_cell.find('a')
+            item_link = name_cell.find("a")
             if not item_link:
                 return None
 
             item_name = item_link.text.strip()
-            item_url = item_link.get('href', '')
+            item_url = item_link.get("href", "")
 
             # Extract item type/base
             base_type = cols[1].text.strip() if len(cols) > 1 else ""
@@ -116,7 +116,7 @@ class PoE2DataScraper:
             # Extract level requirement if present
             level_req = 0
             for col in cols:
-                level_match = re.search(r'Level[:\s]*(\d+)', col.text, re.IGNORECASE)
+                level_match = re.search(r"Level[:\s]*(\d+)", col.text, re.IGNORECASE)
                 if level_match:
                     level_req = int(level_match.group(1))
                     break
@@ -129,7 +129,7 @@ class PoE2DataScraper:
                 "rarity": "Unique",
                 "url": f"{self.base_url}{item_url}" if item_url else None,
                 "source": "poe2db.tw",
-                "scraped_at": datetime.utcnow().isoformat()
+                "scraped_at": datetime.utcnow().isoformat(),
             }
 
         except Exception as e:
@@ -140,25 +140,28 @@ class PoE2DataScraper:
         """Classify item based on base type"""
         base_lower = base_type.lower()
 
-        if any(x in base_lower for x in ['sword', 'axe', 'mace', 'dagger', 'claw', 'bow', 'wand', 'staff']):
+        if any(
+            x in base_lower
+            for x in ["sword", "axe", "mace", "dagger", "claw", "bow", "wand", "staff"]
+        ):
             return "Weapon"
-        elif any(x in base_lower for x in ['helmet', 'helm', 'hood', 'crown']):
+        elif any(x in base_lower for x in ["helmet", "helm", "hood", "crown"]):
             return "Helmet"
-        elif any(x in base_lower for x in ['chest', 'armour', 'armor', 'robe', 'vest', 'coat']):
+        elif any(x in base_lower for x in ["chest", "armour", "armor", "robe", "vest", "coat"]):
             return "Body Armour"
-        elif any(x in base_lower for x in ['gloves', 'gauntlets', 'mitts']):
+        elif any(x in base_lower for x in ["gloves", "gauntlets", "mitts"]):
             return "Gloves"
-        elif any(x in base_lower for x in ['boots', 'greaves', 'slippers']):
+        elif any(x in base_lower for x in ["boots", "greaves", "slippers"]):
             return "Boots"
-        elif any(x in base_lower for x in ['ring']):
+        elif any(x in base_lower for x in ["ring"]):
             return "Ring"
-        elif any(x in base_lower for x in ['amulet', 'talisman']):
+        elif any(x in base_lower for x in ["amulet", "talisman"]):
             return "Amulet"
-        elif any(x in base_lower for x in ['belt', 'sash']):
+        elif any(x in base_lower for x in ["belt", "sash"]):
             return "Belt"
-        elif any(x in base_lower for x in ['shield', 'buckler']):
+        elif any(x in base_lower for x in ["shield", "buckler"]):
             return "Shield"
-        elif any(x in base_lower for x in ['quiver']):
+        elif any(x in base_lower for x in ["quiver"]):
             return "Quiver"
         else:
             return "Other"
@@ -182,13 +185,13 @@ class PoE2DataScraper:
                 logger.error(f"Failed to fetch skill gems: {response.status_code}")
                 return []
 
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, "html.parser")
 
             # Find skill gem tables
-            tables = soup.find_all('table')
+            tables = soup.find_all("table")
 
             for table in tables:
-                rows = table.find_all('tr')[1:]  # Skip header
+                rows = table.find_all("tr")[1:]  # Skip header
 
                 for row in rows:
                     try:
@@ -209,13 +212,13 @@ class PoE2DataScraper:
     def _parse_skill_row(self, row) -> Optional[Dict[str, Any]]:
         """Parse a single skill gem row"""
         try:
-            cols = row.find_all(['td', 'th'])
+            cols = row.find_all(["td", "th"])
             if len(cols) < 2:
                 return None
 
             # Extract skill name
             name_cell = cols[0]
-            skill_link = name_cell.find('a')
+            skill_link = name_cell.find("a")
             if not skill_link:
                 return None
 
@@ -225,7 +228,11 @@ class PoE2DataScraper:
             tags = []
             for col in cols:
                 # Look for tags like "Fire", "Spell", "AoE", etc.
-                tag_matches = re.findall(r'\b(Fire|Cold|Lightning|Physical|Chaos|Spell|Attack|AoE|Projectile|Duration|Minion)\b', col.text, re.IGNORECASE)
+                tag_matches = re.findall(
+                    r"\b(Fire|Cold|Lightning|Physical|Chaos|Spell|Attack|AoE|Projectile|Duration|Minion)\b",
+                    col.text,
+                    re.IGNORECASE,
+                )
                 tags.extend(tag_matches)
 
             return {
@@ -233,7 +240,7 @@ class PoE2DataScraper:
                 "tags": list(set(tags)),  # Remove duplicates
                 "gem_type": "Active",
                 "source": "poe2db.tw",
-                "scraped_at": datetime.utcnow().isoformat()
+                "scraped_at": datetime.utcnow().isoformat(),
             }
 
         except Exception as e:
@@ -259,11 +266,11 @@ class PoE2DataScraper:
                 logger.error(f"Failed to fetch support gems: {response.status_code}")
                 return []
 
-            soup = BeautifulSoup(response.text, 'html.parser')
-            tables = soup.find_all('table')
+            soup = BeautifulSoup(response.text, "html.parser")
+            tables = soup.find_all("table")
 
             for table in tables:
-                rows = table.find_all('tr')[1:]
+                rows = table.find_all("tr")[1:]
 
                 for row in rows:
                     try:
@@ -300,15 +307,17 @@ class PoE2DataScraper:
                 logger.error(f"Failed to fetch passive tree: {response.status_code}")
                 return None
 
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, "html.parser")
 
             # Look for embedded passive tree JSON data
-            scripts = soup.find_all('script')
+            scripts = soup.find_all("script")
             for script in scripts:
-                if script.string and 'passiveSkillTree' in script.string:
+                if script.string and "passiveSkillTree" in script.string:
                     try:
                         # Extract JSON data
-                        json_match = re.search(r'passiveSkillTree\s*=\s*({.*?});', script.string, re.DOTALL)
+                        json_match = re.search(
+                            r"passiveSkillTree\s*=\s*({.*?});", script.string, re.DOTALL
+                        )
                         if json_match:
                             tree_data = json.loads(json_match.group(1))
                             logger.info("Successfully extracted passive tree data")
@@ -346,11 +355,11 @@ class PoE2DataScraper:
 
                 response = await self.client.get(url)
                 if response.status_code == 200:
-                    soup = BeautifulSoup(response.text, 'html.parser')
-                    tables = soup.find_all('table')
+                    soup = BeautifulSoup(response.text, "html.parser")
+                    tables = soup.find_all("table")
 
                     for table in tables:
-                        rows = table.find_all('tr')[1:]
+                        rows = table.find_all("tr")[1:]
 
                         for row in rows:
                             try:
@@ -371,12 +380,12 @@ class PoE2DataScraper:
     def _parse_base_item_row(self, row, category: str) -> Optional[Dict[str, Any]]:
         """Parse a single base item row"""
         try:
-            cols = row.find_all(['td', 'th'])
+            cols = row.find_all(["td", "th"])
             if len(cols) < 2:
                 return None
 
             name_cell = cols[0]
-            item_link = name_cell.find('a')
+            item_link = name_cell.find("a")
             if not item_link:
                 return None
 
@@ -385,8 +394,8 @@ class PoE2DataScraper:
             # Extract level requirement
             level_req = 0
             for col in cols:
-                level_match = re.search(r'(\d+)', col.text)
-                if level_match and 'level' in col.text.lower():
+                level_match = re.search(r"(\d+)", col.text)
+                if level_match and "level" in col.text.lower():
                     level_req = int(level_match.group(1))
                     break
 
@@ -397,7 +406,7 @@ class PoE2DataScraper:
                 "level_requirement": level_req,
                 "rarity": "Normal",
                 "source": "poe2db.tw",
-                "scraped_at": datetime.utcnow().isoformat()
+                "scraped_at": datetime.utcnow().isoformat(),
             }
 
         except Exception as e:

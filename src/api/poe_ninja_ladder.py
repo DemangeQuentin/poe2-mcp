@@ -60,6 +60,7 @@ ParsedField = Tuple[int, Any, Any]  # (field_no, wire_kind, value)
 # Protobuf wire primitives (schema-less)
 # ---------------------------------------------------------------------------
 
+
 def _varint(buf: bytes, i: int, n: int):
     v, shift = 0, 0
     while i < n:
@@ -102,9 +103,13 @@ def parse_message(buf: bytes, depth: int = 0, max_depth: int = 10) -> Optional[L
             ln, i = _varint(buf, i, n)
             if ln is None or i + ln > n:
                 return None
-            chunk = buf[i:i + ln]
+            chunk = buf[i : i + ln]
             i += ln
-            sub = parse_message(chunk, depth + 1, max_depth) if (depth < max_depth and len(chunk) > 1) else None
+            sub = (
+                parse_message(chunk, depth + 1, max_depth)
+                if (depth < max_depth and len(chunk) > 1)
+                else None
+            )
             if sub is not None:
                 out.append((field, "msg", sub))
             else:
@@ -125,6 +130,7 @@ def parse_message(buf: bytes, depth: int = 0, max_depth: int = 10) -> Optional[L
 # ---------------------------------------------------------------------------
 # Columnar search-response decoding
 # ---------------------------------------------------------------------------
+
 
 def decode_search_response(payload: bytes) -> Dict[str, Any]:
     """Decode a /builds/{version}/search response into rows.
@@ -189,11 +195,13 @@ def decode_search_response(payload: bytes) -> Dict[str, Any]:
 # Client
 # ---------------------------------------------------------------------------
 
+
 class LadderClient:
     """Builds-list / ladder access over the recovered protobuf API."""
 
-    def __init__(self, rate_limiter: Optional[RateLimiter] = None,
-                 client: Optional[httpx.AsyncClient] = None):
+    def __init__(
+        self, rate_limiter: Optional[RateLimiter] = None, client: Optional[httpx.AsyncClient] = None
+    ):
         self.base_url = "https://poe.ninja"
         self.rate_limiter = rate_limiter or RateLimiter(rate_limit=20)
         self._client = client
@@ -204,7 +212,8 @@ class LadderClient:
     def client(self) -> httpx.AsyncClient:
         if self._client is None:
             self._client = httpx.AsyncClient(
-                timeout=30.0, follow_redirects=True,
+                timeout=30.0,
+                follow_redirects=True,
                 headers={"User-Agent": "PoE2-MCP-Server/1.0"},
             )
         return self._client
@@ -246,8 +255,9 @@ class LadderClient:
             logger.error(f"search decode failed: {e}")
             return None
 
-    async def top_builds(self, league_slug: str, class_name: Optional[str] = None,
-                         sort: str = "level") -> List[Dict[str, Any]]:
+    async def top_builds(
+        self, league_slug: str, class_name: Optional[str] = None, sort: str = "level"
+    ) -> List[Dict[str, Any]]:
         """First ladder page (100 rows), optionally class-filtered."""
         filters: Dict[str, str] = {"sort": sort}
         if class_name:
