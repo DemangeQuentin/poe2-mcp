@@ -1,0 +1,53 @@
+name: Publish to PyPI
+
+# Continuous deployment: every merge to main publishes a fresh release to PyPI,
+# so the published package can never silently drift behind source again
+# (see #193 — a recurrence of #56 that only existed in the stale PyPI build).
+#
+# PyPI refuses duplicate version uploads, so each run derives a unique, monotonic
+# version: <major.minor from pyproject>.<github run number> (e.g. 1.0.1, 1.0.2 …).
+# The bump is build-time only and is never committed back to main.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}   # allow manual publishes too
+
+# Never let two publishes race.
+concurrency:
+  group: publish-pypi
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # required for PyPI Trusted Publishing (OIDC) — no stored token
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Derive version = <major.minor>.<run_number>
+        run: |
+          base=$(grep -m1 '^version = ' pyproject.toml | sed -E 's/.*"([0-9]+\.[0-9]+).*"/\1/')
+          version="${base}.${GITHUB_RUN_NUMBER}"
+          sed -i -E "s/^version = .*/version = \"${version}\"/" pyproject.toml
+          echo "PKG_VERSION=${version}" >> "$GITHUB_ENV"
+          echo "Publishing poe2-mcp ${version}"
+
+      - name: Build sdist + wheel
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+
+      - name: Publish to PyPI (Trusted Publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # No token: authenticates via the id-token (OIDC) above. The trusted
+        # publisher must be configured once on PyPI — see the PR description.
+
+      - name: Summary
+        run: echo "Published **poe2-mcp ${PKG_VERSION}** to PyPI" >> "$GITHUB_STEP_SUMMARY"
