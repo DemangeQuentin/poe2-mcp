@@ -11,7 +11,8 @@ MCPConfig = {}
 MCPConfig.HOST = "127.0.0.1"  -- Only accept local connections (security)
 MCPConfig.PORT = 49085        -- Default port for MCP communication
 MCPConfig.TIMEOUT = 0         -- Non-blocking (0 = immediate return)
-MCPConfig.READ_TIMEOUT = 5    -- Seconds to wait for client data
+MCPConfig.READ_TIMEOUT = 0.5  -- Seconds to wait for client data (kept short so a
+                              -- slow/dead client can never freeze a PoB frame for long)
 
 -- Feature flags
 MCPConfig.ENABLED = true      -- Master enable/disable

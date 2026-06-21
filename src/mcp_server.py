@@ -2175,13 +2175,21 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
     # =========================================================================
 
     def _get_pob_client(self, port: int = 49085):
-        """Lazily build/cache the live PoB bridge client (sync socket client)."""
-        if self.pob_client is None or getattr(self.pob_client, "port", port) != port:
-            try:
-                from .pob.client import PoBClient
-            except ImportError:
-                from src.pob.client import PoBClient
-            self.pob_client = PoBClient(port=port)
+        """
+        Lazily build/cache the live PoB bridge client, discovering the bound
+        port. The addon falls back from 49085 to 49086-49088 when 49085 is busy,
+        so a hardwired port can miss a running bridge.
+        """
+        try:
+            from .pob.client import PoBClient
+        except ImportError:
+            from src.pob.client import PoBClient
+        # Reuse the cached client only while it's still reachable.
+        if self.pob_client is not None and self.pob_client.is_connected():
+            return self.pob_client
+        # Scan the fallback range; fall back to a default-port object so callers
+        # still get a clean "not reachable" error when PoB isn't running.
+        self.pob_client = PoBClient.find_bridge() or PoBClient(port=port)
         return self.pob_client
 
     async def _handle_pob_status(self, args: dict) -> List[types.TextContent]:
@@ -2199,17 +2207,34 @@ Tracked at https://github.com/HivemindOverlord/poe2-mcp/issues/61.
                          + (f" ({status['pob_path']})" if status.get('pob_path') else ""))
             lines.append(f"  Addon deployed: {status['addon_installed']}")
             lines.append(f"  Launch.lua patched: {status['launch_patched']}")
-            lines.append(f"  Bridge reachable (port {port}): {status['bridge_reachable']}")
+            _bport = status.get("bridge_port") or port
+            lines.append(f"  Bridge reachable (port {_bport}): {status['bridge_reachable']}")
             if status.get("ping"):
                 ping = status["ping"]
                 lines.append(f"  PoB version: {ping.get('pob_version')}, "
                              f"build loaded: {ping.get('build_loaded')}"
                              + (f" ('{ping.get('build_name')}')" if ping.get('build_name') else ""))
             if not status["bridge_reachable"]:
-                if not status["addon_installed"]:
-                    lines.append("  -> Addon not installed. Use pob_install_addon, then restart PoB.")
-                else:
+                if status["addon_installed"]:
                     lines.append("  -> Addon installed but PoB isn't running (or not reachable). Start PoB.")
+                elif status["pob_installed"] and not status["launch_patched"]:
+                    # Distinguish "never installed" from "PoB updated and wiped the
+                    # Launch.lua hook". In the latter the addon files still exist;
+                    # auto-repair so the addon survives PoB updates.
+                    deploy = await asyncio.to_thread(
+                        installer.is_addon_installed, Path(status["pob_path"]))
+                    if deploy.get("files_present"):
+                        repair = await asyncio.to_thread(
+                            installer.ensure_installed, Path(status["pob_path"]))
+                        if repair.get("action") == "repatched":
+                            lines.append("  -> PoB updated and removed the addon hook; "
+                                         "I re-applied it automatically. Restart PoB.")
+                        else:
+                            lines.append(f"  -> Auto-repair: {repair.get('message')}")
+                    else:
+                        lines.append("  -> Addon not installed. Use pob_install_addon, then restart PoB.")
+                else:
+                    lines.append("  -> Addon not installed. Use pob_install_addon, then restart PoB.")
             return [types.TextContent(type="text", text="\n".join(lines))]
         except Exception as e:
             logger.error(f"pob_status error: {e}", exc_info=True)

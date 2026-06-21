@@ -130,6 +130,30 @@ class PoBClient:
             self._last_error = f"Invalid JSON response: {e}"
             raise PoBCommandError(self._last_error)
 
+    # The addon binds 49085, but falls back to 49086-49088 if that port is busy
+    # (and updates its own config.PORT). A single hardwired port can therefore
+    # miss a running bridge, so discovery scans the whole range.
+    BRIDGE_PORTS = (49085, 49086, 49087, 49088)
+
+    @classmethod
+    def find_bridge(
+        cls,
+        host: str = "127.0.0.1",
+        ports: Optional[tuple] = None,
+        timeout: float = 1.5,
+    ) -> Optional["PoBClient"]:
+        """
+        Find a running PoB bridge across the default + fallback ports.
+
+        Returns a connected PoBClient on the first port that answers ping(), or
+        None if nothing is reachable. Use this instead of assuming 49085.
+        """
+        for port in (ports or cls.BRIDGE_PORTS):
+            client = cls(host=host, port=port, timeout=timeout)
+            if client.is_connected():
+                return client
+        return None
+
     def is_connected(self) -> bool:
         """Check if PoB is running and responsive."""
         try:
@@ -530,3 +554,93 @@ class PoBClient:
                 pass
             time.sleep(delay)
         return False
+
+    # =========================================================================
+    # Build editing (added during the bridge build-out)
+    # =========================================================================
+
+    def set_main_skill_group(self, index: int) -> Dict[str, Any]:
+        """Set which socket group is the main skill (drives DPS/Average Hit)."""
+        return self._send_command("set_main_skill_group", {"index": index})
+
+    def set_displayed_skill(
+        self, group_index: int, skill_index: Optional[int] = None,
+        part: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Set the DISPLAYED active skill (and skill part) within a group.
+
+        Essential for trigger / multi-stage skills: PoB otherwise shows the
+        trigger gem (0 damage) instead of the real damaging skill.
+        """
+        params: Dict[str, Any] = {"group_index": group_index}
+        if skill_index is not None:
+            params["skill_index"] = skill_index
+        if part is not None:
+            params["part"] = part
+        return self._send_command("set_displayed_skill", params)
+
+    def get_skill_parts(self, group_index: int) -> Dict[str, Any]:
+        """List the active skills (and parts) in a group + which is displayed."""
+        return self._send_command("get_skill_parts", {"group_index": group_index})
+
+    def set_group_gems(
+        self, index: int, gems: list
+    ) -> Dict[str, Any]:
+        """
+        Replace a socket group's gems in place (keeps the rest of the build).
+
+        Args:
+            index: socket group index (1-based)
+            gems: list of {"name": str, "level": int, "quality": int}
+        """
+        return self._send_command("set_group_gems", {"index": index, "gems": gems})
+
+    def set_character_level(self, level: int) -> Dict[str, Any]:
+        """Set the character level (controls the passive-point budget)."""
+        return self._send_command("set_character_level", {"level": level})
+
+    def set_config_input(self, key: str, value: Any) -> Dict[str, Any]:
+        """Set a configTab input (e.g. detonateDeadCorpseLife, enemy settings)."""
+        return self._send_command("set_config_input", {"key": key, "value": value})
+
+    # =========================================================================
+    # Introspection
+    # =========================================================================
+
+    def get_output(self, keys: Optional[list] = None) -> Dict[str, Any]:
+        """Return specific output fields (avoids dumping the whole table)."""
+        params = {"keys": keys} if keys else {}
+        return self._send_command("get_output", params)
+
+    def get_full_dps(self) -> Dict[str, Any]:
+        """PoB Full DPS (sum of all damaging skills incl. triggered DoTs)."""
+        return self._send_command("get_full_dps")
+
+    def get_stat_breakdown(self, stat: str, minion: bool = False) -> Dict[str, Any]:
+        """
+        Explain WHY an output stat is what it is — PoB's modifier-by-modifier
+        breakdown. Works for defensive/attribute/resist stats (e.g. "Life",
+        "Armour", "FireResist"). Returns {found, lines} or {found: False,
+        available: [...]}.
+        """
+        return self._send_command("get_stat_breakdown", {"stat": stat, "minion": minion})
+
+    def list_config_options(
+        self, filter: Optional[str] = None, limit: int = 400
+    ) -> Dict[str, Any]:
+        """Enumerate PoB's available config options + current values."""
+        params: Dict[str, Any] = {"limit": limit}
+        if filter:
+            params["filter"] = filter
+        return self._send_command("list_config_options", params)
+
+    def search_tree_nodes(
+        self, keywords, notables_only: bool = False, limit: int = 200
+    ) -> Dict[str, Any]:
+        """Search the full passive tree for nodes whose stats match keyword(s)."""
+        if isinstance(keywords, str):
+            keywords = [keywords]
+        return self._send_command("search_tree_nodes", {
+            "keywords": keywords, "notables_only": notables_only, "limit": limit
+        })

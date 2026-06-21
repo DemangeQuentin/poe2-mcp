@@ -321,6 +321,59 @@ def uninstall_addon(pob_path: Optional[Path] = None) -> Dict[str, object]:
     }
 
 
+def ensure_installed(pob_path: Optional[Path] = None) -> Dict[str, object]:
+    """
+    Make the addon survive PoB updates by auto-repairing it.
+
+    PoB's auto-updater overwrites tracked source files — including
+    ``src/Launch.lua`` — which silently removes our one-line loader hook. The
+    ``src/Addons/`` folder is NOT in PoB's update manifest, so the addon files
+    themselves survive; only the Launch.lua hook is lost. This function detects
+    that state and re-applies just what's missing, so a user never has to
+    manually reinstall after a PoB patch.
+
+    Returns one of action: "ok" (nothing needed), "repatched" (Launch.lua hook
+    re-applied after an update wiped it), "installed" (full install), or
+    "failed".
+    """
+    if pob_path is None:
+        pob_path = find_pob_installation()
+    if pob_path is None:
+        return {"action": "failed", "message": "PoB installation not found."}
+    pob_path = Path(pob_path)
+
+    state = is_addon_installed(pob_path)
+    if state["installed"]:
+        return {"action": "ok", "pob_path": str(pob_path),
+                "message": "Addon present and Launch.lua hooked."}
+
+    # Files survived an update but the Launch.lua hook was wiped: re-patch only.
+    if state["files_present"] and not state["launch_patched"]:
+        launch = pob_path / "src" / "Launch.lua"
+        backup = pob_path / "src" / "Launch.lua.mcp_backup"
+        try:
+            if not backup.exists():
+                shutil.copy2(launch, backup)
+            patch_result = _patch_launch_lua(launch)
+        except OSError as e:
+            return {"action": "failed", "message": f"Re-patch failed: {e}"}
+        if patch_result == "anchor_not_found":
+            # PoB's Launch.lua changed shape in the update — fall back to a full
+            # reinstall (re-copies addon + re-finds the anchor).
+            return install_addon(pob_path)
+        return {
+            "action": "repatched",
+            "pob_path": str(pob_path),
+            "message": "PoB updated and removed the addon hook; re-applied it. "
+            "Restart Path of Building.",
+        }
+
+    # Nothing (or only a partial) deployment present: do a full install.
+    result = install_addon(pob_path)
+    result["action"] = "installed" if result.get("success") else "failed"
+    return result
+
+
 def get_bridge_status(
     host: str = "127.0.0.1",
     port: int = 49085,
@@ -356,11 +409,16 @@ def get_bridge_status(
     except ImportError:  # pragma: no cover - direct execution fallback
         from src.pob.client import PoBClient  # type: ignore
 
+    result["bridge_port"] = None
     try:
-        client = PoBClient(host=host, port=port, timeout=2.0)
-        ping = client.ping()
-        result["bridge_reachable"] = ping.get("status") == "ok"
-        result["ping"] = ping
+        # Scan the default + fallback ports (the addon may have bound 49086-49088
+        # if 49085 was busy), starting from the requested port.
+        scan = (port,) + tuple(p for p in PoBClient.BRIDGE_PORTS if p != port)
+        client = PoBClient.find_bridge(host=host, ports=scan, timeout=2.0)
+        if client is not None:
+            result["bridge_reachable"] = True
+            result["bridge_port"] = client.port
+            result["ping"] = client.ping()
     except Exception as e:  # noqa: BLE001 - status must never raise
         result["ping_error"] = str(e)
 

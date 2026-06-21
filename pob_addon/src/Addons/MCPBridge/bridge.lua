@@ -78,26 +78,35 @@ function MCPBridge.stop()
     ConPrintf("[MCPBridge] Server stopped")
 end
 
--- Send JSON-RPC response
+-- Send JSON-RPC response. Encode is wrapped in pcall so a non-serialisable
+-- result becomes a clean JSON-RPC error instead of a silently-closed/empty
+-- socket (which the client otherwise reports as a misleading connection error).
 local function sendResponse(client, id, result)
-    local response = dkjson.encode({
+    local ok, response = pcall(dkjson.encode, {
         jsonrpc = "2.0",
         id = id,
         result = result
     })
+    if not ok or type(response) ~= "string" then
+        response = dkjson.encode({
+            jsonrpc = "2.0",
+            id = id,
+            error = { code = -32603, message = "Result not serialisable: " .. tostring(response) }
+        }) or '{"jsonrpc":"2.0","id":null,"error":{"code":-32603,"message":"serialization failed"}}'
+    end
     client:send(response .. "\n")
 end
 
--- Send JSON-RPC error
+-- Send JSON-RPC error (also pcall-guarded for safety).
 local function sendError(client, id, code, message)
-    local response = dkjson.encode({
+    local ok, response = pcall(dkjson.encode, {
         jsonrpc = "2.0",
         id = id,
-        error = {
-            code = code,
-            message = message
-        }
+        error = { code = code, message = tostring(message) }
     })
+    if not ok or type(response) ~= "string" then
+        response = '{"jsonrpc":"2.0","id":null,"error":{"code":-32603,"message":"error encode failed"}}'
+    end
     client:send(response .. "\n")
 end
 
@@ -181,17 +190,19 @@ function MCPBridge.getStatus()
 end
 
 -- Hook into PoB's main loop
--- We need to inject our poll() call into the frame update cycle
+-- We need to inject our poll() call into the frame update cycle.
 local originalOnFrame = launch.OnFrame
 launch.OnFrame = function(self)
-    -- Call original OnFrame
-    if originalOnFrame then
-        originalOnFrame(self)
+    -- Poll FIRST, wrapped in pcall: this keeps the bridge responsive even if
+    -- PoB's own OnFrame later errors or hangs (e.g. the minion tree-import
+    -- crash), and a faulty command can never take down PoB's frame loop.
+    if config.ENABLED then
+        pcall(MCPBridge.poll)
     end
 
-    -- Poll for MCP connections
-    if config.ENABLED then
-        MCPBridge.poll()
+    -- Then run PoB's real OnFrame (draw + its own recalcs).
+    if originalOnFrame then
+        originalOnFrame(self)
     end
 end
 

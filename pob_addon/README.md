@@ -58,21 +58,61 @@ Once installed, the addon starts automatically when you launch Path of Building.
 
 ### Available Commands
 
-The bridge accepts JSON-RPC commands on port `49085`:
+The bridge accepts JSON-RPC commands on port `49085`.
 
+**System / build**
 | Command | Description |
 |---------|-------------|
-| `ping` | Health check |
-| `get_build` | Get current build as XML or PoB code |
-| `load_build` | Load a build from XML or PoB code |
-| `get_calcs` | Get calculation results (DPS, defenses, etc.) |
-| `get_skills` | Get all skill groups and gems |
-| `set_skill_group` | Add or modify skill setups |
-| `get_passive_tree` | Get allocated passive nodes |
-| `set_passive_node` | Allocate or deallocate nodes |
-| `get_items` | Get equipped items |
-| `set_custom_mods` | Set custom modifier text |
-| `get_config` / `set_config` | Read/write configuration |
+| `ping` / `status` | Health check / server status |
+| `get_build` | Current build as XML or PoB code |
+| `load_build` / `load_build_direct` / `new_build` | Load a build (mode-switch / in-place / empty) |
+| `recalculate` | Force a calc refresh (use sparingly — heavy) |
+
+**Calculation output**
+| Command | Description |
+|---------|-------------|
+| `get_calcs` | Key stats (DPS, life, ES, resists, attributes) |
+| `get_output` | Only the requested output fields (avoids huge dumps) |
+| `get_full_dps` | Full DPS incl. triggered/DoT skills, per-skill list |
+| `get_defense_stats` / `get_skill_dps` / `get_raw_output` | Focused defense / per-group DPS / raw output |
+| `get_stat_breakdown` | **Modifier-by-modifier "why" for a stat** (defensive/attribute/resist) |
+| `compare_with_snapshot` | Diff current calcs vs a saved snapshot |
+
+**Skills**
+| Command | Description |
+|---------|-------------|
+| `get_skills` / `get_skill_parts` | List socket groups / a group's active skills + parts |
+| `set_skill_group` | Add/replace a socket group (paste format) |
+| `set_group_gems` | Replace a group's gems **in place** |
+| `set_main_skill_group` | Set which group is the main skill |
+| `set_displayed_skill` | Set the displayed active skill + part (trigger/DoT skills) |
+
+**Passive tree**
+| Command | Description |
+|---------|-------------|
+| `get_passive_tree` | Allocated nodes (class, ascendancy, points) |
+| `search_tree_nodes` | Search the full tree by stat keyword(s) |
+| `set_passive_node` | Allocate (auto-paths) / deallocate a node |
+| `reset_tree` | Reset to class start (for a clean respec) |
+
+**Items / config**
+| Command | Description |
+|---------|-------------|
+| `get_items` | Equipped items + mods |
+| `get_config` / `set_config` / `set_config_input` | Read / write config inputs |
+| `list_config_options` | Enumerate available config options + values |
+| `get_custom_mods` / `set_custom_mods` | Read / write custom modifier text |
+| `set_character_level` | Set level (passive-point budget) |
+
+**Character import (Path of Exile API)**
+| Command | Description |
+|---------|-------------|
+| `import_download_list` | Download the account's character list |
+| `import_get_state` | Poll import state + character list |
+| `import_select_char` | Select a character by name |
+| `import_run` | Import `tree` or `items` for the selected character |
+
+> **Tip:** import the **passive tree before items** — importing a tree while a minion-summon is the main skill triggers a PoB crash (see poe2-mcp's bug report to upstream PoB).
 
 ### Example JSON-RPC Request
 

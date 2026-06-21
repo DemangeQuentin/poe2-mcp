@@ -52,6 +52,23 @@ MOCK_RESPONSES = {
     "get_build": {"code": "eNrMOCKCODE", "format": "pob_code", "name": "Mock Build"},
     "get_calcs": {"TotalDPS": 123456.0, "Life": 4200, "FireResist": 75},
     "load_build": {"success": True, "name": "Mock Import", "note": "queued"},
+    "set_main_skill_group": {"success": True, "main_socket_group": 7},
+    "set_displayed_skill": {"success": True, "group": 6, "mainActiveSkill": 2},
+    "get_skill_parts": {"group": 6, "mainActiveSkill": 1,
+                         "skills": [{"index": 1, "name": "Cast on Minion Death", "is_main": True, "parts": []},
+                                    {"index": 2, "name": "Bitter Dead", "is_main": False, "parts": []}]},
+    "set_group_gems": {"success": True, "index": 7,
+                        "gems": [{"name": "Detonate Dead", "valid": True}]},
+    "set_config_input": {"success": True, "key": "detonateDeadCorpseLife", "value": 34963},
+    "get_output": {"TotalDPS": 56530.0, "AverageDamage": 60299.0},
+    "get_stat_breakdown": {"stat": "Life", "found": True,
+                            "lines": ["1915 (base)", "x 1.05 (increased)", "= 1910"]},
+    "list_config_options": {"count": 1,
+                             "options": [{"var": "detonateDeadCorpseLife", "type": "count",
+                                          "label": "Enemy Corpse Life:", "value": 34963}]},
+    "search_tree_nodes": {"count": 1,
+                           "nodes": [{"id": 51184, "name": "Raw Destruction", "reachable": True,
+                                      "allocated": False, "distance": 3, "stats": ["16% increased Spell Damage"]}]},
 }
 
 
@@ -288,3 +305,117 @@ def test_config_lua_uses_global_mcpconfig():
     config_lua = (ADDON_SOURCE / "MCPBridge" / "config.lua").read_text(encoding="utf-8")
     assert "local MCPConfig" not in config_lua
     assert "MCPConfig = {}" in config_lua
+
+
+def test_ensure_installed_repatches_after_update(fake_pob):
+    """Simulate a PoB update that overwrites Launch.lua (wiping our hook) but
+    leaves the Addons/ folder. ensure_installed should re-apply just the hook."""
+    installer.install_addon(pob_path=fake_pob, source_dir=ADDON_SOURCE)
+    launch = fake_pob / "src" / "Launch.lua"
+
+    # PoB update: Launch.lua reverted to the un-patched original (addon files stay)
+    launch.write_text(FAKE_LAUNCH_LUA, encoding="utf-8")
+    assert installer.ADDON_LOADER_MARKER not in launch.read_text(encoding="utf-8")
+    assert (fake_pob / "src" / "Addons" / "MCPBridge" / "bridge.lua").is_file()
+
+    result = installer.ensure_installed(fake_pob)
+    assert result["action"] == "repatched", result
+    assert installer.is_addon_installed(fake_pob)["installed"] is True
+    assert launch.read_text(encoding="utf-8").count(installer.ADDON_LOADER_MARKER) == 1
+
+
+def test_ensure_installed_full_install_when_absent(fake_pob):
+    result = installer.ensure_installed(fake_pob)  # nothing deployed yet
+    assert result["action"] == "installed", result
+    assert installer.is_addon_installed(fake_pob)["installed"] is True
+
+
+def test_ensure_installed_noop_when_already_ok(fake_pob):
+    installer.install_addon(pob_path=fake_pob, source_dir=ADDON_SOURCE)
+    result = installer.ensure_installed(fake_pob)
+    assert result["action"] == "ok", result
+
+
+# ---------------------------------------------------------------------------
+# Client wrappers for the build-editing / introspection commands
+# ---------------------------------------------------------------------------
+
+def test_client_set_displayed_skill(mock_bridge):
+    client = PoBClient(port=mock_bridge.port, timeout=2.0)
+    r = client.set_displayed_skill(group_index=6, skill_index=2)
+    assert r["mainActiveSkill"] == 2
+    req = mock_bridge.last_request
+    assert req["method"] == "set_displayed_skill"
+    assert req["params"] == {"group_index": 6, "skill_index": 2}
+
+
+def test_client_get_skill_parts(mock_bridge):
+    client = PoBClient(port=mock_bridge.port, timeout=2.0)
+    r = client.get_skill_parts(6)
+    names = [s["name"] for s in r["skills"]]
+    assert "Bitter Dead" in names
+
+
+def test_client_set_group_gems(mock_bridge):
+    client = PoBClient(port=mock_bridge.port, timeout=2.0)
+    gems = [{"name": "Detonate Dead", "level": 19, "quality": 20}]
+    r = client.set_group_gems(7, gems)
+    assert r["success"] is True
+    assert mock_bridge.last_request["params"]["gems"] == gems
+
+
+def test_client_get_stat_breakdown(mock_bridge):
+    client = PoBClient(port=mock_bridge.port, timeout=2.0)
+    r = client.get_stat_breakdown("Life")
+    assert r["found"] is True
+    assert any("base" in ln for ln in r["lines"])
+
+
+def test_client_set_config_input(mock_bridge):
+    client = PoBClient(port=mock_bridge.port, timeout=2.0)
+    client.set_config_input("detonateDeadCorpseLife", 34963)
+    assert mock_bridge.last_request["params"] == {"key": "detonateDeadCorpseLife", "value": 34963}
+
+
+def test_client_list_config_options(mock_bridge):
+    client = PoBClient(port=mock_bridge.port, timeout=2.0)
+    r = client.list_config_options(filter="corpse")
+    assert r["options"][0]["var"] == "detonateDeadCorpseLife"
+    assert mock_bridge.last_request["params"]["filter"] == "corpse"
+
+
+def test_client_search_tree_nodes_accepts_str(mock_bridge):
+    client = PoBClient(port=mock_bridge.port, timeout=2.0)
+    client.search_tree_nodes("spell damage", notables_only=True)
+    # single string should be normalised to a list
+    assert mock_bridge.last_request["params"]["keywords"] == ["spell damage"]
+    assert mock_bridge.last_request["params"]["notables_only"] is True
+
+
+def test_client_get_output_default_and_keys(mock_bridge):
+    client = PoBClient(port=mock_bridge.port, timeout=2.0)
+    client.get_output()
+    assert mock_bridge.last_request["params"] == {}
+    client.get_output(keys=["TotalDPS", "Life"])
+    assert mock_bridge.last_request["params"]["keys"] == ["TotalDPS", "Life"]
+
+
+# ---------------------------------------------------------------------------
+# Review fixes: port discovery (#1) and encode robustness (#2)
+# ---------------------------------------------------------------------------
+
+def test_find_bridge_discovers_running_port(mock_bridge):
+    # find_bridge across an explicit port list locates the live bridge
+    client = PoBClient.find_bridge(ports=[59997, mock_bridge.port], timeout=1.0)
+    assert client is not None
+    assert client.port == mock_bridge.port
+    assert client.ping()["status"] == "ok"
+
+
+def test_find_bridge_none_when_unreachable():
+    assert PoBClient.find_bridge(ports=[59997, 59998], timeout=0.4) is None
+
+
+def test_bridge_ports_includes_fallback_range():
+    # The addon falls back to 49086-49088; discovery must cover them
+    assert PoBClient.BRIDGE_PORTS == (49085, 49086, 49087, 49088)
