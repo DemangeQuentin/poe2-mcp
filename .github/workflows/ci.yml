@@ -54,7 +54,10 @@ jobs:
           echo "All addon Lua files are syntactically valid."
 
   # ---- Blocking: black formatting ----------------------------------------
-  # The codebase is black-clean (#197), so this is a gate.
+  # The codebase is black-clean (#197), so this is a gate. black is PINNED:
+  # its stable style changes between yearly majors (26.x reformats 25.x-clean
+  # code), so an unpinned install makes the gate nondeterministic. Bump this
+  # pin and reformat in the same PR when adopting a newer black.
   format:
     runs-on: ubuntu-latest
     steps:
@@ -62,7 +65,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install black
+      - run: pip install "black==25.11.0"
       - name: black --check
         run: black --check src/ tests/ scripts/
 
