@@ -53,9 +53,22 @@ jobs:
           find pob_addon -name '*.lua' -print0 | xargs -0 -I{} luac5.1 -p "{}"
           echo "All addon Lua files are syntactically valid."
 
-  # ---- Advisory: format + types (non-blocking) ---------------------------
-  # The codebase isn't fully black/isort/mypy-clean yet, so these report drift
-  # without blocking PRs. A dedicated reformat PR promotes black to a gate.
+  # ---- Blocking: black formatting ----------------------------------------
+  # The codebase is black-clean (#197), so this is a gate.
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install black
+      - name: black --check
+        run: black --check src/ tests/ scripts/
+
+  # ---- Advisory: import order + types (non-blocking) ---------------------
+  # isort and mypy aren't fully clean yet; run them as signals. Promote each
+  # to blocking once worked down (isort first — it's close).
   advisory:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -67,9 +80,7 @@ jobs:
       - name: Install deps + tools
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt black isort mypy
-      - name: black --check (advisory)
-        run: black --check src/ tests/ scripts/
+          pip install -r requirements.txt isort mypy
       - name: isort --check (advisory)
         run: isort --check-only --profile black src/ tests/ scripts/
       - name: mypy (advisory)
