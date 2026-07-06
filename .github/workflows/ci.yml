@@ -33,7 +33,7 @@ jobs:
       - name: Run hermetic test subset
         run: >
           python -m pytest tests/ -q -p no:cacheprovider
-          -k "pob or bridge or installer or spirit or stun or resource or calculator
+          -k "pob or bridge or installer or report_error or spirit or stun or resource or calculator
           or knowledge or formula or mechanic or synergy or validation_tools or scor or
           archetype or optimizer or readiness or comparator or schema"
 
