@@ -35,7 +35,7 @@ jobs:
           python -m pytest tests/ -q -p no:cacheprovider
           -k "pob or bridge or installer or spirit or stun or resource or calculator
           or knowledge or formula or mechanic or synergy or validation_tools or scor or
-          archetype or optimizer or readiness or comparator"
+          archetype or optimizer or readiness or comparator or schema"
 
   # ---- Blocking: addon Lua syntax ----------------------------------------
   # The MCP bridge is Lua; a syntax error breaks the addon *silently* (it just
