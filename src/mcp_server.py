@@ -700,11 +700,6 @@ class PoE2BuildOptimizerMCP:
                             "name": {"type": "string", "description": "Alias for spell_name"},
                             "gem_name": {"type": "string", "description": "Alias for spell_name"},
                         },
-                        "oneOf": [
-                            {"required": ["spell_name"]},
-                            {"required": ["name"]},
-                            {"required": ["gem_name"]},
-                        ],
                     },
                 ),
                 types.Tool(
@@ -1232,11 +1227,6 @@ class PoE2BuildOptimizerMCP:
                                 ),
                             },
                         },
-                        "oneOf": [
-                            {"required": ["support_gems"]},
-                            {"required": ["support_gem_names"]},
-                            {"required": ["names"]},
-                        ],
                     },
                 ),
                 types.Tool(
@@ -1374,7 +1364,6 @@ class PoE2BuildOptimizerMCP:
                             },
                             "name": {"type": "string", "description": "Alias for keystone_name"},
                         },
-                        "oneOf": [{"required": ["keystone_name"]}, {"required": ["name"]}],
                     },
                 ),
                 types.Tool(
