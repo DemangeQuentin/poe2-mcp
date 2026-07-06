@@ -172,6 +172,27 @@ except ImportError:
         normalize_item_class as _normalize_item_class,
     )
 
+# Opt-in error reporting (`report_error` tool). Helper module keeps the capture
+# buffer + report/link builders unit-testable without full server init.
+try:
+    from .error_reporter import (
+        ErrorRecorder,
+        REPORT_EMAIL,
+        build_report,
+        github_issue_link,
+        mailto_link,
+        report_to_text,
+    )
+except ImportError:
+    from src.error_reporter import (
+        ErrorRecorder,
+        REPORT_EMAIL,
+        build_report,
+        github_issue_link,
+        mailto_link,
+        report_to_text,
+    )
+
 
 debug_log("=== PoE2 Build Optimizer MCP Server ===")
 debug_log(f"Python version: {sys.version}")
@@ -237,6 +258,10 @@ class PoE2BuildOptimizerMCP:
 
         # Conversation context
         self.conversation_contexts: Dict[str, Any] = {}
+
+        # Redacted ring buffer of recent handler errors, packaged on demand by
+        # the `report_error` tool. Stores arg keys only — never arg values.
+        self._error_recorder = ErrorRecorder()
 
         self._register_tools()
         self._register_resources()
@@ -395,8 +420,22 @@ class PoE2BuildOptimizerMCP:
             logger.error(f"Error during cleanup: {e}")
 
     async def handle_call_tool(self, name: str, arguments: dict) -> List[types.TextContent]:
+        """Public entry point for tool calls (MCP SDK + integration tests).
+
+        Thin wrapper: dispatches to the internal handler, then records any
+        handler `Error:` response into the redacted buffer for `report_error`.
+        Capture must never break a tool call, so it is fully guarded.
         """
-        Public method for handling tool calls (used by integration tests and MCP SDK)
+        result = await self._dispatch_tool(name, arguments)
+        if name != "report_error":  # don't let the reporter observe itself
+            try:
+                self._error_recorder.observe(name, arguments, result)
+            except Exception:  # pragma: no cover - defensive
+                pass
+        return result
+
+    async def _dispatch_tool(self, name: str, arguments: dict) -> List[types.TextContent]:
+        """
         Dispatches to the appropriate internal handler
 
         Args:
@@ -449,6 +488,8 @@ class PoE2BuildOptimizerMCP:
                 return await self._handle_health_check(arguments)
             elif name == "clear_cache":
                 return await self._handle_clear_cache(arguments)
+            elif name == "report_error":
+                return await self._handle_report_error(arguments)
             elif name == "check_tree_freshness":
                 return await self._handle_check_tree_freshness(arguments)
             elif name == "check_for_updates":
@@ -849,6 +890,39 @@ class PoE2BuildOptimizerMCP:
                     name="clear_cache",
                     description="Clear all cached data (memory, SQLite, Redis).",
                     inputSchema={"type": "object", "properties": {}},
+                ),
+                types.Tool(
+                    name="report_error",
+                    description=(
+                        "Package recent MCP tool errors into a redacted report to help "
+                        "improve the server. Offer this to the user when they hit tool "
+                        "errors and might want to report them. Captures ONLY error "
+                        "messages, tool names, and argument key names — never argument "
+                        "values (no character names, URLs, or pasted codes). Sends "
+                        "nothing itself: it saves a local report file and returns a "
+                        "prefilled email link and a prefilled GitHub-issue link so the "
+                        "user chooses whether and where to submit. Always ask for the "
+                        "user's consent before presenting the report; a GitHub account "
+                        "is NOT required (email and the local file work without one)."
+                    ),
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "note": {
+                                "type": "string",
+                                "description": "Optional user description of what they were doing / what went wrong.",
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "description": "Max number of most-recent errors to include (default: all buffered).",
+                            },
+                            "clear_after": {
+                                "type": "boolean",
+                                "default": False,
+                                "description": "Clear the captured-error buffer after building the report.",
+                            },
+                        },
+                    },
                 ),
                 types.Tool(
                     name="check_tree_freshness",
@@ -3656,6 +3730,115 @@ Consider:
                     text=f"Cache clear failed with error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}",
                 )
             ]
+
+    async def _handle_report_error(self, args: dict) -> List[types.TextContent]:
+        """Package recent handler errors into a redacted, user-submittable report.
+
+        Sends nothing. Writes a local report file and returns prefilled email +
+        GitHub-issue links so the user chooses whether and where to submit. A
+        GitHub account is not required — email and the local file work without one.
+        """
+        try:
+            import os
+            from datetime import datetime
+
+            note = (args.get("note") or "").strip()
+            limit = args.get("limit")
+            clear_after = bool(args.get("clear_after", False))
+
+            errors = self._error_recorder.recent(limit if isinstance(limit, int) else None)
+
+            if not errors and not note:
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=(
+                            "No tool errors have been captured this session, and no "
+                            "note was provided — nothing to report. If you want to "
+                            "describe a problem anyway, call `report_error` again with "
+                            "a `note`."
+                        ),
+                    )
+                ]
+
+            # Best-effort data version for context (never fatal).
+            data_version = None
+            try:
+                version_file = DATA_DIR / "game" / "version.json"
+                if not version_file.exists():
+                    version_file = DATA_DIR / "version.json"
+                if version_file.exists():
+                    data_version = json.loads(version_file.read_text(encoding="utf-8")).get(
+                        "version"
+                    )
+            except Exception:
+                data_version = None
+
+            report = build_report(
+                errors,
+                note=note,
+                extra_env={"data_version": data_version} if data_version else None,
+            )
+
+            # Local-file floor: works with no account, no network, no client mail app.
+            # Destination is overridable (POE2_MCP_REPORT_DIR) for users who want
+            # reports elsewhere; defaults to the repo's logs/ dir.
+            saved_path = None
+            try:
+                reports_dir = Path(
+                    os.environ.get(
+                        "POE2_MCP_REPORT_DIR",
+                        str(Path(__file__).resolve().parent.parent / "logs"),
+                    )
+                )
+                reports_dir.mkdir(parents=True, exist_ok=True)
+                stamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+                saved = reports_dir / f"error_report_{stamp}.json"
+                saved.write_text(json.dumps(report, indent=2), encoding="utf-8")
+                saved_path = str(saved)
+            except Exception as e:
+                logger.warning(f"Could not write error report file: {e}")
+
+            email_link = mailto_link(report)
+            github_link = github_issue_link(report)
+
+            lines = [
+                "# Error Report Ready",
+                "",
+                f"Captured **{report['error_count']}** recent tool error(s). "
+                "Nothing has been sent — you choose whether and where to submit. "
+                "The report contains only error messages, tool names, and argument "
+                "**key names** (never argument values).",
+                "",
+                "**Ways to submit (pick one — a GitHub account is NOT required):**",
+                "",
+            ]
+            if saved_path:
+                lines.append(f"1. **Saved locally:** `{saved_path}` — attach or paste it anywhere.")
+            else:
+                lines.append("1. **Local save failed** — copy the report block below instead.")
+            lines.append(f"2. **Email:** [send to {REPORT_EMAIL}]({email_link})")
+            lines.append(
+                f"3. **GitHub issue** (needs an account): [open prefilled issue]({github_link})"
+            )
+            lines.append("")
+            lines.append("---")
+            lines.append("Report contents (redacted):")
+            lines.append("")
+            lines.append("```")
+            lines.append(report_to_text(report, markdown=False))
+            lines.append("```")
+
+            if clear_after:
+                self._error_recorder.clear()
+                lines.append("")
+                lines.append("_Captured-error buffer cleared._")
+
+            return [types.TextContent(type="text", text="\n".join(lines))]
+
+        except Exception as e:
+            logger.error(f"report_error failed: {e}")
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     # NEW ENHANCEMENT FEATURE HANDLERS
 
