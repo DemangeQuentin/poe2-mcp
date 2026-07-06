@@ -35,7 +35,7 @@ jobs:
           python -m pytest tests/ -q -p no:cacheprovider
           -k "pob or bridge or installer or spirit or stun or resource or calculator
           or knowledge or formula or mechanic or synergy or validation_tools or scor or
-          archetype or optimizer or readiness or comparator"
+          archetype or optimizer or readiness or comparator or schema"
 
   # ---- Blocking: addon Lua syntax ----------------------------------------
   # The MCP bridge is Lua; a syntax error breaks the addon *silently* (it just
@@ -53,9 +53,25 @@ jobs:
           find pob_addon -name '*.lua' -print0 | xargs -0 -I{} luac5.1 -p "{}"
           echo "All addon Lua files are syntactically valid."
 
-  # ---- Advisory: format + types (non-blocking) ---------------------------
-  # The codebase isn't fully black/isort/mypy-clean yet, so these report drift
-  # without blocking PRs. A dedicated reformat PR promotes black to a gate.
+  # ---- Blocking: black formatting ----------------------------------------
+  # The codebase is black-clean (#197), so this is a gate. black is PINNED:
+  # its stable style changes between yearly majors (26.x reformats 25.x-clean
+  # code), so an unpinned install makes the gate nondeterministic. Bump this
+  # pin and reformat in the same PR when adopting a newer black.
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "black==25.11.0"
+      - name: black --check
+        run: black --check src/ tests/ scripts/
+
+  # ---- Advisory: import order + types (non-blocking) ---------------------
+  # isort and mypy aren't fully clean yet; run them as signals. Promote each
+  # to blocking once worked down (isort first — it's close).
   advisory:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -67,9 +83,7 @@ jobs:
       - name: Install deps + tools
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt black isort mypy
-      - name: black --check (advisory)
-        run: black --check src/ tests/ scripts/
+          pip install -r requirements.txt isort mypy
       - name: isort --check (advisory)
         run: isort --check-only --profile black src/ tests/ scripts/
       - name: mypy (advisory)
