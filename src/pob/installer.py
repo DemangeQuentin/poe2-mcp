@@ -11,8 +11,17 @@ MCP server (and tests) do three things without a shell script:
 
 The addon "injects" itself into PoB without modifying upstream source files in a
 way that survives updates badly: it drops an ``Addons/`` folder (which PoB does
-not ship) and adds ONE line to ``src/Launch.lua`` that ``dofile``s our loader.
-That single line is what makes our TCP bridge come up inside PoB's Lua VM.
+not ship) and adds ONE line to ``Launch.lua`` that ``dofile``s our loader. That
+single line is what makes our TCP bridge come up inside PoB's Lua VM.
+
+PoB (PoE2) ships in two directory layouts, and this module supports both:
+
+  * "src" layout — a source-tree checkout (dev clone, some community builds):
+    ``<root>/src/Launch.lua`` + ``<root>/src/Addons/``.
+  * "root" layout — the packaged Windows release of Path of Building Community
+    (PoE2) (e.g. ``%APPDATA%/Path of Building Community (PoE2)``): the built
+    Lua bundle is flattened, so ``Launch.lua`` and ``Addons/`` sit directly at
+    the install root with no ``src/`` subfolder (#206).
 
 https://github.com/HivemindOverlord/poe2-mcp
 """
@@ -45,14 +54,19 @@ def _candidate_install_paths() -> List[Path]:
     import os
 
     home = Path.home()
+    appdata = Path(os.environ.get("APPDATA", str(home)))
+    localappdata = Path(os.environ.get("LOCALAPPDATA", str(home)))
     candidates = [
         home / "Path of Building (PoE2)",
-        Path(os.environ.get("LOCALAPPDATA", str(home))) / "Path of Building (PoE2)",
+        localappdata / "Path of Building (PoE2)",
         Path("C:/Path of Building (PoE2)"),
         Path("C:/Program Files/Path of Building (PoE2)"),
         Path("C:/Program Files (x86)/Path of Building (PoE2)"),
         # PoE2-fork community builds sometimes install under these names:
         home / "Path of Building Community (PoE2)",
+        localappdata / "Path of Building Community (PoE2)",
+        # Packaged Windows release installs here (root Launch.lua layout, #206).
+        appdata / "Path of Building Community (PoE2)",
         Path(os.environ.get("PROGRAMDATA", "C:/ProgramData")) / "Path of Building (PoE2)",
         # Maintainer dev clone (CLAUDE.md "External File Locations").
         home / "ClaudesPathOfExile2EnhancementService" / "PathOfBuilding-PoE2",
@@ -60,12 +74,45 @@ def _candidate_install_paths() -> List[Path]:
     return candidates
 
 
-def _is_pob_root(path: Path) -> bool:
-    """A PoB install root contains src/Launch.lua."""
+def _pob_layout(path: Path) -> Optional[str]:
+    """
+    Detect which directory layout a candidate PoB root uses.
+
+    Returns "src" if ``<path>/src/Launch.lua`` exists (source-tree checkout),
+    "root" if ``<path>/Launch.lua`` exists with no src/ subfolder (packaged
+    Community PoE2 release, #206), or None if neither is present.
+
+    "src" is checked first: a source checkout's root sometimes also contains
+    an unrelated top-level Launch.lua-named file from packaging leftovers, but
+    src/Launch.lua is the authoritative signal when both exist.
+    """
     try:
-        return (path / "src" / "Launch.lua").is_file()
+        if (path / "src" / "Launch.lua").is_file():
+            return "src"
+        if (path / "Launch.lua").is_file():
+            return "root"
     except OSError:
-        return False
+        pass
+    return None
+
+
+def _is_pob_root(path: Path) -> bool:
+    """A PoB install root contains Launch.lua, in either supported layout."""
+    return _pob_layout(path) is not None
+
+
+def _launch_lua_path(pob_path: Path, layout: Optional[str] = None) -> Path:
+    """Path to Launch.lua for the given (or auto-detected) layout."""
+    if layout is None:
+        layout = _pob_layout(pob_path) or "src"
+    return pob_path / "Launch.lua" if layout == "root" else pob_path / "src" / "Launch.lua"
+
+
+def _addons_dir(pob_path: Path, layout: Optional[str] = None) -> Path:
+    """Path to the Addons/ folder for the given (or auto-detected) layout."""
+    if layout is None:
+        layout = _pob_layout(pob_path) or "src"
+    return pob_path / "Addons" if layout == "root" else pob_path / "src" / "Addons"
 
 
 def find_pob_installation(extra_paths: Optional[List[Path]] = None) -> Optional[Path]:
@@ -128,7 +175,7 @@ def is_addon_installed(pob_path: Path) -> Dict[str, object]:
         installed: bool      — both of the above (fully wired)
         missing: list[str]   — which expected files are absent
     """
-    addons = pob_path / "src" / "Addons"
+    addons = _addons_dir(pob_path)
     expected = [
         addons / "init.lua",
         addons / "MCPBridge" / "bridge.lua",
@@ -138,7 +185,7 @@ def is_addon_installed(pob_path: Path) -> Dict[str, object]:
     missing = [str(p) for p in expected if not p.is_file()]
     files_present = not missing
 
-    launch = pob_path / "src" / "Launch.lua"
+    launch = _launch_lua_path(pob_path)
     launch_patched = False
     if launch.is_file():
         try:
@@ -215,10 +262,12 @@ def install_addon(
             "Set POB_PATH or pass pob_path explicitly.",
         }
     pob_path = Path(pob_path)
-    if not _is_pob_root(pob_path):
+    layout = _pob_layout(pob_path)
+    if layout is None:
         return {
             "success": False,
-            "message": f"Not a PoB install (no src/Launch.lua): {pob_path}",
+            "message": f"Not a PoB install (no Launch.lua found, checked src/ and "
+            f"root layouts): {pob_path}",
         }
 
     if source_dir is None:
@@ -230,15 +279,15 @@ def install_addon(
         }
     source_dir = Path(source_dir)
 
-    src_addons = pob_path / "src" / "Addons"
+    addons = _addons_dir(pob_path, layout)
     try:
-        # Copy init.lua + MCPBridge/ into PoB's src/Addons.
-        (src_addons / "MCPBridge").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_dir / "init.lua", src_addons / "init.lua")
+        # Copy init.lua + MCPBridge/ into PoB's Addons folder.
+        (addons / "MCPBridge").mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_dir / "init.lua", addons / "init.lua")
         for name in ("bridge.lua", "commands.lua", "config.lua"):
             src = source_dir / "MCPBridge" / name
             if src.is_file():
-                shutil.copy2(src, src_addons / "MCPBridge" / name)
+                shutil.copy2(src, addons / "MCPBridge" / name)
     except OSError as e:
         return {
             "success": False,
@@ -247,8 +296,8 @@ def install_addon(
         }
 
     # Back up Launch.lua once, then patch.
-    launch = pob_path / "src" / "Launch.lua"
-    backup = pob_path / "src" / "Launch.lua.mcp_backup"
+    launch = _launch_lua_path(pob_path, layout)
+    backup = launch.with_name("Launch.lua.mcp_backup")
     try:
         if not backup.exists():
             shutil.copy2(launch, backup)
@@ -287,21 +336,23 @@ def uninstall_addon(pob_path: Optional[Path] = None) -> Dict[str, object]:
     if pob_path is None:
         return {"success": False, "message": "PoB installation not found."}
     pob_path = Path(pob_path)
+    layout = _pob_layout(pob_path)
 
     # Remove addon files.
-    addons = pob_path / "src" / "Addons" / "MCPBridge"
+    addons_root = _addons_dir(pob_path, layout)
+    addons = addons_root / "MCPBridge"
     removed = []
     if addons.exists():
         shutil.rmtree(addons, ignore_errors=True)
         removed.append(str(addons))
-    init_lua = pob_path / "src" / "Addons" / "init.lua"
+    init_lua = addons_root / "init.lua"
     if init_lua.exists():
         init_lua.unlink()
         removed.append(str(init_lua))
 
     # Restore Launch.lua from backup if present, else strip the loader line.
-    launch = pob_path / "src" / "Launch.lua"
-    backup = pob_path / "src" / "Launch.lua.mcp_backup"
+    launch = _launch_lua_path(pob_path, layout)
+    backup = launch.with_name("Launch.lua.mcp_backup")
     if backup.exists():
         shutil.copy2(backup, launch)
     elif launch.is_file():
@@ -348,8 +399,8 @@ def ensure_installed(pob_path: Optional[Path] = None) -> Dict[str, object]:
 
     # Files survived an update but the Launch.lua hook was wiped: re-patch only.
     if state["files_present"] and not state["launch_patched"]:
-        launch = pob_path / "src" / "Launch.lua"
-        backup = pob_path / "src" / "Launch.lua.mcp_backup"
+        launch = _launch_lua_path(pob_path)
+        backup = launch.with_name("Launch.lua.mcp_backup")
         try:
             if not backup.exists():
                 shutil.copy2(launch, backup)

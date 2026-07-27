@@ -817,7 +817,7 @@ class PoE2BuildOptimizerMCP:
                         "properties": {
                             "pob_path": {
                                 "type": "string",
-                                "description": "Path to the PoB install root (folder containing src/Launch.lua). Auto-detected if omitted.",
+                                "description": "Path to the PoB install root (folder containing Launch.lua, either directly or under src/). Auto-detected if omitted.",
                             }
                         },
                         "required": [],
