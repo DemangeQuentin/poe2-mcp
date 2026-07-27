@@ -258,17 +258,87 @@ def fake_pob(tmp_path):
     return root
 
 
+@pytest.fixture
+def fake_pob_packaged(tmp_path):
+    """Packaged Windows Community PoE2 release: flattened, no src/ subfolder (#206)."""
+    root = tmp_path / "Path of Building Community (PoE2)"
+    root.mkdir(parents=True)
+    (root / "Launch.lua").write_text(FAKE_LAUNCH_LUA, encoding="utf-8")
+    return root
+
+
 def test_find_pob_installation(fake_pob):
     found = installer.find_pob_installation(extra_paths=[fake_pob])
     assert found == fake_pob
 
 
 def test_non_pob_dir_not_detected(tmp_path):
-    # A dir with no src/Launch.lua is not a PoB root. (We assert on _is_pob_root
-    # rather than find_pob_installation, which intentionally falls back to
-    # scanning common install paths and would find a real install on a dev box.)
+    # A dir with no Launch.lua in either layout is not a PoB root. (We assert on
+    # _is_pob_root rather than find_pob_installation, which intentionally falls
+    # back to scanning common install paths and would find a real install on a
+    # dev box.)
     assert installer._is_pob_root(tmp_path) is False
     assert installer._is_pob_root(tmp_path / "nope") is False
+
+
+# ---------------------------------------------------------------------------
+# Packaged Community PoE2 layout (root Launch.lua, no src/) — regression tests
+# for #206, where the bridge failed to detect this install shape at all.
+# ---------------------------------------------------------------------------
+
+
+def test_packaged_layout_detected(fake_pob_packaged):
+    assert installer._is_pob_root(fake_pob_packaged) is True
+    assert installer._pob_layout(fake_pob_packaged) == "root"
+    found = installer.find_pob_installation(extra_paths=[fake_pob_packaged])
+    assert found == fake_pob_packaged
+
+
+def test_packaged_layout_install_and_detect(fake_pob_packaged):
+    before = installer.is_addon_installed(fake_pob_packaged)
+    assert before["installed"] is False
+
+    result = installer.install_addon(pob_path=fake_pob_packaged, source_dir=ADDON_SOURCE)
+    assert result["success"] is True, result
+
+    after = installer.is_addon_installed(fake_pob_packaged)
+    assert after["installed"] is True
+
+    # Addon files land at <root>/Addons, not <root>/src/Addons.
+    assert (fake_pob_packaged / "Addons" / "MCPBridge" / "bridge.lua").is_file()
+    assert not (fake_pob_packaged / "src").exists()
+
+    launch_text = (fake_pob_packaged / "Launch.lua").read_text(encoding="utf-8")
+    assert launch_text.count(installer.ADDON_LOADER_MARKER) == 1
+    assert (fake_pob_packaged / "Launch.lua.mcp_backup").is_file()
+
+
+def test_packaged_layout_uninstall_restores(fake_pob_packaged):
+    installer.install_addon(pob_path=fake_pob_packaged, source_dir=ADDON_SOURCE)
+
+    result = installer.uninstall_addon(pob_path=fake_pob_packaged)
+    assert result["success"] is True
+
+    assert not (fake_pob_packaged / "Addons" / "MCPBridge").exists()
+    launch_text = (fake_pob_packaged / "Launch.lua").read_text(encoding="utf-8")
+    assert installer.ADDON_LOADER_MARKER not in launch_text
+    assert launch_text == FAKE_LAUNCH_LUA
+
+
+def test_packaged_layout_ensure_installed_full_install(fake_pob_packaged):
+    result = installer.ensure_installed(fake_pob_packaged)
+    assert result["action"] == "installed", result
+    assert installer.is_addon_installed(fake_pob_packaged)["installed"] is True
+
+
+def test_src_layout_preferred_when_both_present(tmp_path):
+    """If a root both has src/Launch.lua and a stray root Launch.lua, the src/
+    layout wins (matches the source-of-truth checkout, not packaging leftovers)."""
+    root = tmp_path / "Ambiguous"
+    (root / "src").mkdir(parents=True)
+    (root / "src" / "Launch.lua").write_text(FAKE_LAUNCH_LUA, encoding="utf-8")
+    (root / "Launch.lua").write_text("-- stray file, not the real one\n", encoding="utf-8")
+    assert installer._pob_layout(root) == "src"
 
 
 def test_addon_source_resolves():
