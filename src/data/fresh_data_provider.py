@@ -20,6 +20,7 @@ CACHE_PATH = BASE_DIR / "data" / "fresh_gamedata"
 COMPLETE_MODELS_PATH = BASE_DIR / "data" / "complete_models"
 GAME_DATA_PATH = BASE_DIR / "data" / "game"
 SUPPORT_GEMS_CANONICAL = GAME_DATA_PATH / "support_gems" / "support_gems.json"
+BASE_ITEMS_CANONICAL = GAME_DATA_PATH / "base_items" / "base_items.json"
 
 
 class Datc64Parser:
@@ -112,6 +113,14 @@ class FreshDataProvider:
     def _load_all_data(self):
         """Load all game data from fresh extractions."""
         logger.info("Loading fresh game data...")
+
+        # Base items load from their own canonical file independently of the
+        # passives/skills/stats priority cascade below: _load_from_complete_models
+        # returns (and short-circuits everything after it) as soon as its 4
+        # required files are present, so a call placed inside that cascade would
+        # never run on a normal install (#205 — base items were never populated
+        # anywhere, on any install, because of exactly this short-circuit).
+        self._load_base_items_canonical()
 
         # Priority 1: Try to load from complete models (most detailed)
         if self._load_from_complete_models():
@@ -230,6 +239,30 @@ class FreshDataProvider:
             return True
         except Exception as e:
             logger.warning(f"Failed to load canonical support_gems: {e}")
+            return False
+
+    def _load_base_items_canonical(self) -> bool:
+        """Load base items from data/game/base_items/ (.datc64-extracted SSoT, #205).
+
+        Returns True if the canonical file was loaded (populating
+        self._base_items), False if it's missing. There is no legacy
+        fallback source for base items — before this file existed, nothing
+        populated base items at all (see the #205 investigation notes in
+        extract_base_items_data.py).
+        """
+        if not BASE_ITEMS_CANONICAL.exists():
+            return False
+        try:
+            with open(BASE_ITEMS_CANONICAL, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            loaded = 0
+            for item_id, item_data in data.get("base_items", {}).items():
+                self._base_items[item_id] = item_data
+                loaded += 1
+            logger.info(f"Loaded {loaded} base items from canonical data/game/base_items/")
+            return True
+        except Exception as e:
+            logger.warning(f"Failed to load canonical base_items: {e}")
             return False
 
     def _load_from_cache(self) -> bool:

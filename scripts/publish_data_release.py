@@ -64,6 +64,8 @@ CANONICAL_FILES = [
     "merged_passive_tree.json",
     # Ascendancy
     "complete_models/all_ascendancies.json",
+    # Base items (id/name/item_class from baseitemtypes.datc64, #205)
+    "game/base_items/base_items.json",
     # PoB-sourced skill data
     "pob_active_skills.json",
     # Other extracted reference data
