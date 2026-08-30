@@ -1,0 +1,606 @@
+SECRET_KEY is not set — generated an ephemeral random key for this process only. Sessions/encrypted data will not survive a restart. For persistence, add it to .env: python -c "import secrets; print(secrets.token_hex(32))"
+ENCRYPTION_KEY is not set — generated an ephemeral random key for this process only. Sessions/encrypted data will not survive a restart. For persistence, add it to .env: python -c "import secrets; print(secrets.token_hex(32))"
+[MCP-SERVER] === PoE2 Build Optimizer MCP Server ===
+[MCP-SERVER] Python version: 3.14.4 (main, Apr 14 2026, 14:30:57) [MSC v.1944 64 bit (AMD64)]
+[MCP-SERVER] Working directory: C:\Users\deman\Workspace\poe2-mcp
+[MCP-SERVER] Script location: C:\Users\deman\Workspace\poe2-mcp\src\mcp_server.py
+2026-08-30 17:46:23,122 - asyncio - DEBUG - Using proactor: IocpProactor
+================================================================================
+TESTING POE2 MCP TOOLS
+================================================================================
+2026-08-30 17:46:23,123 - mcp.server.lowlevel.server - DEBUG - Initializing server 'poe2-build-optimizer'
+[MCP-SERVER] Starting server initialization...
+2026-08-30 17:46:23,123 - src.mcp_server - INFO - Initializing PoE2 Build Optimizer MCP Server...
+[MCP-SERVER] Initializing database manager...
+2026-08-30 17:46:23,139 - aiosqlite - DEBUG - executing <function connect.<locals>.connector at 0x000001E59F031A60>
+2026-08-30 17:46:23,139 - aiosqlite - DEBUG - operation <function connect.<locals>.connector at 0x000001E59F031A60> completed
+2026-08-30 17:46:23,140 - aiosqlite - DEBUG - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x000001E59F013790>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x000001E59F02BD70>, deterministic=True)
+2026-08-30 17:46:23,140 - aiosqlite - DEBUG - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x000001E59F013790>, 'regexp', 2, <function SQLiteDialect_pysqlite.on_connect.<locals>.regexp at 0x000001E59F02BD70>, deterministic=True) completed
+2026-08-30 17:46:23,140 - aiosqlite - DEBUG - executing functools.partial(<built-in method create_function of sqlite3.Connection object at 0x000001E59F013790>, 'floor', 1, <built-in function floor>, deterministic=True)
+2026-08-30 17:46:23,140 - aiosqlite - DEBUG - operation functools.partial(<built-in method create_function of sqlite3.Connection object at 0x000001E59F013790>, 'floor', 1, <built-in function floor>, deterministic=True) completed
+2026-08-30 17:46:23,140 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,141 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,141 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA read_uncommitted', [])
+2026-08-30 17:46:23,141 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA read_uncommitted', []) completed
+2026-08-30 17:46:23,141 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,141 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,141 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,141 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,142 - aiosqlite - DEBUG - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,142 - aiosqlite - DEBUG - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,142 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,142 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,142 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("items")', ())
+2026-08-30 17:46:23,143 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("items")', ()) completed
+2026-08-30 17:46:23,143 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,143 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,143 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,143 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,144 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,144 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,144 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("unique_items")', ())
+2026-08-30 17:46:23,144 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("unique_items")', ()) completed
+2026-08-30 17:46:23,144 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,144 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,144 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,145 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,145 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,145 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,145 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("modifiers")', ())
+2026-08-30 17:46:23,145 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("modifiers")', ()) completed
+2026-08-30 17:46:23,145 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,145 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,145 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,146 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,146 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,146 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,146 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("passive_nodes")', ())
+2026-08-30 17:46:23,146 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("passive_nodes")', ()) completed
+2026-08-30 17:46:23,146 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,146 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("passive_connections")', ())
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("passive_connections")', ()) completed
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,147 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,148 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,148 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,148 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("skill_gems")', ())
+2026-08-30 17:46:23,148 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("skill_gems")', ()) completed
+2026-08-30 17:46:23,148 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,148 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,148 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,148 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,148 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,149 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,149 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("support_gems")', ())
+2026-08-30 17:46:23,149 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("support_gems")', ()) completed
+2026-08-30 17:46:23,149 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,149 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,149 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,149 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,150 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,150 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,150 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("ascendancies")', ())
+2026-08-30 17:46:23,150 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("ascendancies")', ()) completed
+2026-08-30 17:46:23,150 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,150 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,150 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,150 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,151 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,151 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,151 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("saved_builds")', ())
+2026-08-30 17:46:23,151 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("saved_builds")', ()) completed
+2026-08-30 17:46:23,151 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,151 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,151 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("item_mods")', ())
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("item_mods")', ()) completed
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,152 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,153 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,153 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("game_data_version")', ())
+2026-08-30 17:46:23,153 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E59F035140>, 'PRAGMA main.table_info("game_data_version")', ()) completed
+2026-08-30 17:46:23,153 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,153 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,153 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>)
+2026-08-30 17:46:23,153 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E59F035140>) completed
+2026-08-30 17:46:23,154 - aiosqlite - DEBUG - executing functools.partial(<built-in method commit of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,154 - aiosqlite - DEBUG - operation functools.partial(<built-in method commit of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,154 - aiosqlite - DEBUG - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,154 - aiosqlite - DEBUG - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,154 - src.database.manager - INFO - Database initialized successfully
+2026-08-30 17:46:23,154 - src.mcp_server - INFO - Database initialized
+[MCP-SERVER] Database initialization complete
+[MCP-SERVER] Initializing cache manager...
+2026-08-30 17:46:23,155 - aiosqlite - DEBUG - executing <function connect.<locals>.connector at 0x000001E59F032090>
+2026-08-30 17:46:23,155 - aiosqlite - DEBUG - operation <function connect.<locals>.connector at 0x000001E59F032090> completed
+2026-08-30 17:46:23,155 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Connection object at 0x000001E59F055B70>, '\n            CREATE TABLE IF NOT EXISTS cache (\n                key TEXT PRIMARY KEY,\n                value BLOB,\n                expires_at TIMESTAMP,\n                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n            )\n        ', [])
+2026-08-30 17:46:23,156 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Connection object at 0x000001E59F055B70>, '\n            CREATE TABLE IF NOT EXISTS cache (\n                key TEXT PRIMARY KEY,\n                value BLOB,\n                expires_at TIMESTAMP,\n                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n            )\n        ', []) completed
+2026-08-30 17:46:23,156 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Connection object at 0x000001E59F055B70>, '\n            CREATE INDEX IF NOT EXISTS idx_expires_at\n            ON cache(expires_at)\n        ', [])
+2026-08-30 17:46:23,156 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Connection object at 0x000001E59F055B70>, '\n            CREATE INDEX IF NOT EXISTS idx_expires_at\n            ON cache(expires_at)\n        ', []) completed
+2026-08-30 17:46:23,156 - aiosqlite - DEBUG - executing functools.partial(<built-in method commit of sqlite3.Connection object at 0x000001E59F055B70>)
+2026-08-30 17:46:23,156 - aiosqlite - DEBUG - operation functools.partial(<built-in method commit of sqlite3.Connection object at 0x000001E59F055B70>) completed
+2026-08-30 17:46:23,156 - src.api.cache_manager - INFO - SQLite cache initialized
+2026-08-30 17:46:23,156 - src.mcp_server - INFO - Cache manager initialized
+[MCP-SERVER] Cache manager initialization complete
+2026-08-30 17:46:23,156 - src.mcp_server - INFO - Rate limiter initialized
+2026-08-30 17:46:23,222 - src.mcp_server - INFO - PoE API client initialized
+2026-08-30 17:46:23,252 - src.mcp_server - INFO - Character fetcher initialized
+2026-08-30 17:46:23,252 - src.api.trade_api - WARNING - No POESESSID cookie configured. Trade API searches may be limited or fail.
+Use the 'setup_trade_auth' MCP tool for automated setup.
+Or see .env.example for manual cookie extraction instructions.
+2026-08-30 17:46:23,266 - src.mcp_server - INFO - Trade API initialized
+2026-08-30 17:46:23,266 - src.data.fresh_data_provider - INFO - Loading fresh game data...
+2026-08-30 17:46:23,279 - src.data.fresh_data_provider - INFO - Loaded 5382 base items from canonical data/game/base_items/
+2026-08-30 17:46:23,298 - src.data.fresh_data_provider - INFO - Loaded 680 support gems from canonical data/game/support_gems/
+2026-08-30 17:46:23,329 - src.data.fresh_data_provider - INFO - Loaded complete models: 6454 active skills, 680 support gems, 7138 passives
+2026-08-30 17:46:23,330 - src.data.fresh_data_provider - INFO - Loaded from complete_models successfully
+2026-08-30 17:46:23,330 - src.mcp_server - INFO - Optimizers initialized
+2026-08-30 17:46:23,375 - src.mcp_server - INFO - Comparison system initialized
+2026-08-30 17:46:23,375 - src.calculator.defense_calculator - INFO - DefenseCalculator initialized for Path of Exile 2
+2026-08-30 17:46:23,375 - src.calculator.defense_calculator - INFO - DefenseCalculator initialized for Path of Exile 2
+2026-08-30 17:46:23,375 - src.calculator.ehp_calculator - INFO - EHPCalculator initialized for Path of Exile 2
+2026-08-30 17:46:23,376 - src.analyzer.weakness_detector - INFO - WeaknessDetector initialized
+2026-08-30 17:46:23,376 - src.calculator.defense_calculator - INFO - DefenseCalculator initialized for Path of Exile 2
+2026-08-30 17:46:23,376 - src.calculator.defense_calculator - INFO - DefenseCalculator initialized for Path of Exile 2
+2026-08-30 17:46:23,376 - src.calculator.ehp_calculator - INFO - EHPCalculator initialized for Path of Exile 2
+2026-08-30 17:46:23,376 - src.calculator.damage_calculator - INFO - DamageCalculator initialized
+2026-08-30 17:46:23,376 - src.analyzer.gear_evaluator - INFO - GearEvaluator initialized
+2026-08-30 17:46:23,376 - src.calculator.defense_calculator - INFO - DefenseCalculator initialized for Path of Exile 2
+2026-08-30 17:46:23,376 - src.calculator.ehp_calculator - INFO - EHPCalculator initialized for Path of Exile 2
+2026-08-30 17:46:23,376 - src.calculator.spirit_calculator - INFO - Initialized SpiritCalculator
+2026-08-30 17:46:23,376 - src.calculator.damage_calculator - INFO - DamageCalculator initialized
+2026-08-30 17:46:23,376 - src.mcp_server - INFO - Advanced calculators and analyzers initialized
+2026-08-30 17:46:23,389 - src.optimizer.gem_synergy_calculator - INFO - FreshDataProvider: 6419 active skills, 680 support gems
+2026-08-30 17:46:23,390 - src.optimizer.gem_synergy_calculator - WARNING - pob_complete_skills.json not found, constantStats won't be available
+2026-08-30 17:46:23,390 - src.optimizer.gem_synergy_calculator - INFO - Loaded 6419 spell gems and 667 support gems (SSoT: Fresh Game Data + PoB)
+2026-08-30 17:46:23,400 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,400 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,401 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A06D5540>, 'SELECT support_gems.id, support_gems.name, support_gems.tags, support_gems.required_level, support_gems.mana_multiplier, support_gems.spirit_cost, support_gems.spirit_cost_by_level, support_gems.modifiers, support_gems.quality_stats, support_gems.compatible_tags, support_gems.created_at \nFROM support_gems', ())
+2026-08-30 17:46:23,401 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A06D5540>, 'SELECT support_gems.id, support_gems.name, support_gems.tags, support_gems.required_level, support_gems.mana_multiplier, support_gems.spirit_cost, support_gems.spirit_cost_by_level, support_gems.modifiers, support_gems.quality_stats, support_gems.compatible_tags, support_gems.created_at \nFROM support_gems', ()) completed
+2026-08-30 17:46:23,401 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E5A06D5540>)
+2026-08-30 17:46:23,401 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E5A06D5540>) completed
+2026-08-30 17:46:23,402 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A06D5540>)
+2026-08-30 17:46:23,402 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A06D5540>) completed
+2026-08-30 17:46:23,402 - src.optimizer.gem_synergy_calculator - WARNING - No support gems found in database, keeping FreshDataProvider data
+2026-08-30 17:46:23,402 - aiosqlite - DEBUG - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,403 - aiosqlite - DEBUG - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,403 - aiosqlite - DEBUG - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,403 - src.mcp_server - INFO - Enhancement features initialized (gem synergy, mechanics KB, etc.)
+[MCP-SERVER] Enhancement features ready: gem synergy calculator, mechanics knowledge base, gear comparator, damage scaling analyzer, content readiness checker
+2026-08-30 17:46:23,403 - aiosqlite - DEBUG - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,403 - src.mcp_server - INFO - Path of Building components initialized
+2026-08-30 17:46:23,427 - src.parsers.passive_tree_resolver - INFO - Loaded 4975 passive nodes
+2026-08-30 17:46:23,427 - src.mcp_server - INFO - Passive tree resolver initialized (4975 nodes)
+[MCP-SERVER] Passive tree resolver loaded 4975 nodes
+2026-08-30 17:46:23,428 - src.mcp_server - INFO - Local game readers initialized (Client.txt: found, config: found)
+2026-08-30 17:46:23,428 - src.mcp_server - INFO - PoE2 Build Optimizer MCP Server initialized successfully
+
+[ 1] Testing health_check([])
+[MCP-SERVER] Tool called: health_check
+[MCP-SERVER] Arguments: {}
+2026-08-30 17:46:23,429 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,429 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,429 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A0CE7240>, "SELECT name FROM sqlite_master WHERE type='table'", ())
+2026-08-30 17:46:23,429 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A0CE7240>, "SELECT name FROM sqlite_master WHERE type='table'", ()) completed
+2026-08-30 17:46:23,430 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E5A0CE7240>)
+2026-08-30 17:46:23,430 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E5A0CE7240>) completed
+2026-08-30 17:46:23,430 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A0CE7240>)
+2026-08-30 17:46:23,430 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A0CE7240>) completed
+2026-08-30 17:46:23,431 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,431 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,431 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A0CE7240>, 'SELECT COUNT(*) FROM items', ())
+2026-08-30 17:46:23,431 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A0CE7240>, 'SELECT COUNT(*) FROM items', ()) completed
+2026-08-30 17:46:23,431 - aiosqlite - DEBUG - executing functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E5A0CE7240>)
+2026-08-30 17:46:23,431 - aiosqlite - DEBUG - operation functools.partial(<built-in method fetchall of sqlite3.Cursor object at 0x000001E5A0CE7240>) completed
+2026-08-30 17:46:23,431 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A0CE7240>)
+2026-08-30 17:46:23,431 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A0CE7240>) completed
+2026-08-30 17:46:23,432 - aiosqlite - DEBUG - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,432 - aiosqlite - DEBUG - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,432 - aiosqlite - DEBUG - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,432 - aiosqlite - DEBUG - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>) completed
+     ✓ Success - 806 chars
+
+[ 2] Testing check_tree_freshness([])
+[MCP-SERVER] Tool called: check_tree_freshness
+[MCP-SERVER] Arguments: {}
+2026-08-30 17:46:23,455 - httpcore.connection - DEBUG - connect_tcp.started host='poe.ninja' port=443 local_address=None timeout=15.0 socket_options=None
+2026-08-30 17:46:23,475 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x000001E5A0A59550>
+2026-08-30 17:46:23,476 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x000001E59F08DD30> server_hostname='poe.ninja' timeout=15.0
+2026-08-30 17:46:23,494 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x000001E59F15F9D0>
+2026-08-30 17:46:23,495 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2026-08-30 17:46:23,495 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-08-30 17:46:23,495 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2026-08-30 17:46:23,496 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-08-30 17:46:23,496 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2026-08-30 17:46:23,517 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sun, 30 Aug 2026 15:46:24 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'Cache-Control', b'public, max-age=300, stale-while-revalidate=300, stale-if-error=86400'), (b'etag', b'W/57eb738c33ac3af602d06ca1f5fcdd7b'), (b'Server', b'cloudflare'), (b'Age', b'298'), (b'Report-To', b'{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=PQlJUtsrosPHUCOxtW5k%2Bfs%2F3oePvCrPWxbSWQxwbeMS5Li%2BTnj86bhvs0jx0EZHVFs%2FMICxZuHYpW1EAwnooNQmTiFvLLBizHS4Pc%2F13AX%2FWpA5BkFDB8Nzag%3D%3D"}]}'), (b'cf-cache-status', b'HIT'), (b'Nel', b'{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'), (b'Vary', b'accept-encoding'), (b'Content-Encoding', b'gzip'), (b'CF-RAY', b'a334ed971c65ab52-CDG'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2026-08-30 17:46:23,517 - httpx - INFO - HTTP Request: GET https://poe.ninja/poe2/api/data/index-state "HTTP/1.1 200 OK"
+2026-08-30 17:46:23,518 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2026-08-30 17:46:23,518 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-08-30 17:46:23,518 - httpcore.http11 - DEBUG - response_closed.started
+2026-08-30 17:46:23,518 - httpcore.http11 - DEBUG - response_closed.complete
+2026-08-30 17:46:23,519 - httpcore.connection - DEBUG - close.started
+2026-08-30 17:46:23,519 - httpcore.connection - DEBUG - close.complete
+     ✓ Success - 541 chars
+
+[ 3] Testing get_formula(['formula_name'])
+[MCP-SERVER] Tool called: get_formula
+[MCP-SERVER] Arguments: {'formula_name': 'dps'}
+     ✓ Success - 1485 chars
+
+[ 4] Testing get_formula(['formula_name'])
+[MCP-SERVER] Tool called: get_formula
+[MCP-SERVER] Arguments: {'formula_name': 'ehp'}
+     ✓ Success - 1485 chars
+
+[ 5] Testing get_formula(['formula_name'])
+[MCP-SERVER] Tool called: get_formula
+[MCP-SERVER] Arguments: {'formula_name': 'armor'}
+     ✓ Success - 1485 chars
+
+[ 6] Testing list_all_keystones(['limit'])
+[MCP-SERVER] Tool called: list_all_keystones
+[MCP-SERVER] Arguments: {'limit': 5}
+     ✓ Success - 648 chars
+
+[ 7] Testing inspect_keystone(['keystone_name'])
+[MCP-SERVER] Tool called: inspect_keystone
+[MCP-SERVER] Arguments: {'keystone_name': 'Acrobatics'}
+     ✓ Success - 190 chars
+
+[ 8] Testing list_all_notables(['limit'])
+[MCP-SERVER] Tool called: list_all_notables
+[MCP-SERVER] Arguments: {'limit': 5}
+     ✓ Success - 555 chars
+
+[ 9] Testing inspect_passive_node(['node_name'])
+[MCP-SERVER] Tool called: inspect_passive_node
+[MCP-SERVER] Arguments: {'node_name': 'Acrobatics'}
+     ✓ Success - 136 chars
+
+[10] Testing list_all_spells(['limit'])
+[MCP-SERVER] Tool called: list_all_spells
+[MCP-SERVER] Arguments: {'limit': 5}
+     ✓ Success - 663 chars
+
+[11] Testing list_all_supports(['limit'])
+[MCP-SERVER] Tool called: list_all_supports
+[MCP-SERVER] Arguments: {'limit': 5}
+     ✓ Success - 345 chars
+
+[12] Testing inspect_spell_gem(['gem_name'])
+[MCP-SERVER] Tool called: inspect_spell_gem
+[MCP-SERVER] Arguments: {'gem_name': 'Fireball'}
+     ✓ Success - 2226 chars
+
+[13] Testing inspect_support_gem(['gem_name'])
+[MCP-SERVER] Tool called: inspect_support_gem
+[MCP-SERVER] Arguments: {'gem_name': 'Added Fire Damage'}
+     ✓ Success - 31 chars
+
+[14] Testing list_all_base_items(['limit'])
+[MCP-SERVER] Tool called: list_all_base_items
+[MCP-SERVER] Arguments: {'limit': 5}
+     ✓ Success - 509 chars
+
+[15] Testing search_items(['query', 'limit'])
+[MCP-SERVER] Tool called: search_items
+[MCP-SERVER] Arguments: {'query': 'life', 'limit': 3}
+2026-08-30 17:46:23,760 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,760 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,760 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A0AD6440>, "ATTACH DATABASE 'C:\\Users\\deman\\Workspace\\poe2-mcp\\data\\poe2_datc64.db' AS datc64", ())
+2026-08-30 17:46:23,761 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A0AD6440>, "ATTACH DATABASE 'C:\\Users\\deman\\Workspace\\poe2-mcp\\data\\poe2_datc64.db' AS datc64", ()) completed
+2026-08-30 17:46:23,761 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A0AD6440>)
+2026-08-30 17:46:23,761 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A0AD6440>) completed
+2026-08-30 17:46:23,762 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,762 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,762 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A0AD6440>, "\n                    SELECT\n                        b.data,\n                        i.data as class_data\n                    FROM datc64.baseitemtypes b\n                    LEFT JOIN datc64.itemclasses i\n                        ON i.row_index = CAST(json_extract(b.data, '$.ItemClassesKey') AS INTEGER)\n                    WHERE (\n                        json_extract(b.data, '$.Name') LIKE ?\n                        OR json_extract(b.data, '$.InheritsFrom') LIKE ?\n                        OR json_extract(b.data, '$.Id') LIKE ?\n                    )\n                    LIMIT 50\n                ", ('%life%', '%life%', '%life%'))
+2026-08-30 17:46:23,762 - aiosqlite - DEBUG - returning exception no such table: datc64.baseitemtypes
+2026-08-30 17:46:23,763 - aiosqlite - DEBUG - executing functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,764 - aiosqlite - DEBUG - operation functools.partial(<built-in method cursor of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,764 - aiosqlite - DEBUG - executing functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A0AD6B40>, 'DETACH DATABASE datc64', ())
+2026-08-30 17:46:23,764 - aiosqlite - DEBUG - operation functools.partial(<built-in method execute of sqlite3.Cursor object at 0x000001E5A0AD6B40>, 'DETACH DATABASE datc64', ()) completed
+2026-08-30 17:46:23,764 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A0AD6B40>)
+2026-08-30 17:46:23,764 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Cursor object at 0x000001E5A0AD6B40>) completed
+2026-08-30 17:46:23,764 - aiosqlite - DEBUG - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,764 - aiosqlite - DEBUG - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,764 - aiosqlite - DEBUG - executing functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:23,764 - aiosqlite - DEBUG - operation functools.partial(<built-in method rollback of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:23,765 - src.mcp_server - ERROR - search_items error: (sqlite3.OperationalError) no such table: datc64.baseitemtypes
+[SQL: 
+                    SELECT
+                        b.data,
+                        i.data as class_data
+                    FROM datc64.baseitemtypes b
+                    LEFT JOIN datc64.itemclasses i
+                        ON i.row_index = CAST(json_extract(b.data, '$.ItemClassesKey') AS INTEGER)
+                    WHERE (
+                        json_extract(b.data, '$.Name') LIKE ?
+                        OR json_extract(b.data, '$.InheritsFrom') LIKE ?
+                        OR json_extract(b.data, '$.Id') LIKE ?
+                    )
+                    LIMIT 50
+                ]
+[parameters: ('%life%', '%life%', '%life%')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+     ✓ Success - 792 chars
+
+[16] Testing list_all_mods(['limit'])
+[MCP-SERVER] Tool called: list_all_mods
+[MCP-SERVER] Arguments: {'limit': 5}
+     ✓ Success - 362 chars
+
+[17] Testing inspect_mod(['mod_id'])
+[MCP-SERVER] Tool called: inspect_mod
+[MCP-SERVER] Arguments: {'mod_id': 'IncreasedLife1'}
+     ✓ Success - 275 chars
+
+[18] Testing search_mods_by_stat(['stat_text', 'limit'])
+[MCP-SERVER] Tool called: search_mods_by_stat
+[MCP-SERVER] Arguments: {'stat_text': 'life', 'limit': 3}
+     ✓ Success - 58 chars
+
+[19] Testing get_mod_tiers(['mod_id'])
+[MCP-SERVER] Tool called: get_mod_tiers
+[MCP-SERVER] Arguments: {'mod_id': 'IncreasedLife'}
+     ✓ Success - 27 chars
+
+[20] Testing validate_support_combination(['spell_name', 'supports'])
+[MCP-SERVER] Tool called: validate_support_combination
+[MCP-SERVER] Arguments: {'spell_name': 'Fireball', 'supports': ['Added Fire Damage', 'Spell Echo']}
+     ✓ Success - 73 chars
+
+[21] Testing validate_build_constraints(['resistances'])
+[MCP-SERVER] Tool called: validate_build_constraints
+[MCP-SERVER] Arguments: {'resistances': {'fire': 75}}
+     ✓ Success - 33 chars
+
+[22] Testing explain_mechanic(['mechanic_name'])
+[MCP-SERVER] Tool called: explain_mechanic
+[MCP-SERVER] Arguments: {'mechanic_name': 'armor'}
+[MCP-SERVER] Explaining mechanic: armor
+2026-08-30 17:46:24,228 - src.mcp_server - DEBUG - Could not fetch official terminology: 'PoE2MechanicsKnowledgeBase' object has no attribute 'get_official_terminology'
+2026-08-30 17:46:24,239 - src.mcp_server - INFO - Explained via Tier 2: armor
+     ✓ Success - 3938 chars
+
+[23] Testing find_stat_sources(['stat_keyword', 'limit'])
+[MCP-SERVER] Tool called: find_stat_sources
+[MCP-SERVER] Arguments: {'stat_keyword': 'fire resistance', 'limit': 3}
+     ✓ Success - 77 chars
+
+[24] Testing calculate_character_dps(['spell_name', 'gem_level', 'spell_stats'])
+[MCP-SERVER] Tool called: calculate_character_dps
+[MCP-SERVER] Arguments: {'spell_name': 'Fireball', 'gem_level': 20, 'spell_stats': {'added_flat_fire': [10, 20]}}
+     ✓ Success - 691 chars
+
+================================================================================
+TEST SUMMARY: 24 passed, 0 failed out of 24 tests
+================================================================================
+2026-08-30 17:46:24,245 - src.mcp_server - INFO - Cleaning up server resources...
+2026-08-30 17:46:24,245 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Connection object at 0x000001E59F055B70>)
+2026-08-30 17:46:24,245 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Connection object at 0x000001E59F055B70>) completed
+2026-08-30 17:46:24,245 - aiosqlite - DEBUG - executing <function Connection.stop.<locals>.close_and_stop at 0x000001E59F031BC0>
+2026-08-30 17:46:24,245 - aiosqlite - DEBUG - operation <function Connection.stop.<locals>.close_and_stop at 0x000001E59F031BC0> completed
+2026-08-30 17:46:24,246 - aiosqlite - DEBUG - executing functools.partial(<built-in method close of sqlite3.Connection object at 0x000001E59F013790>)
+2026-08-30 17:46:24,246 - aiosqlite - DEBUG - operation functools.partial(<built-in method close of sqlite3.Connection object at 0x000001E59F013790>) completed
+2026-08-30 17:46:24,246 - aiosqlite - DEBUG - executing <function Connection.stop.<locals>.close_and_stop at 0x000001E5A0ACD4E0>
+2026-08-30 17:46:24,246 - aiosqlite - DEBUG - operation <function Connection.stop.<locals>.close_and_stop at 0x000001E5A0ACD4E0> completed
+2026-08-30 17:46:24,246 - src.mcp_server - INFO - Server cleanup complete
+[
+  {
+    "tool": "health_check",
+    "args": {},
+    "status": "\u2713 PASS",
+    "response_chars": 806
+  },
+  {
+    "tool": "check_tree_freshness",
+    "args": {},
+    "status": "\u2713 PASS",
+    "response_chars": 541
+  },
+  {
+    "tool": "get_formula",
+    "args": {
+      "formula_name": "dps"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 1485
+  },
+  {
+    "tool": "get_formula",
+    "args": {
+      "formula_name": "ehp"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 1485
+  },
+  {
+    "tool": "get_formula",
+    "args": {
+      "formula_name": "armor"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 1485
+  },
+  {
+    "tool": "list_all_keystones",
+    "args": {
+      "limit": 5
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 648
+  },
+  {
+    "tool": "inspect_keystone",
+    "args": {
+      "keystone_name": "Acrobatics"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 190
+  },
+  {
+    "tool": "list_all_notables",
+    "args": {
+      "limit": 5
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 555
+  },
+  {
+    "tool": "inspect_passive_node",
+    "args": {
+      "node_name": "Acrobatics"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 136
+  },
+  {
+    "tool": "list_all_spells",
+    "args": {
+      "limit": 5
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 663
+  },
+  {
+    "tool": "list_all_supports",
+    "args": {
+      "limit": 5
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 345
+  },
+  {
+    "tool": "inspect_spell_gem",
+    "args": {
+      "gem_name": "Fireball"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 2226
+  },
+  {
+    "tool": "inspect_support_gem",
+    "args": {
+      "gem_name": "Added Fire Damage"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 31
+  },
+  {
+    "tool": "list_all_base_items",
+    "args": {
+      "limit": 5
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 509
+  },
+  {
+    "tool": "search_items",
+    "args": {
+      "query": "life",
+      "limit": 3
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 792
+  },
+  {
+    "tool": "list_all_mods",
+    "args": {
+      "limit": 5
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 362
+  },
+  {
+    "tool": "inspect_mod",
+    "args": {
+      "mod_id": "IncreasedLife1"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 275
+  },
+  {
+    "tool": "search_mods_by_stat",
+    "args": {
+      "stat_text": "life",
+      "limit": 3
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 58
+  },
+  {
+    "tool": "get_mod_tiers",
+    "args": {
+      "mod_id": "IncreasedLife"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 27
+  },
+  {
+    "tool": "validate_support_combination",
+    "args": {
+      "spell_name": "Fireball",
+      "supports": [
+        "Added Fire Damage",
+        "Spell Echo"
+      ]
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 73
+  },
+  {
+    "tool": "validate_build_constraints",
+    "args": {
+      "resistances": {
+        "fire": 75
+      }
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 33
+  },
+  {
+    "tool": "explain_mechanic",
+    "args": {
+      "mechanic_name": "armor"
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 3938
+  },
+  {
+    "tool": "find_stat_sources",
+    "args": {
+      "stat_keyword": "fire resistance",
+      "limit": 3
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 77
+  },
+  {
+    "tool": "calculate_character_dps",
+    "args": {
+      "spell_name": "Fireball",
+      "gem_level": 20,
+      "spell_stats": {
+        "added_flat_fire": [
+          10,
+          20
+        ]
+      }
+    },
+    "status": "\u2713 PASS",
+    "response_chars": 691
+  }
+]
