@@ -641,24 +641,50 @@ class PoE2BuildOptimizerMCP:
             return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
     async def _wrapper_list_tools(self, params):
-        """Wrapper for list_tools handler"""
+        """Wrapper for list_tools - compatible with MCP 2.1.1 handler signature"""
         return await self._handle_list_tools(params)
 
     async def _wrapper_call_tool(self, params):
-        """Wrapper for call_tool handler"""
+        """Wrapper for call_tool - compatible with MCP 2.1.1 handler signature"""
         return await self._handle_call_tool(params)
 
     async def _wrapper_list_resources(self, params):
-        """Wrapper for list_resources handler"""
+        """Wrapper for list_resources - compatible with MCP 2.1.1 handler signature"""
         return await self._handle_list_resources(params)
 
     async def _wrapper_read_resource(self, params):
-        """Wrapper for read_resource handler"""
+        """Wrapper for read_resource - compatible with MCP 2.1.1 handler signature"""
         return await self._handle_read_resource(params)
 
     async def _wrapper_list_prompts(self, params):
-        """Wrapper for list_prompts handler"""
+        """Wrapper for list_prompts - compatible with MCP 2.1.1 handler signature"""
         return await self._handle_list_prompts(params)
+
+    async def _request_list_tools(self, *args, **kwargs) -> types.ListToolsResult:
+        """MCP 2.1.1 compatible handler - accepts Request object, returns Result"""
+        # Extract request from args[0] if present
+        request = args[0] if args else kwargs.get('request')
+        return await self._handle_list_tools(request)
+
+    async def _request_call_tool(self, *args, **kwargs) -> types.CallToolResult:
+        """MCP 2.1.1 compatible handler - accepts Request object, returns Result"""
+        request = args[0] if args else kwargs.get('request')
+        return await self._handle_call_tool(request)
+
+    async def _request_list_resources(self, *args, **kwargs) -> types.ListResourcesResult:
+        """MCP 2.1.1 compatible handler - accepts Request object, returns Result"""
+        request = args[0] if args else kwargs.get('request')
+        return await self._handle_list_resources(request)
+
+    async def _request_read_resource(self, *args, **kwargs) -> types.ReadResourceResult:
+        """MCP 2.1.1 compatible handler - accepts Request object, returns Result"""
+        request = args[0] if args else kwargs.get('request')
+        return await self._handle_read_resource(request)
+
+    async def _request_list_prompts(self, *args, **kwargs) -> types.ListPromptsResult:
+        """MCP 2.1.1 compatible handler - accepts Request object, returns Result"""
+        request = args[0] if args else kwargs.get('request')
+        return await self._handle_list_prompts(request)
 
     def _register_tools(self):
         """Register MCP tools using MCP SDK 2.1.1 API"""
@@ -1729,40 +1755,43 @@ class PoE2BuildOptimizerMCP:
             ]
 
         # Register handlers with MCP 2.1.1 API
+        # Pass the method directly - MCP SDK handles the binding
         self.server.add_request_handler(
             "tools/list",
             types.ListToolsRequest,
-            self._wrapper_list_tools
+            self._request_list_tools
         )
         self.server.add_request_handler(
             "tools/call",
             types.CallToolRequest,
-            self._wrapper_call_tool
+            self._request_call_tool
         )
 
     def _register_resources(self):
         """Register MCP resources using MCP SDK 2.1.1 API"""
         
         # Register handlers with MCP 2.1.1 API
+        # Pass the method directly - MCP SDK handles the binding
         self.server.add_request_handler(
             "resources/list",
             types.ListResourcesRequest,
-            self._wrapper_list_resources
+            self._request_list_resources
         )
         self.server.add_request_handler(
             "resources/read",
             types.ReadResourceRequest,
-            self._wrapper_read_resource
+            self._request_read_resource
         )
 
     def _register_prompts(self):
         """Register MCP prompts using MCP SDK 2.1.1 API"""
         
         # Register handler with MCP 2.1.1 API
+        # Pass the method directly - MCP SDK handles the binding
         self.server.add_request_handler(
             "prompts/list",
             types.ListPromptsRequest,
-            self._wrapper_list_prompts
+            self._request_list_prompts
         )
 
     # Tool Implementation Methods
