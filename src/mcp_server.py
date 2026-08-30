@@ -562,7 +562,7 @@ class PoE2BuildOptimizerMCP:
     def _register_tools(self):
         """Register MCP tools"""
 
-        @self.server.list_tools()
+        @self.server.list_tools
         async def handle_list_tools() -> List[types.Tool]:
             """List all available tools - 18 focused MCP tools
 
@@ -1634,7 +1634,7 @@ class PoE2BuildOptimizerMCP:
                 ),
             ]
 
-        @self.server.call_tool()
+        @self.server.call_tool
         async def handle_call_tool(name: str, arguments: dict) -> List[types.TextContent]:
             """Handle tool calls (MCP SDK callback - delegates to class method)"""
             return await self.handle_call_tool(name, arguments)
@@ -1642,7 +1642,7 @@ class PoE2BuildOptimizerMCP:
     def _register_resources(self):
         """Register MCP resources"""
 
-        @self.server.list_resources()
+        @self.server.list_resources
         async def handle_list_resources() -> List[types.Resource]:
             """List available resources"""
             return [
@@ -1666,7 +1666,7 @@ class PoE2BuildOptimizerMCP:
                 ),
             ]
 
-        @self.server.read_resource()
+        @self.server.read_resource
         async def handle_read_resource(uri: str) -> str:
             """Read resource data"""
             if uri == "poe2://game-data/items":
@@ -1684,7 +1684,7 @@ class PoE2BuildOptimizerMCP:
     def _register_prompts(self):
         """Register MCP prompts"""
 
-        @self.server.list_prompts()
+        @self.server.list_prompts
         async def handle_list_prompts() -> List[types.Prompt]:
             """List available prompts"""
             return [
