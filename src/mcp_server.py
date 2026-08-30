@@ -419,6 +419,87 @@ class PoE2BuildOptimizerMCP:
         except Exception as e:
             logger.error(f"Error during cleanup: {e}")
 
+    async def _handle_list_tools(self, params):
+        """MCP handler for tools/list"""
+        # Retrieve tools from tool registry
+        return types.ListToolsResult(tools=self._tools_list)
+
+    async def _handle_call_tool(self, params):
+        """MCP handler for tools/call"""
+        result = await self.handle_call_tool(params.name, params.arguments or {})
+        return types.CallToolResult(content=result)
+
+    async def _handle_list_resources(self, params):
+        """MCP handler for resources/list"""
+        return types.ListResourcesResult(resources=[
+            types.Resource(
+                uri="poe2://game-data/items",
+                name="Item Database",
+                description="Complete PoE2 item database",
+                mimeType="application/json",
+            ),
+            types.Resource(
+                uri="poe2://game-data/passives",
+                name="Passive Tree",
+                description="Complete passive skill tree data",
+                mimeType="application/json",
+            ),
+            types.Resource(
+                uri="poe2://game-data/skills",
+                name="Skill Gems",
+                description="All skill gem data",
+                mimeType="application/json",
+            ),
+        ])
+
+    async def _handle_read_resource(self, params):
+        """MCP handler for resources/read"""
+        uri = params.uri
+        if uri == "poe2://game-data/items":
+            items = await self.db_manager.get_all_items()
+            return types.ReadResourceResult(contents=[
+                types.TextResourceContents(uri=uri, text=json.dumps(items, indent=2))
+            ])
+        elif uri == "poe2://game-data/passives":
+            passives = await self.db_manager.get_passive_tree()
+            return types.ReadResourceResult(contents=[
+                types.TextResourceContents(uri=uri, text=json.dumps(passives, indent=2))
+            ])
+        elif uri == "poe2://game-data/skills":
+            skills = await self.db_manager.get_all_skills()
+            return types.ReadResourceResult(contents=[
+                types.TextResourceContents(uri=uri, text=json.dumps(skills, indent=2))
+            ])
+        else:
+            raise ValueError(f"Unknown resource: {uri}")
+
+    async def _handle_list_prompts(self, params):
+        """MCP handler for prompts/list"""
+        return types.ListPromptsResult(prompts=[
+            types.Prompt(
+                name="analyze_build",
+                description="Comprehensive build analysis prompt",
+                arguments=[
+                    types.PromptArgument(
+                        name="character_data",
+                        description="Character data to analyze",
+                        required=True,
+                    )
+                ],
+            ),
+            types.Prompt(
+                name="optimize_for_goal",
+                description="Goal-specific build optimization",
+                arguments=[
+                    types.PromptArgument(
+                        name="goal",
+                        description="Optimization goal (dps, defense, etc.)",
+                        required=True,
+                    )
+                ],
+            ),
+        ])
+
     async def handle_call_tool(self, name: str, arguments: dict) -> List[types.TextContent]:
         """Public entry point for tool calls (MCP SDK + integration tests).
 
@@ -559,11 +640,31 @@ class PoE2BuildOptimizerMCP:
             debug_log(f"Traceback:\n{traceback.format_exc()}")
             return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
+    async def _wrapper_list_tools(self, params):
+        """Wrapper for list_tools handler"""
+        return await self._handle_list_tools(params)
+
+    async def _wrapper_call_tool(self, params):
+        """Wrapper for call_tool handler"""
+        return await self._handle_call_tool(params)
+
+    async def _wrapper_list_resources(self, params):
+        """Wrapper for list_resources handler"""
+        return await self._handle_list_resources(params)
+
+    async def _wrapper_read_resource(self, params):
+        """Wrapper for read_resource handler"""
+        return await self._handle_read_resource(params)
+
+    async def _wrapper_list_prompts(self, params):
+        """Wrapper for list_prompts handler"""
+        return await self._handle_list_prompts(params)
+
     def _register_tools(self):
         """Register MCP tools using MCP SDK 2.1.1 API"""
         
-        # Define tools list
-        tools = [
+        # Define tools list and store for handler access
+        self._tools_list = [
                 # ============================================
                 # DATA ACCESS TOOLS (14 tools)
                 # ============================================
@@ -1628,127 +1729,41 @@ class PoE2BuildOptimizerMCP:
             ]
 
         # Register handlers with MCP 2.1.1 API
-        # Use add_request_handler with (method_name, params_type, handler)
-        def register_tools():
-            async def list_tools_handler(params):
-                return types.ListToolsResult(tools=tools)
-            
-            async def call_tool_handler(params):
-                result = await self.handle_call_tool(params.name, params.arguments or {})
-                return types.CallToolResult(content=result)
-            
-            self.server.add_request_handler(
-                "tools/list",
-                types.ListToolsRequest,
-                list_tools_handler
-            )
-            self.server.add_request_handler(
-                "tools/call",
-                types.CallToolRequest,
-                call_tool_handler
-            )
-        
-        register_tools()
+        self.server.add_request_handler(
+            "tools/list",
+            types.ListToolsRequest,
+            self._wrapper_list_tools
+        )
+        self.server.add_request_handler(
+            "tools/call",
+            types.CallToolRequest,
+            self._wrapper_call_tool
+        )
 
     def _register_resources(self):
         """Register MCP resources using MCP SDK 2.1.1 API"""
         
-        def register_resources():
-            async def list_resources_handler(params):
-                """List available resources"""
-                return types.ListResourcesResult(resources=[
-                    types.Resource(
-                        uri="poe2://game-data/items",
-                        name="Item Database",
-                        description="Complete PoE2 item database",
-                        mimeType="application/json",
-                    ),
-                    types.Resource(
-                        uri="poe2://game-data/passives",
-                        name="Passive Tree",
-                        description="Complete passive skill tree data",
-                        mimeType="application/json",
-                    ),
-                    types.Resource(
-                        uri="poe2://game-data/skills",
-                        name="Skill Gems",
-                        description="All skill gem data",
-                        mimeType="application/json",
-                    ),
-                ])
-
-            async def read_resource_handler(params):
-                """Read resource data"""
-                uri = params.uri
-                if uri == "poe2://game-data/items":
-                    items = await self.db_manager.get_all_items()
-                    return types.ReadResourceResult(contents=[
-                        types.TextResourceContents(uri=uri, text=json.dumps(items, indent=2))
-                    ])
-                elif uri == "poe2://game-data/passives":
-                    passives = await self.db_manager.get_passive_tree()
-                    return types.ReadResourceResult(contents=[
-                        types.TextResourceContents(uri=uri, text=json.dumps(passives, indent=2))
-                    ])
-                elif uri == "poe2://game-data/skills":
-                    skills = await self.db_manager.get_all_skills()
-                    return types.ReadResourceResult(contents=[
-                        types.TextResourceContents(uri=uri, text=json.dumps(skills, indent=2))
-                    ])
-                else:
-                    raise ValueError(f"Unknown resource: {uri}")
-
-            self.server.add_request_handler(
-                "resources/list",
-                types.ListResourcesRequest,
-                list_resources_handler
-            )
-            self.server.add_request_handler(
-                "resources/read",
-                types.ReadResourceRequest,
-                read_resource_handler
-            )
-        
-        register_resources()
+        # Register handlers with MCP 2.1.1 API
+        self.server.add_request_handler(
+            "resources/list",
+            types.ListResourcesRequest,
+            self._wrapper_list_resources
+        )
+        self.server.add_request_handler(
+            "resources/read",
+            types.ReadResourceRequest,
+            self._wrapper_read_resource
+        )
 
     def _register_prompts(self):
         """Register MCP prompts using MCP SDK 2.1.1 API"""
         
-        def register_prompts():
-            async def list_prompts_handler(params):
-                """List available prompts"""
-                return types.ListPromptsResult(prompts=[
-                    types.Prompt(
-                        name="analyze_build",
-                        description="Comprehensive build analysis prompt",
-                        arguments=[
-                            types.PromptArgument(
-                                name="character_data",
-                                description="Character data to analyze",
-                                required=True,
-                            )
-                        ],
-                    ),
-                    types.Prompt(
-                        name="optimize_for_goal",
-                        description="Goal-specific build optimization",
-                        arguments=[
-                            types.PromptArgument(
-                                name="goal",
-                                description="Optimization goal (dps, defense, etc.)",
-                                required=True,
-                            )
-                        ],
-                    ),
-                ])
-
-            self.server.add_request_handler(
-                "prompts/list",
-                types.ListPromptsRequest,
-                list_prompts_handler
-            )
-        
-        register_prompts()
+        # Register handler with MCP 2.1.1 API
+        self.server.add_request_handler(
+            "prompts/list",
+            types.ListPromptsRequest,
+            self._wrapper_list_prompts
+        )
 
     # Tool Implementation Methods
 
